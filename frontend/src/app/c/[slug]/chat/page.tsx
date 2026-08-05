@@ -439,7 +439,7 @@ export default function ClassicChatPage() {
         
         {/* Close Button */}
         <button 
-          onClick={() => router.push(`/c/${params.slug}/entry`)} 
+          onClick={() => router.push(`/c/${slug}/entry`)} 
           className="absolute top-2 left-2 z-[60] bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-colors border-2 border-white"
           title="خروج من الشات"
         >
