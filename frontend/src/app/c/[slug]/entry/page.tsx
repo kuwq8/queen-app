@@ -25,8 +25,9 @@ export default function RetroEntryPage() {
       .then(res => res.json())
       .then(data => {
         setServer(data);
-        setIsLoading(false);
-      });
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   }, [slug, router]);
 
   const handleJoin = async () => {

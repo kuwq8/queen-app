@@ -66,7 +66,9 @@ export default function CommunityPage() {
           headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => res.json())
-        .then(data => setServers(data));
+        .then(data => setServers(data))
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
       }
     }, 300);
     return () => clearTimeout(delayDebounceFn);
