@@ -1,0 +1,405 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  username  String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profile   Profile?
+  posts     Post[]
+  comments  Comment[]
+  likes            Like[]
+  bookmarks        Bookmark[]
+  followers        Follows[] @relation("following")
+  following        Follows[] @relation("followers")
+  notifications    Notification[] @relation("Received")
+  notificationsSent Notification[] @relation("Sent")
+  chatRooms        ChatParticipant[]
+  messages         ChatMessage[]
+  ownedServers     CommunityServer[] @relation("ServerOwner")
+  communityMembers CommunityMember[]
+  communityMessages CommunityMessage[]
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String?
+  lastName  String?
+  bio       String?
+  avatarUrl String?
+  coverUrl  String?
+  allowDirectMessages Boolean @default(true)
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  content   String
+  authorId      String
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  mediaUrl      String?
+  quotePostId   String?
+  quotePost     Post?     @relation("Quotes", fields: [quotePostId], references: [id])
+  quotedBy      Post[]    @relation("Quotes")
+  comments      Comment[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  notifications Notification[]
+  createdAt     DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String?
+  mediaUrl  String?
+  authorId  String
+  postId    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model Follows {
+  followerId  String
+  followingId String
+  follower    User     @relation("followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+}
+
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  actorId   String
+  type      String   // LIKE, COMMENT, FOLLOW
+  postId    String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation("Received", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User     @relation("Sent", fields: [actorId], references: [id], onDelete: Cascade)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model ChatRoom {
+  id           String            @id @default(uuid())
+  name         String?
+  isGroup      Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  participants ChatParticipant[]
+  messages     ChatMessage[]
+}
+
+model ChatParticipant {
+  id         String   @id @default(uuid())
+  userId     String
+  roomId     String
+  joinedAt   DateTime @default(now())
+  lastReadAt DateTime? // For read receipts
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room       ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roomId])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  content   String?
+  mediaUrl  String?
+  senderId  String
+  roomId    String
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
+
+model CommunityServer {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  bannerUrl   String?
+  ownerId     String
+  isPrivate   Boolean  @default(false)
+  owner       User     @relation("ServerOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     CommunityMember[]
+  rooms       CommunityRoom[]
+  roles       CommunityRole[]
+  settings    CommunitySettings?
+  shortcuts   CommunityShortcut[]
+  bots        CommunityBot[]
+  gifts       CommunityGift[]
+  banners     CommunityBanner[]
+  domains     CommunityDomain[]
+  fakeUsers   CommunityFakeUser[]
+  logs        CommunityLog[]
+  bans        CommunityBan[]
+  ignores     UserIgnore[]
+  emojis      CommunityEmoji[]
+  createdAt   DateTime @default(now())
+}
+
+model CommunitySettings {
+  id              String   @id @default(uuid())
+  serverId        String   @unique
+  server          CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  
+  primaryColor    String?  @default("#5C4033")
+  secondaryColor  String?  @default("#8B5A2B")
+  backgroundColor String?  @default("#EAEAD2")
+  
+  isMarqueeEnabled Boolean @default(true)
+  marqueeText      String? @default("عامل الناس بما تحب أن تعامل ... مرحباً بكم في شاتنا ... نرجو الالتزام بالقوانين وعدم الإساءة للآخرين ...")
+  
+  areAddonsEnabled Boolean @default(true)
+
+  allowPublicChat      Boolean @default(true)
+  allowPrivateChat     Boolean @default(true)
+  allowAlerts          Boolean @default(true)
+  welcomeMessage       String? @default("أهلاً بك في الشات!")
+  rollingMessageLimit  Int     @default(50)
+  autoDeleteAfterHours Int     @default(1)
+}
+
+model CommunityRole {
+  id          String   @id @default(uuid())
+  name        String
+  priority    Int      @default(0)
+  iconUrl     String?
+  isDefault   Boolean  @default(false)
+  isSystem    Boolean  @default(false)
+  serverId    String
+  server      CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  
+  canKick                 Boolean @default(false)
+  canKickRoom             Boolean @default(false)
+  canMuteWall             Boolean @default(false)
+  canQuickChat            Boolean @default(false)
+  canLikeWall             Boolean @default(true)
+  canCommentWall          Boolean @default(true)
+  canDeleteWall           Boolean @default(false)
+  canSendAlerts           Boolean @default(false)
+  canChangeOwnNick        Boolean @default(false)
+  canChangeOthersNicks    Boolean @default(false)
+  canBan                  Boolean @default(false)
+  canPostAnnouncements    Boolean @default(false)
+  canOpenPrivate          Boolean @default(false)
+  canMoveUsers            Boolean @default(false)
+  canManageRooms          Boolean @default(false)
+  canCreateRooms          Boolean @default(false)
+  canToggleRooms          Boolean @default(false)
+  canManageUsers          Boolean @default(false)
+  canMute                 Boolean @default(false)
+  canEditLikes            Boolean @default(false)
+  canManageFilter         Boolean @default(false)
+  canManageSubscriptions  Boolean @default(false)
+  // Discord-style Permissions
+  canAdmin                Boolean @default(false)
+  canManageServer         Boolean @default(false)
+  canManageRoles          Boolean @default(false)
+  canViewAuditLog         Boolean @default(false)
+  canSendMessages         Boolean @default(true)
+  canEmbedLinks           Boolean @default(false)
+  canAttachFiles          Boolean @default(false)
+  canManageMessages       Boolean @default(false)
+  canMentionEveryone      Boolean @default(false)
+  canReadHistory          Boolean @default(true)
+  canEnterLockedRooms     Boolean @default(false)
+
+  members     CommunityMember[]
+  fakeUsers   CommunityFakeUser[]
+
+  @@unique([serverId, name])
+}
+
+model CommunityMember {
+  id        String   @id @default(uuid())
+  userId    String
+  serverId  String
+  roleId    String?
+  status    String   @default("APPROVED")
+  isMuted   Boolean  @default(false)
+  muteUntil DateTime?
+  isWallMuted Boolean @default(false)
+  warningsCount Int  @default(0)
+  nameColor String?  @default("#8B5A2B")
+  textColor String?  @default("#000000")
+  bgColor   String?  @default("#FDFDFD")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  server    CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  role      CommunityRole?  @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  joinedAt  DateTime @default(now())
+  lastSeen  DateTime @default(now())
+  lastIp    String?
+  lastDevice String?
+
+  @@unique([userId, serverId])
+}
+
+model CommunityRoom {
+  id        String   @id @default(uuid())
+  name      String
+  serverId  String
+  server    CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  messages  CommunityMessage[]
+  createdAt DateTime @default(now())
+}
+
+model CommunityMessage {
+  id        String   @id @default(uuid())
+  content   String?
+  mediaUrl  String?
+  senderId  String
+  roomId    String
+  isSystemMessage Boolean @default(false)
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  room      CommunityRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model CommunityShortcut {
+  id        String   @id @default(uuid())
+  shortcut  String
+  expansion String
+  serverId  String
+  server    CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([serverId, shortcut])
+}
+
+model CommunityBot {
+  id              String   @id @default(uuid())
+  type            String   // e.g. "TRIVIA", "BROADCAST"
+  intervalMinutes Int      @default(10)
+  content         String?  // JSON array for broadcast messages
+  isActive        Boolean  @default(false)
+  serverId        String
+  server          CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+}
+
+model CommunityGift {
+  id        String   @id @default(uuid())
+  name      String
+  imageUrl  String
+  serverId  String
+  server    CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model CommunityBanner {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  serverId  String
+  server    CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model CommunityDomain {
+  id             String   @id @default(uuid())
+  domain         String   @unique
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String?
+  serverId       String
+  server         CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+}
+
+model UserIgnore {
+  id             String   @id @default(uuid())
+  userId         String
+  targetUserId   String
+  serverId       String
+  server         CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, targetUserId, serverId])
+}
+
+
+
+model CommunityFakeUser {
+  id        String   @id @default(uuid())
+  name      String
+  avatarUrl String?
+  status    String   @default("????")
+  serverId  String
+  roleId    String?
+  server    CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  role      CommunityRole?  @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+}
+
+
+model CommunityLog {
+  id String @id @default(uuid())
+  userId String?
+  action String
+  ipAddress String?
+  device String?
+  serverId String
+  server CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model CommunityBan {
+  id String @id @default(uuid())
+  ipAddress String?
+  device String?
+  userId String?
+  reason String?
+  expiresAt DateTime?
+  serverId String
+  server CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model CommunityEmoji {
+  id        String   @id @default(uuid())
+  type      String   // "EMOJI" or "STICKER"
+  url       String
+  shortcut  String?  // e.g. "ف1"
+  serverId  String
+  server    CommunityServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
