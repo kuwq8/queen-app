@@ -7,7 +7,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const res = await fetch(`http://localhost:3001/community/${slug}`);
+    const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}`);
     if (!res.ok) {
       return {
         title: 'شات غير معروف',

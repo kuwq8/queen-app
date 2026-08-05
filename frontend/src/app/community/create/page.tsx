@@ -34,7 +34,7 @@ export default function CreateChatPage() {
     const timer = setTimeout(async () => {
       setIsChecking(true);
       try {
-        const res = await fetch(`http://localhost:3001/community/check-slug/${slug}`);
+        const res = await fetch(`https://queen-app-api.onrender.com/community/check-slug/${slug}`);
         const data = await res.json();
         setIsAvailable(data.available);
       } catch (err) {
@@ -56,7 +56,7 @@ export default function CreateChatPage() {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/community', {
+      const res = await fetch('https://queen-app-api.onrender.com/community', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

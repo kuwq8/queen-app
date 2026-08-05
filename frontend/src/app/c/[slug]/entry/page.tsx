@@ -21,7 +21,7 @@ export default function RetroEntryPage() {
       setCurrentUser(payload);
     } catch(e) {}
 
-    fetch(`http://localhost:3001/community/${slug}`)
+    fetch(`https://queen-app-api.onrender.com/community/${slug}`)
       .then(res => res.json())
       .then(data => {
         setServer(data);
@@ -32,7 +32,7 @@ export default function RetroEntryPage() {
   const handleJoin = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/community/${slug}/join`, {
+      const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/join`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });

@@ -14,7 +14,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
     const token = localStorage.getItem('token');
     if (!token) return;
     
-    fetch('http://localhost:3001/notifications/unread-count', {
+    fetch('https://queen-app-api.onrender.com/notifications/unread-count', {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.ok ? res.json() : { count: 0 })

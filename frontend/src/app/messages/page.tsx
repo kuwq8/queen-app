@@ -31,7 +31,7 @@ export default function MessagesPage() {
 
   const fetchRooms = async (token: string) => {
     try {
-      const res = await fetch('http://localhost:3001/chat/rooms', {
+      const res = await fetch('https://queen-app-api.onrender.com/chat/rooms', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setRooms(await res.json());
@@ -45,7 +45,7 @@ export default function MessagesPage() {
     // Allow empty search to fetch contacts
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/users/search?q=${q}&followingOnly=true`, {
+      const res = await fetch(`https://queen-app-api.onrender.com/users/search?q=${q}&followingOnly=true`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setSearchResults(await res.json());
@@ -73,7 +73,7 @@ export default function MessagesPage() {
     setIsCreating(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/chat/rooms', {
+      const res = await fetch('https://queen-app-api.onrender.com/chat/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ usernames, isGroup, name })

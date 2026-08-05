@@ -22,7 +22,7 @@ export default function NotificationsPage() {
 
   const fetchNotifications = async (token: string) => {
     try {
-      const res = await fetch('http://localhost:3001/notifications', {
+      const res = await fetch('https://queen-app-api.onrender.com/notifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -58,7 +58,7 @@ export default function NotificationsPage() {
     // Mark as read in background
     const token = localStorage.getItem('token');
     if (!notification.read) {
-      fetch(`http://localhost:3001/notifications/${notification.id}/read`, {
+      fetch(`https://queen-app-api.onrender.com/notifications/${notification.id}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       }).catch(console.error);

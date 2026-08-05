@@ -46,7 +46,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     }
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/posts/${post.id}`, {
+      const res = await fetch(`https://queen-app-api.onrender.com/posts/${post.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     const token = localStorage.getItem('token');
     try {
       setIsDeleting(true);
-      const res = await fetch(`http://localhost:3001/posts/${post.id}`, {
+      const res = await fetch(`https://queen-app-api.onrender.com/posts/${post.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -100,7 +100,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     });
 
     try {
-      await fetch(`http://localhost:3001/posts/${post.id}/like`, {
+      await fetch(`https://queen-app-api.onrender.com/posts/${post.id}/like`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -122,7 +122,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     });
 
     try {
-      await fetch(`http://localhost:3001/posts/${post.id}/bookmark`, {
+      await fetch(`https://queen-app-api.onrender.com/posts/${post.id}/bookmark`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -154,7 +154,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     setIsReposted(!isReposted);
 
     try {
-      await fetch(`http://localhost:3001/posts/${post.id}/repost`, {
+      await fetch(`https://queen-app-api.onrender.com/posts/${post.id}/repost`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });

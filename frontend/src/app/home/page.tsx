@@ -37,7 +37,7 @@ export default function HomePage() {
       const payload = JSON.parse(atob(base64));
       setCurrentUsername(payload.username);
       
-      fetch(`http://localhost:3001/users/${payload.username}`, {
+      fetch(`https://queen-app-api.onrender.com/users/${payload.username}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -54,7 +54,7 @@ export default function HomePage() {
   const fetchPosts = async (token: string, type: 'all' | 'following') => {
     try {
       setIsLoading(true);
-      const url = type === 'following' ? 'http://localhost:3001/posts?followingOnly=true' : 'http://localhost:3001/posts';
+      const url = type === 'following' ? 'https://queen-app-api.onrender.com/posts?followingOnly=true' : 'https://queen-app-api.onrender.com/posts';
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -84,7 +84,7 @@ export default function HomePage() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const res = await fetch('http://localhost:3001/users/bookmarks', {
+      const res = await fetch('https://queen-app-api.onrender.com/users/bookmarks', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -105,7 +105,7 @@ export default function HomePage() {
       if (mediaFile) {
         const formData = new FormData();
         formData.append('file', mediaFile);
-        const uploadRes = await fetch('http://localhost:3001/posts/media', {
+        const uploadRes = await fetch('https://queen-app-api.onrender.com/posts/media', {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: formData
@@ -116,7 +116,7 @@ export default function HomePage() {
         }
       }
 
-      const res = await fetch('http://localhost:3001/posts', {
+      const res = await fetch('https://queen-app-api.onrender.com/posts', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

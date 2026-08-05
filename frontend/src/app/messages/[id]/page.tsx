@@ -41,14 +41,14 @@ export default function ChatRoomPage() {
     setCurrentUserId(payload.sub);
 
     // Fetch Room Info
-    fetch(`http://localhost:3001/chat/rooms/${roomId}`, {
+    fetch(`https://queen-app-api.onrender.com/chat/rooms/${roomId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.json())
     .then(data => setRoomInfo(data));
 
     // Fetch initial messages
-    fetch(`http://localhost:3001/chat/${roomId}/messages`, {
+    fetch(`https://queen-app-api.onrender.com/chat/${roomId}/messages`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -58,7 +58,7 @@ export default function ChatRoomPage() {
     });
 
     // Connect WebSocket
-    const socket = io('http://localhost:3001', {
+    const socket = io('https://queen-app-api.onrender.com', {
       auth: { token: `Bearer ${token}` }
     });
     socketRef.current = socket;
@@ -176,7 +176,7 @@ export default function ChatRoomPage() {
       if (audioBlob) formData.append('file', audioBlob, 'voice-note.webm');
       else if (mediaFile) formData.append('file', mediaFile);
 
-      const uploadRes = await fetch('http://localhost:3001/chat/media', {
+      const uploadRes = await fetch('https://queen-app-api.onrender.com/chat/media', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData

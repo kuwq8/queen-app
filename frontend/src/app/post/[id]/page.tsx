@@ -36,7 +36,7 @@ export default function PostDetailPage() {
     try {
       // We need a specific endpoint to fetch a single post, but for now we can fetch the feed and find it
       // Wait, let's just fetch feed and filter (since we didn't build GET /posts/:id).
-      const feedRes = await fetch(`http://localhost:3001/posts`, {
+      const feedRes = await fetch(`https://queen-app-api.onrender.com/posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (feedRes.ok) {
@@ -45,7 +45,7 @@ export default function PostDetailPage() {
         if (foundPost) setPost(foundPost);
       }
 
-      const commentsRes = await fetch(`http://localhost:3001/posts/${postId}/comments`, {
+      const commentsRes = await fetch(`https://queen-app-api.onrender.com/posts/${postId}/comments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (commentsRes.ok) {
@@ -64,7 +64,7 @@ export default function PostDetailPage() {
     setIsSubmitting(true);
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:3001/posts/${postId}/comments`, {
+      const res = await fetch(`https://queen-app-api.onrender.com/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

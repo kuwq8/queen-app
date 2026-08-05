@@ -24,7 +24,7 @@ export default function AuthPage() {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const bodyPayload = isLogin ? { email, password } : { email, username, password };
       
-      const res = await fetch(`http://localhost:3001${endpoint}`, {
+      const res = await fetch(`https://queen-app-api.onrender.com${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPayload),

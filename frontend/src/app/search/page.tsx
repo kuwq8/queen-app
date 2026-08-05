@@ -25,7 +25,7 @@ export default function SearchPage() {
         setIsSearching(true);
         const token = localStorage.getItem('token');
         try {
-          const res = await fetch(`http://localhost:3001/users/search?q=${encodeURIComponent(query)}`, {
+          const res = await fetch(`https://queen-app-api.onrender.com/users/search?q=${encodeURIComponent(query)}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {
