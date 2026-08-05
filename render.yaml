@@ -1,4 +1,6 @@
 # Render.com IaC Configuration
+# This file must be in the root directory
+
 services:
   - type: web
     name: gemini-social-backend
