@@ -1,3 +1,4 @@
+# Render.com IaC Configuration
 services:
   - type: web
     name: gemini-social-backend
@@ -12,7 +13,7 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: PORT
-        value: 3001
+        value: "3001"
       - key: FRONTEND_URL
         value: https://gemini-social.onrender.com
 
