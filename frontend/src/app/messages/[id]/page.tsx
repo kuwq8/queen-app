@@ -1,11 +1,9 @@
 'use client';
 
-
-import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users } from 'lucide-react';
-import io, { Socket } from 'socket.io-client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function ChatRoomPage() {
   const router = useRouter();
@@ -18,6 +16,7 @@ export default function ChatRoomPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInfoPaneOpen, setIsInfoPaneOpen] = useState(false);
   const [roomInfo, setRoomInfo] = useState<any>(null);
+  const [myUsername, setMyUsername] = useState<string>('');
   
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [isTypingState, setIsTypingState] = useState(false);
@@ -32,69 +31,108 @@ export default function ChatRoomPage() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
 
-  const socketRef = useRef<Socket | null>(null);
+  const supabaseRef = useRef<any>(null);
+  const channelRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return router.push('/');
-    
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    setCurrentUserId(payload.sub);
+    const init = async () => {
+      const supabase = createClient();
+      supabaseRef.current = supabase;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return router.push('/');
+      setCurrentUserId(session.user.id);
+      
+      const myId = session.user.id;
+      
+      // Get my profile for presence
+      const { data: myProfile } = await supabase.from('profiles').select('username').eq('id', myId).single();
+      if (myProfile) setMyUsername(myProfile.username);
 
-    // Fetch Room Info
-    fetch(`${API_URL}/chat/rooms/${roomId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => setRoomInfo(data));
-
-    // Fetch initial messages
-    fetch(`${API_URL}/chat/${roomId}/messages`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-      setMessages(data.reverse());
-      scrollToBottom();
-    });
-
-    // Connect WebSocket
-    const socket = io(`${API_URL}`, {
-      auth: { token: `Bearer ${token}` }
-    });
-    socketRef.current = socket;
-
-    socket.on('newMessage', (message: any) => {
-      if (message.roomId === roomId) {
-        setMessages(prev => [...prev, message]);
-        scrollToBottom();
-        socket.emit('readMessage', { roomId }); // Mark read
+      // Fetch Room Info
+      const { data: roomData } = await supabase
+        .from('channels')
+        .select(`
+          *,
+          participants:channel_members(
+             user_id,
+             user:profiles!user_id(id, username, avatar_url, bio)
+          )
+        `)
+        .eq('id', roomId as string)
+        .single();
+        
+      if (roomData) {
+        setRoomInfo(roomData);
       }
-    });
 
-    socket.on('userTyping', (data: any) => {
-      if (data.roomId === roomId) {
-        setTypingUsers(prev => {
-          if (data.isTyping) {
-            return prev.includes(data.username) ? prev : [...prev, data.username];
-          } else {
-            return prev.filter(u => u !== data.username);
+      // Fetch initial messages
+      const { data: msgsData } = await supabase
+        .from('messages')
+        .select(`
+          *,
+          sender:profiles!sender_id(id, username, avatar_url)
+        `)
+        .eq('channel_id', roomId as string)
+        .order('created_at', { ascending: true });
+        
+      if (msgsData) {
+         setMessages(msgsData);
+         scrollToBottom();
+      }
+
+      // Supabase Realtime
+      const channel = supabase.channel(`room:${roomId}`);
+      channelRef.current = channel;
+      
+      channel
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'messages', filter: `channel_id=eq.${roomId}` },
+          async (payload: any) => {
+            if (payload.eventType === 'INSERT') {
+               // Only add if we didn't add it locally (to avoid duplicates)
+               // But usually realtime triggers after insert, so we can just re-fetch sender
+               const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.sender_id).single();
+               const newMsg = { ...payload.new, sender: senderData };
+               
+               setMessages(prev => {
+                  if (prev.find(m => m.id === newMsg.id)) return prev;
+                  return [...prev, newMsg];
+               });
+               scrollToBottom();
+            } else if (payload.eventType === 'UPDATE') {
+               setMessages(prev => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
+            } else if (payload.eventType === 'DELETE') {
+               setMessages(prev => prev.filter(m => m.id !== payload.old.id));
+            }
           }
+        )
+        .on('presence', { event: 'sync' }, () => {
+           const state = channel.presenceState();
+           const typers: string[] = [];
+           Object.values(state).forEach((presences: any) => {
+             presences.forEach((p: any) => {
+               if (p.isTyping && p.userId !== myId) {
+                  typers.push(p.username);
+               }
+             });
+           });
+           setTypingUsers(Array.from(new Set(typers)));
+        })
+        .subscribe(async (status: string) => {
+           if (status === 'SUBSCRIBED') {
+              await channel.track({ userId: myId, username: myProfile?.username || 'User', isTyping: false });
+           }
         });
-      }
-    });
 
-    socket.on('messageRead', (data: any) => {
-      if (data.roomId === roomId) {
-         setMessages(prev => prev.map(m => ({ ...m, read: true })));
-      }
-    });
-
-    socket.emit('readMessage', { roomId });
+    };
+    init();
 
     return () => {
-      socket.disconnect();
+      if (channelRef.current) {
+        channelRef.current.unsubscribe();
+      }
     };
   }, [roomId]);
 
@@ -158,43 +196,51 @@ export default function ChatRoomPage() {
   const sendMessage = async () => {
     if (!newMessage.trim() && !audioBlob && !mediaFile) return;
 
+    const supabase = supabaseRef.current;
+
     if (editingMessageId) {
-      setMessages(messages.map(m => m.id === editingMessageId ? { ...m, content: newMessage, isEdited: true } : m));
-      setEditingMessageId(null);
-      setNewMessage('');
-      return;
+       await supabase.from('messages').update({ content: newMessage }).eq('id', editingMessageId);
+       setEditingMessageId(null);
+       setNewMessage('');
+       return;
     }
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    socketRef.current?.emit('typing', { roomId, isTyping: false });
+    channelRef.current?.track({ userId: currentUserId, username: myUsername, isTyping: false });
     setIsTypingState(false);
 
-    const token = getToken();
-    let mediaUrl = undefined;
+    let finalMediaUrl = null;
 
-    // Upload media/audio if exists via REST API first
     if (audioBlob || mediaFile) {
-      const formData = new FormData();
-      if (audioBlob) formData.append('file', audioBlob, 'voice-note.webm');
-      else if (mediaFile) formData.append('file', mediaFile);
+      const file = audioBlob || mediaFile!;
+      const fileExt = audioBlob ? 'webm' : file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `chat/${roomId}/${fileName}`;
 
-      const uploadRes = await fetch(`${API_URL}/chat/media`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData
-      });
-      if (uploadRes.ok) {
-        const uploadData = await uploadRes.json();
-        mediaUrl = uploadData.mediaUrl;
+      const { data, error } = await supabase.storage
+        .from('media') // MUST create a 'media' bucket in Supabase!
+        .upload(filePath, file);
+
+      if (!error && data) {
+        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
+        finalMediaUrl = publicUrlData.publicUrl;
+      } else {
+        alert('حدث خطأ أثناء رفع الملف.');
+        return;
       }
     }
 
-    // Emit through WebSocket
-    socketRef.current?.emit('sendMessage', {
-      roomId,
+    const { data: insertData, error: insertError } = await supabase.from('messages').insert({
+      channel_id: roomId,
+      sender_id: currentUserId,
       content: newMessage,
-      mediaUrl
-    });
+      media_url: finalMediaUrl
+    }).select('*, sender:profiles!sender_id(id, username, avatar_url)').single();
+    
+    if (insertData) {
+       setMessages(prev => [...prev, insertData]);
+       scrollToBottom();
+    }
 
     setNewMessage('');
     cancelMedia();
@@ -205,14 +251,18 @@ export default function ChatRoomPage() {
     
     if (!isTypingState) {
       setIsTypingState(true);
-      socketRef.current?.emit('typing', { roomId, isTyping: true });
+      channelRef.current?.track({ userId: currentUserId, username: myUsername, isTyping: true });
     }
     
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       setIsTypingState(false);
-      socketRef.current?.emit('typing', { roomId, isTyping: false });
+      channelRef.current?.track({ userId: currentUserId, username: myUsername, isTyping: false });
     }, 2000);
+  };
+  
+  const deleteMessage = async (id: string) => {
+     await supabaseRef.current.from('messages').delete().eq('id', id);
   };
 
   let chatTitle = 'دردشة';
@@ -220,14 +270,14 @@ export default function ChatRoomPage() {
   let chatSubtext = '';
   
   if (roomInfo) {
-    if (roomInfo.isGroup) {
+    if (roomInfo.is_group) {
       chatTitle = roomInfo.name || 'دردشة جماعية';
       chatSubtext = `${roomInfo.participants.length} أعضاء`;
     } else {
-      const otherUser = roomInfo.participants.find((p: any) => p.userId !== currentUserId)?.user;
+      const otherUser = roomInfo.participants.find((p: any) => p.user_id !== currentUserId)?.user;
       if (otherUser) {
         chatTitle = otherUser.username;
-        chatAvatar = otherUser.profile?.avatarUrl;
+        chatAvatar = otherUser.avatar_url;
         chatSubtext = 'متصل';
       }
     }
@@ -254,7 +304,7 @@ export default function ChatRoomPage() {
               <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {chatAvatar ? (
                   <img src={chatAvatar} className="w-full h-full object-cover" />
-                ) : roomInfo?.isGroup ? (
+                ) : roomInfo?.is_group ? (
                   <Users size={20} className="text-slate-400" />
                 ) : (
                   <span className="font-bold text-lg" dir="ltr">{chatTitle.charAt(0).toUpperCase()}</span>
@@ -276,7 +326,7 @@ export default function ChatRoomPage() {
           {isMenuOpen && (
             <div className="absolute top-12 left-0 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-2 z-50 text-right">
               <button onClick={() => { setIsMenuOpen(false); setIsInfoPaneOpen(true); }} className="w-full text-right px-4 py-2 hover:bg-slate-800 transition-colors text-white">
-                {roomInfo?.isGroup ? 'معلومات المجموعة' : 'معلومات جهة الاتصال'}
+                {roomInfo?.is_group ? 'معلومات المجموعة' : 'معلومات جهة الاتصال'}
               </button>
               <button className="w-full text-right px-4 py-2 hover:bg-slate-800 transition-colors text-red-400">
                 حظر المستخدم
@@ -292,8 +342,8 @@ export default function ChatRoomPage() {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, idx) => {
-          const isMe = msg.sender.id === currentUserId;
-          const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender.id !== msg.sender.id);
+          const isMe = msg.sender?.id === currentUserId;
+          const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
           
           return (
             <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group`}>
@@ -302,10 +352,10 @@ export default function ChatRoomPage() {
                 {!isMe && (
                   <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
                     {showAvatar ? (
-                      msg.sender.profile?.avatarUrl ? (
-                        <img src={msg.sender.profile.avatarUrl} className="w-full h-full object-cover" />
+                      msg.sender?.avatar_url ? (
+                        <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xs font-bold" dir="ltr">{msg.sender.username.charAt(0).toUpperCase()}</span>
+                        <span className="text-xs font-bold" dir="ltr">{msg.sender?.username?.charAt(0).toUpperCase() || '?'}</span>
                       )
                     ) : null}
                   </div>
@@ -313,40 +363,31 @@ export default function ChatRoomPage() {
 
                 {/* Bubble */}
                 <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'}`}>
-                  {!isMe && showAvatar && roomInfo?.isGroup && <span className="text-xs text-slate-500 mr-1 mb-1 font-bold" dir="ltr">{msg.sender.username}</span>}
+                  {!isMe && showAvatar && roomInfo?.is_group && <span className="text-xs text-slate-500 mr-1 mb-1 font-bold" dir="ltr">{msg.sender?.username}</span>}
                   
-                  {isMe && !msg.isDeleted && (
+                  {isMe && (
                     <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/bubble:opacity-100 flex items-center gap-1 transition-opacity">
                       {msg.content && (
                         <button onClick={() => { setEditingMessageId(msg.id); setNewMessage(msg.content); }} className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-full">
                           <Edit2 size={14}/>
                         </button>
                       )}
-                      <button onClick={() => setMessages(messages.map(m => m.id === msg.id ? {...m, isStarred: !m.isStarred} : m))} className={`p-1.5 bg-slate-800 rounded-full ${msg.isStarred ? 'text-yellow-400' : 'text-slate-400 hover:text-yellow-400'}`}>
-                        <Star size={14} fill={msg.isStarred ? "currentColor" : "none"}/>
-                      </button>
-                      <button onClick={() => setMessages(messages.map(m => m.id === msg.id ? {...m, isDeleted: true} : m))} className="p-1.5 bg-slate-800 text-slate-400 hover:text-red-400 rounded-full">
+                      <button onClick={() => deleteMessage(msg.id)} className="p-1.5 bg-slate-800 text-slate-400 hover:text-red-400 rounded-full">
                         <Trash2 size={14}/>
                       </button>
                     </div>
                   )}
 
-                  <div className={`p-3 rounded-2xl ${msg.isDeleted ? 'bg-slate-900 border border-slate-800 text-slate-500 italic' : isMe ? 'bg-cyan-600 rounded-bl-sm' : 'bg-slate-800 rounded-br-sm'} shadow-sm relative`}>
-                    {msg.isDeleted ? (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Trash2 size={14} />
-                        <span>تم حذف هذه الرسالة</span>
-                      </div>
-                    ) : (
+                  <div className={`p-3 rounded-2xl ${isMe ? 'bg-cyan-600 rounded-bl-sm' : 'bg-slate-800 rounded-br-sm'} shadow-sm relative`}>
                       <>
-                        {msg.mediaUrl && (
+                        {msg.media_url && (
                           <div className="mb-2">
-                            {msg.mediaUrl.endsWith('.webm') ? (
-                              <audio src={msg.mediaUrl} controls className="h-10 w-[200px]" />
-                            ) : msg.mediaUrl.match(/\.(mp4|mov|webm)$/i) ? (
-                              <video src={msg.mediaUrl} controls className="max-w-full rounded-xl max-h-[300px]" />
+                            {msg.media_url.endsWith('.webm') ? (
+                              <audio src={msg.media_url} controls className="h-10 w-[200px]" />
+                            ) : msg.media_url.match(/\.(mp4|mov|webm)$/i) ? (
+                              <video src={msg.media_url} controls className="max-w-full rounded-xl max-h-[300px]" />
                             ) : (
-                              <img src={msg.mediaUrl} className="max-w-full rounded-xl max-h-[300px] object-cover" />
+                              <img src={msg.media_url} className="max-w-full rounded-xl max-h-[300px] object-cover" />
                             )}
                           </div>
                         )}
@@ -355,15 +396,10 @@ export default function ChatRoomPage() {
                             {msg.content}
                           </p>
                         )}
-                        {msg.isEdited && (
-                          <span className="text-[10px] opacity-70 mr-2 italic">معدلة</span>
-                        )}
                       </>
-                    )}
                   </div>
                   <span className="text-[10px] text-slate-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                    <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                    {isMe && <Check size={12} className={msg.read ? 'text-blue-500' : 'text-slate-500'} />}
+                    <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </span>
                 </div>
               </div>
@@ -445,7 +481,7 @@ export default function ChatRoomPage() {
       </div>
       </div>
 
-      {/* Info Pane (WhatsApp style side pane) */}
+      {/* Info Pane */}
       <div 
         className={`absolute top-0 left-0 h-full w-full sm:w-[300px] bg-[#111] border-r border-slate-800 z-50 flex flex-col transition-transform duration-300 transform ${isInfoPaneOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
@@ -453,7 +489,7 @@ export default function ChatRoomPage() {
           <button onClick={() => setIsInfoPaneOpen(false)} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors">
             <ArrowRight size={20} />
           </button>
-          <h3 className="font-bold text-lg">{roomInfo?.isGroup ? 'معلومات المجموعة' : 'معلومات جهة الاتصال'}</h3>
+          <h3 className="font-bold text-lg">{roomInfo?.is_group ? 'معلومات المجموعة' : 'معلومات جهة الاتصال'}</h3>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -461,50 +497,50 @@ export default function ChatRoomPage() {
             <div className="w-24 h-24 rounded-full bg-slate-800 mb-4 flex items-center justify-center overflow-hidden border-4 border-[#111] shadow-xl">
               {chatAvatar ? (
                 <img src={chatAvatar} className="w-full h-full object-cover" />
-              ) : roomInfo?.isGroup ? (
+              ) : roomInfo?.is_group ? (
                 <Users size={40} className="text-slate-400" />
               ) : (
                 <span className="font-bold text-3xl" dir="ltr">{chatTitle.charAt(0).toUpperCase()}</span>
               )}
             </div>
             <h2 className="text-2xl font-bold" dir="ltr">{chatTitle}</h2>
-            {roomInfo?.isGroup && (
+            {roomInfo?.is_group && (
               <p className="text-slate-500 mt-1">مجموعة · {roomInfo.participants?.length} مشاركين</p>
             )}
-            {!roomInfo?.isGroup && (
+            {!roomInfo?.is_group && (
               <p className="text-slate-500 mt-1" dir="ltr">@{chatTitle}</p>
             )}
           </div>
 
-          {!roomInfo?.isGroup && roomInfo?.participants && (
+          {!roomInfo?.is_group && roomInfo?.participants && (
             <div className="p-4 border-b border-slate-800 bg-black/20">
               <h4 className="text-sm font-bold text-cyan-500 mb-2">حول</h4>
               <p className="text-[15px] text-slate-300">
-                {roomInfo.participants.find((p: any) => p.userId !== currentUserId)?.user?.profile?.bio || "لا توجد نبذة."}
+                {roomInfo.participants.find((p: any) => p.user_id !== currentUserId)?.user?.bio || "لا توجد نبذة."}
               </p>
             </div>
           )}
 
-          {roomInfo?.isGroup && roomInfo?.participants && (
+          {roomInfo?.is_group && roomInfo?.participants && (
             <div className="mt-2">
               <div className="px-4 py-2 text-sm font-bold text-cyan-500">
                 {roomInfo.participants.length} مشاركون
               </div>
               <div className="divide-y divide-slate-800/50">
                 {roomInfo.participants.map((p: any) => (
-                  <div key={p.userId} className="flex items-center gap-3 p-4 hover:bg-slate-900 transition-colors cursor-pointer">
+                  <div key={p.user_id} className="flex items-center gap-3 p-4 hover:bg-slate-900 transition-colors cursor-pointer">
                     <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {p.user.profile?.avatarUrl ? (
-                        <img src={p.user.profile.avatarUrl} className="w-full h-full object-cover" />
+                      {p.user?.avatar_url ? (
+                        <img src={p.user.avatar_url} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="font-bold text-sm" dir="ltr">{p.user.username.charAt(0).toUpperCase()}</span>
+                        <span className="font-bold text-sm" dir="ltr">{p.user?.username?.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-[15px] truncate flex justify-between">
-                        <span>{p.userId === currentUserId ? 'أنت' : <span dir="ltr">{p.user.username}</span>}</span>
+                        <span>{p.user_id === currentUserId ? 'أنت' : <span dir="ltr">{p.user?.username}</span>}</span>
                       </div>
-                      <div className="text-sm text-slate-500 truncate" dir="ltr">@{p.user.username}</div>
+                      <div className="text-sm text-slate-500 truncate" dir="ltr">@{p.user?.username}</div>
                     </div>
                   </div>
                 ))}

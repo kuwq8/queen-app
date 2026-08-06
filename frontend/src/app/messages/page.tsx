@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL, getToken } from '@/lib/api';
+// Imports updated
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Users, Plus, Search, Check } from 'lucide-react';
@@ -18,11 +18,18 @@ export default function MessagesPage() {
   const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [groupName, setGroupName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return router.push('/');
-    fetchRooms(token);
+    const init = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return router.push('/');
+      setCurrentUserId(session.user.id);
+      fetchRooms();
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -31,12 +38,64 @@ export default function MessagesPage() {
     }
   }, [isNewChatOpen]);
 
-  const fetchRooms = async (token: string) => {
+  const fetchRooms = async () => {
     try {
-      const res = await fetch(`${API_URL}/chat/rooms`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) setRooms(await res.json());
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return router.push('/');
+
+      const { data: myMemberships } = await supabase
+        .from('channel_members')
+        .select('channel_id')
+        .eq('user_id', session.user.id);
+
+      if (!myMemberships || myMemberships.length === 0) {
+        setRooms([]);
+        return;
+      }
+
+      const channelIds = myMemberships.map(m => m.channel_id);
+
+      const { data: channels, error } = await supabase
+        .from('channels')
+        .select(`
+          id,
+          name,
+          is_group,
+          created_at,
+          participants:channel_members(
+            user:profiles!user_id(id, username, avatar_url)
+          ),
+          messages(
+            id,
+            content,
+            media_url,
+            created_at,
+            sender:profiles!sender_id(id, username)
+          )
+        `)
+        .in('id', channelIds)
+        .order('created_at', { referencedTable: 'messages', ascending: false });
+
+      if (!error && channels) {
+        // Map to match component expectations
+        const formattedRooms = channels.map((c: any) => ({
+          ...c,
+          isGroup: c.is_group,
+          // Limit to 1 message just for preview
+          messages: c.messages && c.messages.length > 0 ? [c.messages[0]] : []
+        }));
+        
+        // Sort rooms by last message date
+        formattedRooms.sort((a, b) => {
+          const aTime = a.messages[0] ? new Date(a.messages[0].created_at).getTime() : new Date(a.created_at).getTime();
+          const bTime = b.messages[0] ? new Date(b.messages[0].created_at).getTime() : new Date(b.created_at).getTime();
+          return bTime - aTime;
+        });
+        
+        setRooms(formattedRooms);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -44,56 +103,83 @@ export default function MessagesPage() {
 
   const handleSearch = async (q: string) => {
     setSearchQuery(q);
-    // Allow empty search to fetch contacts
-    const token = getToken();
     try {
-      const res = await fetch(`${API_URL}/users/search?q=${q}&followingOnly=true`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) setSearchResults(await res.json());
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      let query = supabase.from('profiles').select('*');
+      if (q) {
+        query = query.ilike('username', `%${q}%`);
+      }
+      query = query.neq('id', session.user.id).limit(20);
+      
+      const { data } = await query;
+      if (data) {
+        setSearchResults(data.map(p => ({
+          id: p.id,
+          username: p.username,
+          profile: { avatarUrl: p.avatar_url }
+        })));
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
   const startChat = async (userToChatWith?: any) => {
-    let usernames = [];
+    let users = [];
     let isGroup = false;
     let name = null;
 
     if (chatMode === 'private') {
       if (!userToChatWith) return;
-      usernames = [userToChatWith.username];
+      users = [userToChatWith];
     } else {
       if (selectedUsers.length === 0) return alert('يرجى تحديد مستخدم واحد على الأقل');
       if (!groupName.trim()) return alert('يرجى كتابة اسم للمجموعة');
-      usernames = selectedUsers.map(u => u.username);
+      users = selectedUsers;
       isGroup = true;
       name = groupName.trim();
     }
 
     setIsCreating(true);
     try {
-      const token = getToken();
-      const res = await fetch(`${API_URL}/chat/rooms`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ usernames, isGroup, name })
-      });
-      
-      if (res.ok) {
-        const room = await res.json();
-        setIsNewChatOpen(false);
-        setSelectedUsers([]);
-        setGroupName('');
-        setSearchQuery('');
-        setSearchResults([]);
-        router.push(`/messages/${room.id}`);
-      } else {
-        const err = await res.json();
-        alert('خطأ: ' + err.message);
-      }
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // 1. Create channel
+      const { data: channel, error: channelError } = await supabase
+        .from('channels')
+        .insert({ is_group: isGroup, name })
+        .select()
+        .single();
+
+      if (channelError) throw channelError;
+
+      // 2. Add members
+      const members = [
+        { channel_id: channel.id, user_id: session.user.id },
+        ...users.map(u => ({ channel_id: channel.id, user_id: u.id }))
+      ];
+
+      const { error: membersError } = await supabase
+        .from('channel_members')
+        .insert(members);
+
+      if (membersError) throw membersError;
+
+      setIsNewChatOpen(false);
+      setSelectedUsers([]);
+      setGroupName('');
+      setSearchQuery('');
+      setSearchResults([]);
+      router.push(`/messages/${channel.id}`);
     } catch (e) {
+      console.error(e);
       alert('حدث خطأ في الشبكة.');
     } finally {
       setIsCreating(false);
@@ -136,13 +222,11 @@ export default function MessagesPage() {
         {/* Chat List */}
         <div className="divide-y divide-slate-800">
           {rooms.map(room => {
-            const token = getToken();
-            const currentUserId = token ? JSON.parse(atob(token.split('.')[1])).sub : null;
-            const otherParticipants = room.participants.filter((p: any) => p.user.id !== currentUserId);
+            const otherParticipants = room.participants.filter((p: any) => p.user?.id !== currentUserId);
             const isGroup = room.isGroup;
-            const title = isGroup ? room.name : (otherParticipants[0]?.user.username || 'مجهول');
-            const avatar = isGroup ? null : otherParticipants[0]?.user.profile?.avatarUrl;
-            const lastMsg = room.messages[0];
+            const title = isGroup ? room.name : (otherParticipants[0]?.user?.username || 'مجهول');
+            const avatar = isGroup ? null : otherParticipants[0]?.user?.avatar_url;
+            const lastMsg = room.messages && room.messages.length > 0 ? room.messages[0] : null;
 
             return (
               <div 
@@ -164,14 +248,14 @@ export default function MessagesPage() {
                     <h3 className="font-bold text-white truncate" dir="ltr">{title}</h3>
                     {lastMsg && (
                       <span className="text-xs text-slate-500">
-                        {new Date(lastMsg.createdAt).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+                        {new Date(lastMsg.created_at).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
                       </span>
                     )}
                   </div>
                   {lastMsg ? (
                     <p className="text-slate-400 text-sm truncate">
-                      {lastMsg.sender.id === currentUserId ? 'أنت: ' : <span dir="ltr">{`${lastMsg.sender.username}: `}</span>}
-                      {lastMsg.content || (lastMsg.mediaUrl ? (lastMsg.mediaUrl.endsWith('.webm') ? '🎤 رسالة صوتية' : '📎 وسائط') : '')}
+                      {lastMsg.sender?.id === currentUserId ? 'أنت: ' : <span dir="ltr">{`${lastMsg.sender?.username}: `}</span>}
+                      {lastMsg.content || (lastMsg.media_url ? (lastMsg.media_url.endsWith('.webm') ? '🎤 رسالة صوتية' : '📎 وسائط') : '')}
                     </p>
                   ) : (
                     <p className="text-slate-500 text-sm italic">محادثة جديدة</p>
