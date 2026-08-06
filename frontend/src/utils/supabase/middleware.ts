@@ -1,14 +1,16 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export async function updateSession(request: NextRequest, customResponse?: NextResponse) {
-  let supabaseResponse = customResponse || NextResponse.next({
-    request,
-  });
+export async function updateSession(request: NextRequest, response: NextResponse) {
+  // If env vars are missing (e.g. not set in Vercel), just return response
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
+    console.error('Supabase ENV variables are missing');
+    return response;
+  }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     {
       cookies: {
         getAll() {
@@ -16,11 +18,8 @@ export async function updateSession(request: NextRequest, customResponse?: NextR
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({
-            request,
-          });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            response.cookies.set(name, value, options)
           );
         },
       },
@@ -30,5 +29,5 @@ export async function updateSession(request: NextRequest, customResponse?: NextR
   // refreshing the auth token
   await supabase.auth.getUser();
 
-  return supabaseResponse;
+  return response;
 }
