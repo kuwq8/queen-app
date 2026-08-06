@@ -19,11 +19,11 @@ export declare class ChatGateway implements OnGatewayConnection, OnGatewayDiscon
         success: boolean;
         message: {
             sender: {
-                id: string;
-                username: string;
                 profile: {
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
             };
         } & {
             id: string;
@@ -62,11 +62,11 @@ export declare class ChatGateway implements OnGatewayConnection, OnGatewayDiscon
         success: boolean;
         message: {
             sender: {
-                id: string;
-                username: string;
                 profile: {
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
                 communityMembers: {
                     nameColor: string | null;
                     textColor: string | null;

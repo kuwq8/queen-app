@@ -74,6 +74,9 @@ export declare class CommunityController {
         isPrivate: boolean;
         createdAt: Date;
     })[]>;
+    checkSlug(slug: string): Promise<{
+        available: boolean;
+    }>;
     getMyServers(req: any): Promise<({
         _count: {
             members: number;
@@ -89,17 +92,26 @@ export declare class CommunityController {
         createdAt: Date;
     })[]>;
     getServerBySlug(slug: string): Promise<{
+        _count: {
+            members: number;
+        };
+        rooms: {
+            id: string;
+            name: string;
+            serverId: string;
+            createdAt: Date;
+        }[];
         owner: {
             username: string;
         };
         members: ({
             user: {
-                id: string;
-                username: string;
                 profile: {
                     bio: string | null;
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
             };
         } & {
             id: string;
@@ -119,15 +131,6 @@ export declare class CommunityController {
             lastIp: string | null;
             lastDevice: string | null;
         })[];
-        rooms: {
-            id: string;
-            name: string;
-            serverId: string;
-            createdAt: Date;
-        }[];
-        _count: {
-            members: number;
-        };
     } & {
         id: string;
         name: string;
@@ -164,11 +167,11 @@ export declare class CommunityController {
     }>;
     getRoomMessages(req: any, roomId: string): Promise<({
         sender: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
             communityMembers: {
                 nameColor: string | null;
                 textColor: string | null;

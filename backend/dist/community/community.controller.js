@@ -27,6 +27,9 @@ let CommunityController = class CommunityController {
     async searchServers(q) {
         return this.communityService.searchServers(q);
     }
+    async checkSlug(slug) {
+        return this.communityService.checkSlugAvailability(slug);
+    }
     async getMyServers(req) {
         return this.communityService.getUserServers(req.user.sub);
     }
@@ -150,6 +153,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], CommunityController.prototype, "searchServers", null);
+__decorate([
+    (0, common_1.Get)('check-slug/:slug'),
+    __param(0, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], CommunityController.prototype, "checkSlug", null);
 __decorate([
     (0, common_1.Get)('my-servers'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

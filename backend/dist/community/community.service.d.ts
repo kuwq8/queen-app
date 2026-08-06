@@ -2,6 +2,9 @@ import { PrismaService } from '../prisma/prisma.service';
 export declare class CommunityService {
     private prisma;
     constructor(prisma: PrismaService);
+    checkSlugAvailability(slug: string): Promise<{
+        available: boolean;
+    }>;
     createServer(ownerId: string, name: string, slug: string, description?: string, bannerUrl?: string): Promise<{
         roles: {
             id: string;
@@ -84,6 +87,12 @@ export declare class CommunityService {
         createdAt: Date;
     })[]>;
     getCommunity(slug: string): Promise<{
+        rooms: {
+            id: string;
+            name: string;
+            serverId: string;
+            createdAt: Date;
+        }[];
         owner: {
             id: string;
             email: string;
@@ -161,12 +170,6 @@ export declare class CommunityService {
             lastIp: string | null;
             lastDevice: string | null;
         })[];
-        rooms: {
-            id: string;
-            name: string;
-            serverId: string;
-            createdAt: Date;
-        }[];
         roles: {
             id: string;
             name: string;
@@ -257,17 +260,26 @@ export declare class CommunityService {
         createdAt: Date;
     }>;
     getServerBySlug(slug: string): Promise<{
+        _count: {
+            members: number;
+        };
+        rooms: {
+            id: string;
+            name: string;
+            serverId: string;
+            createdAt: Date;
+        }[];
         owner: {
             username: string;
         };
         members: ({
             user: {
-                id: string;
-                username: string;
                 profile: {
                     bio: string | null;
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
             };
         } & {
             id: string;
@@ -287,15 +299,6 @@ export declare class CommunityService {
             lastIp: string | null;
             lastDevice: string | null;
         })[];
-        rooms: {
-            id: string;
-            name: string;
-            serverId: string;
-            createdAt: Date;
-        }[];
-        _count: {
-            members: number;
-        };
     } & {
         id: string;
         name: string;
@@ -332,11 +335,11 @@ export declare class CommunityService {
     }>;
     getRoomMessages(userId: string, roomId: string): Promise<({
         sender: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
             communityMembers: {
                 nameColor: string | null;
                 textColor: string | null;
@@ -354,11 +357,11 @@ export declare class CommunityService {
     })[]>;
     saveMessage(roomId: string, senderId: string, content?: string, mediaUrl?: string): Promise<{
         sender: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
             communityMembers: {
                 nameColor: string | null;
                 textColor: string | null;
@@ -1046,11 +1049,11 @@ export declare class CommunityService {
     updateMemberPresence(userId: string, ip: string, device: string): Promise<void>;
     saveSystemMessage(roomId: string, senderId: string, content: string): Promise<{
         sender: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
         };
     } & {
         id: string;

@@ -36,6 +36,10 @@ let CommunityService = class CommunityService {
             }
         }, 1000 * 60 * 5);
     }
+    async checkSlugAvailability(slug) {
+        const existing = await this.prisma.communityServer.findUnique({ where: { slug } });
+        return { available: !existing };
+    }
     async createServer(ownerId, name, slug, description, bannerUrl) {
         const existing = await this.prisma.communityServer.findUnique({ where: { slug } });
         if (existing)
