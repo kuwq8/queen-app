@@ -1,7 +1,5 @@
 'use client';
 
-
-import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, ArrowRight } from 'lucide-react';
@@ -17,42 +15,57 @@ export default function CommunityPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return router.push('/');
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setCurrentUser(payload);
-    } catch(e) {}
-    fetchData(token);
-  }, []);
+    const init = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        return router.push('/');
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+        
+      setCurrentUser(profile);
+      fetchData(session.user.id);
+    };
+    init();
+  }, [router]);
 
-  const handleJoinServer = async (e: React.MouseEvent, slug: string) => {
-    e.stopPropagation();
-    const token = getToken();
-    if (!token) return;
-    
-    try {
-      const res = await fetch(`${API_URL}/community/${slug}/join`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      // Navigate to chat whether newly joined or already joined
-      router.push(`/c/${slug}/chat`);
-    } catch (err) {
-      console.error(err);
-      router.push(`/c/${slug}/chat`);
-    }
-  };
-
-  const fetchData = async (token: string) => {
+  const fetchData = async (userId: string) => {
     setIsLoading(true);
     try {
-      const [allRes, myRes] = await Promise.all([
-        fetch(`${API_URL}/community`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_URL}/community/my-servers`, { headers: { Authorization: `Bearer ${token}` } })
-      ]);
-      if (allRes.ok) setServers(await allRes.json());
-      if (myRes.ok) setMyServers(await myRes.json());
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      // Fetch all public channels/servers
+      const { data: allChannels } = await supabase
+        .from('channels')
+        .select('*')
+        .eq('is_group', true);
+
+      // Fetch my memberships
+      const { data: myMemberships } = await supabase
+        .from('channel_members')
+        .select('channel_id')
+        .eq('user_id', userId);
+
+      const myChannelIds = myMemberships?.map(m => m.channel_id) || [];
+      
+      const formattedServers = (allChannels || []).map(ch => ({
+        id: ch.id,
+        name: ch.name,
+        slug: ch.id,
+        bannerUrl: null,
+      }));
+
+      setServers(formattedServers);
+      setMyServers(formattedServers.filter(s => myChannelIds.includes(s.id)));
+
     } catch (e) {
       console.error(e);
     } finally {
@@ -60,17 +73,47 @@ export default function CommunityPage() {
     }
   };
 
+  const handleJoinServer = async (e: React.MouseEvent, slug: string) => {
+    e.stopPropagation();
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const isJoined = myServers.some(s => s.id === slug);
+      if (!isJoined) {
+        await supabase
+          .from('channel_members')
+          .insert({ channel_id: slug, user_id: session.user.id });
+      }
+      
+      router.push(`/c/${slug}/chat`);
+    } catch (err) {
+      console.error(err);
+      router.push(`/c/${slug}/chat`);
+    }
+  };
+
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      const token = getToken();
-      if (token) {
-        fetch(`${API_URL}/community?q=${encodeURIComponent(query)}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(res => res.json())
-        .then(data => setServers(data))
-        .catch(console.error)
-        .finally(() => setIsLoading(false));
+    if (!query) return;
+    const delayDebounceFn = setTimeout(async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      const { data } = await supabase
+        .from('channels')
+        .select('*')
+        .eq('is_group', true)
+        .ilike('name', `%${query}%`);
+        
+      if (data) {
+        setServers(data.map(ch => ({
+          id: ch.id,
+          name: ch.name,
+          slug: ch.id,
+          bannerUrl: null,
+        })));
       }
     }, 300);
     return () => clearTimeout(delayDebounceFn);
@@ -104,7 +147,7 @@ export default function CommunityPage() {
             </div>
             <input
               type="text"
-              placeholder="البحث في المجتمعات (مثل: gemini)..."
+              placeholder="البحث في المجتمعات..."
               className="w-full bg-slate-900 border border-slate-800 text-white rounded-full py-2.5 pr-11 pl-4 focus:outline-none focus:border-cyan-500 transition-colors text-right"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
