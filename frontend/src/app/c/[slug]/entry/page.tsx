@@ -13,7 +13,8 @@ export default function RetroEntryPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    let token = null;
+    try { token = localStorage.getItem('token'); } catch(e) {}
     if (!token) return router.push('/');
     try {
       const base64Url = token.split('.')[1];

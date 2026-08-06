@@ -27,7 +27,8 @@ export default function HomePage() {
   const [selectedQuotePost, setSelectedQuotePost] = useState<any>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    let token = null;
+    try { token = localStorage.getItem('token'); } catch(e) {}
     if (!token) {
       router.push('/');
       return;
