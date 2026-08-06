@@ -45,8 +45,17 @@ export default function RetroEntryPage() {
     }
   };
 
-  if (isLoading || !server) {
+  if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-[#E5E4E2]"><div className="animate-spin"><RefreshCcw size={32} className="text-[#8B5A2B]"/></div></div>;
+  }
+
+  if (!server) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#E5E4E2] font-sans" dir="rtl">
+        <div className="text-red-600 font-bold mb-4">تعذر الاتصال بالخادم. قد يكون غير متصل (أو في وضع النوم).</div>
+        <button onClick={() => window.location.reload()} className="bg-[#8B5A2B] text-white px-4 py-2 rounded-sm shadow">إعادة المحاولة</button>
+      </div>
+    );
   }
 
   return (
