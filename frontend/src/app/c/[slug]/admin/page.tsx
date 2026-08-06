@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Settings, Users, UserPlus, ShieldAlert, ArrowRight, Save, X, Search, Check, Ban, MessageSquare, Type, Bot, Gift, Globe, Lock, Clock, Smile, Image as ImageIcon } from 'lucide-react';
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
   const [newFakeUser, setNewFakeUser] = useState({ name: '', status: 'متصل', avatarUrl: '', roleId: '' });
   useEffect(() => {
     if (activeTab === 'settings') {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       if (token) {
         fetch(`${API_URL}/community/${slug}/fake-users`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
         if (data && !data.error) setSettings(data);
       }).catch(err => console.error(err));
 
-    const token = localStorage.getItem('token');
+    const token = getToken();
     const headers = { Authorization: `Bearer ${token}` };
 
     Promise.all([
@@ -94,7 +94,7 @@ export default function AdminDashboard() {
   }, [slug]);
 
   const handleSaveSettings = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_URL}/community/${slug}/settings`, {
         method: 'PATCH',
@@ -273,7 +273,7 @@ export default function AdminDashboard() {
                   <div className="flex gap-2">
                     <input type="text" value={server.bannerUrl} onChange={e => setServer({...server, bannerUrl: e.target.value})} placeholder="https://example.com/image.png" className="flex-1 border border-gray-300 rounded-md p-2.5 focus:border-[#5C4033] focus:ring-1 focus:ring-[#5C4033] outline-none font-bold text-black text-left" dir="ltr" />
                     <button onClick={async () => {
-                      const token = localStorage.getItem('token');
+                      const token = getToken();
                       try {
                         const res = await fetch(`${API_URL}/community/${slug}/banner`, {
                           method: 'PATCH',
@@ -546,7 +546,7 @@ export default function AdminDashboard() {
                    <input type="text" value={newDomain.seoKeywords} onChange={e => setNewDomain({...newDomain, seoKeywords: e.target.value})} className="w-full border border-gray-300 rounded-md p-2 outline-none focus:border-[#5C4033]" placeholder="شات، تعارف، دردشة..." />
                  </div>
                  <button onClick={async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_URL}/community/${slug}/domains`, {
         method: 'POST',
@@ -588,7 +588,7 @@ export default function AdminDashboard() {
                             <td className="p-3">
                               <button onClick={async () => {
                                 if(confirm('هل أنت متأكد من حذف هذا النطاق؟')) {
-                                  const token = localStorage.getItem('token');
+                                  const token = getToken();
                                   await fetch(`${API_URL}/community/${slug}/domains/${d.id}`, {
                                     method: 'DELETE',
                                     headers: { Authorization: `Bearer ${token}` }
@@ -695,7 +695,7 @@ export default function AdminDashboard() {
                        if (url) {
                          fetch(`${API_URL}/community/${slug}/emojis`, {
                            method: 'POST',
-                           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+                           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
                            body: JSON.stringify({ url, type: 'EMOJI' })
                          }).then(r => r.json()).then(newEmoji => {
                            setEmojis(prev => [...prev, newEmoji]);
@@ -717,7 +717,7 @@ export default function AdminDashboard() {
                            if(confirm('هل أنت متأكد من حذف هذا الفيس؟')) {
                              fetch(`${API_URL}/community/${slug}/emojis/${emoji.id}`, {
                                method: 'DELETE',
-                               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                               headers: { Authorization: `Bearer ${getToken()}` }
                              }).then(() => {
                                setEmojis(prev => prev.filter(e => e.id !== emoji.id));
                              });
@@ -748,7 +748,7 @@ export default function AdminDashboard() {
                        if (url) {
                          fetch(`${API_URL}/community/${slug}/emojis`, {
                            method: 'POST',
-                           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+                           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
                            body: JSON.stringify({ url, type: 'STICKER' })
                          }).then(r => r.json()).then(newEmoji => {
                            setEmojis(prev => [...prev, newEmoji]);
@@ -770,7 +770,7 @@ export default function AdminDashboard() {
                            if(confirm('هل أنت متأكد من حذف هذا الملصق؟')) {
                              fetch(`${API_URL}/community/${slug}/emojis/${emoji.id}`, {
                                method: 'DELETE',
-                               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                               headers: { Authorization: `Bearer ${getToken()}` }
                              }).then(() => {
                                setEmojis(prev => prev.filter(e => e.id !== emoji.id));
                              });
@@ -834,7 +834,7 @@ export default function AdminDashboard() {
                             <button onClick={async () => {
                               const newPass = prompt('أدخل كلمة المرور الجديدة:');
                               if (newPass && newPass.trim() !== '') {
-                                const token = localStorage.getItem('token');
+                                const token = getToken();
                                 try {
                                   const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}/password`, {
                                     method: 'PATCH',
@@ -848,7 +848,7 @@ export default function AdminDashboard() {
                             }} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-sm font-bold text-xs shadow-sm">تغيير رقم سري</button>
                             <button onClick={async () => {
                               if(confirm('هل أنت متأكد من حذف هذه العضوية بالكامل؟')) {
-                                const token = localStorage.getItem('token');
+                                const token = getToken();
                                 try {
                                   const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}`, {
                                     method: 'DELETE',
@@ -902,7 +902,7 @@ export default function AdminDashboard() {
                       const ip = (document.getElementById('ban-ip') as HTMLInputElement).value;
                       const device = (document.getElementById('ban-device') as HTMLInputElement).value;
                       if (!ip && !device) return alert('يجب إدخال IP أو جهاز');
-                      const token = localStorage.getItem('token');
+                      const token = getToken();
                       try {
                         const res = await fetch(`${API_URL}/community/${slug}/bans`, {
                           method: 'POST',
@@ -936,7 +936,7 @@ export default function AdminDashboard() {
                             <td className="p-3 text-sm text-gray-600">{new Date(ban.createdAt).toLocaleDateString()}</td>
                             <td className="p-3">
                               <button onClick={async () => {
-                                const token = localStorage.getItem('token');
+                                const token = getToken();
                                 await fetch(`${API_URL}/community/${slug}/bans/${ban.id}`, {
                                   method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
                                 });
@@ -986,7 +986,7 @@ export default function AdminDashboard() {
                   {editingRole && selectedRoleId !== 'new' && (
                     <button onClick={async () => {
                       if(confirm('هل أنت متأكد من حذف هذه المجموعة؟')) {
-                        const token = localStorage.getItem('token');
+                        const token = getToken();
                         try {
                           await fetch(`${API_URL}/community/${slug}/roles/${selectedRoleId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
                           setRoles(roles.filter(r => r.id !== selectedRoleId));
@@ -1075,7 +1075,7 @@ export default function AdminDashboard() {
                     {/* Save Button */}
                     <div className="mt-6 flex justify-end">
                       <button onClick={async () => {
-                         const token = localStorage.getItem('token');
+                         const token = getToken();
                          try {
                            let res;
                            if (selectedRoleId === 'new') {

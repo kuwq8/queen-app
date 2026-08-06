@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users } from 'lucide-react';
@@ -36,7 +36,7 @@ export default function ChatRoomPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return router.push('/');
     
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -169,7 +169,7 @@ export default function ChatRoomPage() {
     socketRef.current?.emit('typing', { roomId, isTyping: false });
     setIsTypingState(false);
 
-    const token = localStorage.getItem('token');
+    const token = getToken();
     let mediaUrl = undefined;
 
     // Upload media/audio if exists via REST API first

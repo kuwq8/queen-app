@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, UserPlus, UserCheck, ArrowRight, User } from 'lucide-react';
@@ -15,7 +15,7 @@ export default function ExplorePage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return router.push('/');
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -38,7 +38,7 @@ export default function ExplorePage() {
   const searchUsers = async (searchQuery: string) => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(searchQuery)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });

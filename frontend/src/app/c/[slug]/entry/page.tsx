@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Users, LogIn, UserCircle, Globe, RefreshCcw } from 'lucide-react';
@@ -15,8 +15,7 @@ export default function RetroEntryPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let token = null;
-    try { token = localStorage.getItem('token'); } catch(e) {}
+    const token = getToken();
     if (!token) return router.push('/');
     try {
       const base64Url = token.split('.')[1];
@@ -34,7 +33,7 @@ export default function RetroEntryPage() {
   }, [slug, router]);
 
   const handleJoin = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_URL}/community/${slug}/join`, {
         method: 'POST',

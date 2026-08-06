@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Send } from 'lucide-react';
@@ -21,7 +21,7 @@ export default function PostDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       router.push('/');
       return;
@@ -64,7 +64,7 @@ export default function PostDetailPage() {
   const handleAddComment = async () => {
     if (!commentContent.trim()) return;
     setIsSubmitting(true);
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_URL}/posts/${postId}/comments`, {
         method: 'POST',

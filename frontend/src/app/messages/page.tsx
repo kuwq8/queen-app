@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Users, Plus, Search, Check } from 'lucide-react';
@@ -20,7 +20,7 @@ export default function MessagesPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return router.push('/');
     fetchRooms(token);
   }, []);
@@ -45,7 +45,7 @@ export default function MessagesPage() {
   const handleSearch = async (q: string) => {
     setSearchQuery(q);
     // Allow empty search to fetch contacts
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_URL}/users/search?q=${q}&followingOnly=true`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -74,7 +74,7 @@ export default function MessagesPage() {
 
     setIsCreating(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const res = await fetch(`${API_URL}/chat/rooms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -136,7 +136,7 @@ export default function MessagesPage() {
         {/* Chat List */}
         <div className="divide-y divide-slate-800">
           {rooms.map(room => {
-            const token = localStorage.getItem('token');
+            const token = getToken();
             const currentUserId = token ? JSON.parse(atob(token.split('.')[1])).sub : null;
             const otherParticipants = room.participants.filter((p: any) => p.user.id !== currentUserId);
             const isGroup = room.isGroup;

@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, UserPlus, ArrowRight } from 'lucide-react';
@@ -13,7 +13,7 @@ export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       router.push('/');
       return;
@@ -58,7 +58,7 @@ export default function NotificationsPage() {
 
   const handleNotificationClick = (notification: any) => {
     // Mark as read in background
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!notification.read) {
       fetch(`${API_URL}/notifications/${notification.id}/read`, {
         method: 'PATCH',
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
     if (notification.type === 'FOLLOW') {
       router.push(`/${notification.actor.username}`);
     } else if (notification.postId) {
-      router.push(`/${localStorage.getItem('token') ? JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).username : ''}`);
+      router.push(`/${getToken() ? JSON.parse(atob(getToken()!.split('.')[1])).username : ''}`);
     }
   };
 

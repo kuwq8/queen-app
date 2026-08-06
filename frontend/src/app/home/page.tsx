@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -29,8 +29,7 @@ export default function HomePage() {
   const [selectedQuotePost, setSelectedQuotePost] = useState<any>(null);
 
   useEffect(() => {
-    let token = null;
-    try { token = localStorage.getItem('token'); } catch(e) {}
+    const token = getToken();
     if (!token) {
       router.push('/');
       return;
@@ -89,7 +88,7 @@ export default function HomePage() {
   };
 
   const fetchBookmarksAndOpenModal = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return;
     try {
       const res = await fetch(`${API_URL}/users/bookmarks`, {
@@ -107,7 +106,7 @@ export default function HomePage() {
   const handlePostSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newPost.trim() && !mediaFile && !selectedQuotePost) return;
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       let mediaUrl = null;
       if (mediaFile) {
@@ -204,7 +203,7 @@ export default function HomePage() {
           ) : error ? (
             <div className="text-center p-12 flex flex-col items-center">
               <div className="text-red-500 text-sm font-bold mb-4">{error}</div>
-              <button onClick={() => fetchPosts(localStorage.getItem('token')!, feedType)} className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded">إعادة المحاولة</button>
+              <button onClick={() => fetchPosts(getToken()!, feedType)} className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded">إعادة المحاولة</button>
             </div>
           ) : (
             <div>

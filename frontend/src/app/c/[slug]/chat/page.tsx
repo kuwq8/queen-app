@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Settings, Users, Menu, Smile, X, Send, Heart, MessageSquare, Plus, Bell, Volume2, VolumeX, Mic, Lock, Image as ImageIcon, Reply, Camera, LogOut, Palette, BellOff, TrendingUp, Award, Mic2, MessageCircle, Grid, FileText } from 'lucide-react';
@@ -196,7 +196,7 @@ export default function ClassicChatPage() {
     try {
       const res = await fetch(`${API_URL}/users/profile/${uploadType}`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${getToken()}` },
         body: formData
       });
       if (res.ok) {
@@ -225,7 +225,7 @@ export default function ClassicChatPage() {
   }, [slug]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return router.push('/');
     
     try {
@@ -245,7 +245,7 @@ export default function ClassicChatPage() {
 
   useEffect(() => {
     if (!activeRoom) return;
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return;
 
     fetch(`${API_URL}/community/rooms/${activeRoom.id}/messages`, {
@@ -288,14 +288,14 @@ export default function ClassicChatPage() {
     });
 
     socket.on('receiveAlert', (data: any) => {
-      const uId = JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).sub;
+      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
       if (data.targetUserId === uId) {
         setReceivedAlertData({ sender: data.sender, message: data.message || 'أرسل لك تنبيهاً' });
       }
     });
 
     socket.on('userKicked', (data: any) => {
-      const uId = JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).sub;
+      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
       if (data.targetUserId === uId) {
         alert('تم طردك من الغرفة بواسطة الإدارة.');
         router.push('/community');
@@ -303,7 +303,7 @@ export default function ClassicChatPage() {
     });
 
     socket.on('userBanned', (data: any) => {
-      const uId = JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).sub;
+      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
       if (data.targetUserId === uId) {
         alert('لقد تم حظرك (باند) من السيرفر.');
         router.push('/community');
@@ -311,14 +311,14 @@ export default function ClassicChatPage() {
     });
 
     socket.on('userMuted', (data: any) => {
-      const uId = JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).sub;
+      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
       if (data.targetUserId === uId) {
         alert('لقد تم إسكاتك (Mute) من قبل الإدارة.');
       }
     });
 
     socket.on('userWallMuted', (data: any) => {
-      const uId = JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).sub;
+      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
       if (data.targetUserId === uId) {
         alert('تم منعك من النشر في الحائط من قبل الإدارة.');
         setCurrentUser((prev: any) => prev ? {...prev, isWallMuted: true} : prev);
@@ -326,7 +326,7 @@ export default function ClassicChatPage() {
     });
 
     socket.on('profileImageDeleted', (data: any) => {
-      const uId = JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).sub;
+      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
       if (data.targetUserId === uId) {
         alert(`تم حذف صورتك (${data.type === 'avatar' ? 'الشخصية' : 'الغلاف'}) من قبل الإدارة.`);
         setCurrentUser((prev: any) => prev ? {...prev, profile: {...prev.profile, [data.type === 'avatar' ? 'avatarUrl' : 'coverUrl']: null}} : prev);
@@ -334,7 +334,7 @@ export default function ClassicChatPage() {
     });
     
     socket.on('decorationsCleared', (data: any) => {
-       const uId = JSON.parse(atob(localStorage.getItem('token')!.split('.')[1])).sub;
+       const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
        if (data.targetUserId === uId) {
          alert('تم مسح زخارفك (البنر/الحالة/اللون) من قبل الإدارة.');
          setCurrentUser((prev: any) => prev ? {...prev, nameColor: null, bgColor: null, textColor: null} : prev);
@@ -349,7 +349,7 @@ export default function ClassicChatPage() {
 
   useEffect(() => {
     if (activePrivateChat) {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       fetch(`${API_URL}/chat/${activePrivateChat.id}/messages`, {
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -1837,7 +1837,7 @@ export default function ClassicChatPage() {
                     try {
                       const res = await fetch(`${API_URL}/chat/rooms`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
                         body: JSON.stringify({ participantUsernames: [selectedUser.username] })
                       });
                       const newRoom = await res.json();

@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ export default function SearchPage() {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       router.push('/');
     }
@@ -25,7 +25,7 @@ export default function SearchPage() {
     const delayDebounceFn = setTimeout(async () => {
       if (query.trim()) {
         setIsSearching(true);
-        const token = localStorage.getItem('token');
+        const token = getToken();
         try {
           const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(query)}`, {
             headers: { Authorization: `Bearer ${token}` }

@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, X, Loader2, Globe, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
@@ -16,7 +16,7 @@ export default function CreateChatPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       router.push('/?redirect=/community/create');
     }
@@ -57,7 +57,7 @@ export default function CreateChatPage() {
     setError('');
     
     try {
-      const token = localStorage.getItem('token');
+      const token = getToken();
       const res = await fetch(`${API_URL}/community`, {
         method: 'POST',
         headers: {

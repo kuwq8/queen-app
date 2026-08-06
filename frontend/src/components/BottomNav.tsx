@@ -1,4 +1,4 @@
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Home, Search, Bell, MessageCircle, User } from 'lucide-react';
@@ -12,7 +12,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return;
     
     fetch(`${API_URL}/notifications/unread-count`, {

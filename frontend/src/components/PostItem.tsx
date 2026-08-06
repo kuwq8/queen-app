@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -46,7 +46,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       setIsEditing(false);
       return;
     }
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_URL}/posts/${post.id}`, {
         method: 'PATCH',
@@ -67,7 +67,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   };
 
   const handleDelete = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       setIsDeleting(true);
       const res = await fetch(`${API_URL}/posts/${post.id}`, {
@@ -87,7 +87,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const token = localStorage.getItem('token');
+    const token = getToken();
     
     setPost((prev: any) => {
       const currentlyLiked = prev.likes && prev.likes.length > 0;
@@ -113,7 +113,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const token = localStorage.getItem('token');
+    const token = getToken();
     
     setPost((prev: any) => {
       const currentlyBookmarked = prev.bookmarks && prev.bookmarks.length > 0;
@@ -141,7 +141,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
   const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const token = localStorage.getItem('token');
+    const token = getToken();
     
     setPost((prev: any) => {
       const currentCount = prev._count?.quotedBy || 0;

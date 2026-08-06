@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -31,7 +31,7 @@ export default function ProfilePage() {
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       router.push('/');
       return;
@@ -80,7 +80,7 @@ export default function ProfilePage() {
   };
 
   const handleFollow = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_URL}/users/${username}/follow`, {
         method: 'POST',
@@ -115,7 +115,7 @@ export default function ProfilePage() {
   };
 
   const handleSaveProfile = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     setIsSavingProfile(true);
     try {
       const res = await fetch(`${API_URL}/users/profile`, {
@@ -144,7 +144,7 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const token = localStorage.getItem('token');
+    const token = getToken();
     const formData = new FormData();
     formData.append('file', file);
 
@@ -173,7 +173,7 @@ export default function ProfilePage() {
   };
 
   const toggleDMs = async () => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return;
     const newValue = !allowDMs;
     setAllowDMs(newValue);

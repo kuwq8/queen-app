@@ -1,5 +1,7 @@
 'use client';
 
+
+import { getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Send, Phone, Video, MoreVertical, Image as ImageIcon } from 'lucide-react';
@@ -17,7 +19,7 @@ export default function ChatPage() {
   ]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) {
       router.push('/');
     }
