@@ -1,7 +1,5 @@
 'use client';
 
-
-import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, X, Loader2, Globe, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
@@ -16,11 +14,17 @@ export default function CreateChatPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/?redirect=/community/create');
-    }
-  }, []);
+    const checkAuth = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/');
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     if (!slug) {
@@ -36,9 +40,22 @@ export default function CreateChatPage() {
     const timer = setTimeout(async () => {
       setIsChecking(true);
       try {
-        const res = await fetch(`${API_URL}/community/check-slug/${slug}`);
-        const data = await res.json();
-        setIsAvailable(data.available);
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('channels')
+          .select('slug')
+          .eq('slug', slug)
+          .single();
+          
+        if (error && error.code === 'PGRST116') {
+          // No row found, so it's available!
+          setIsAvailable(true);
+        } else if (data) {
+          setIsAvailable(false);
+        } else {
+          setIsAvailable(false);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -57,24 +74,37 @@ export default function CreateChatPage() {
     setError('');
     
     try {
-      const token = getToken();
-      const res = await fetch(`${API_URL}/community`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ name, slug })
-      });
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
       
-      if (res.ok) {
-        router.push(`/c/${slug}/entry`);
-      } else {
-        const data = await res.json();
-        setError(data.message || 'حدث خطأ أثناء الإنشاء');
-      }
-    } catch (err) {
-      setError('تعذر الاتصال بالخادم');
+      // Insert new channel
+      const { data: channel, error: channelError } = await supabase
+        .from('channels')
+        .insert({
+          name: name,
+          slug: slug,
+          is_group: true,
+          created_by: session.user.id
+        })
+        .select()
+        .single();
+        
+      if (channelError) throw channelError;
+      
+      // Add creator as member
+      await supabase
+        .from('channel_members')
+        .insert({
+          channel_id: channel.id,
+          user_id: session.user.id
+        });
+        
+      router.push(`/c/${slug}/entry`);
+
+    } catch (err: any) {
+      setError(err.message || 'تعذر الاتصال بالخادم');
     } finally {
       setIsSubmitting(false);
     }
