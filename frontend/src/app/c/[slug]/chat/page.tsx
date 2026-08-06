@@ -215,7 +215,7 @@ export default function ClassicChatPage() {
   
   // Fetch settings and server data
   useEffect(() => {
-    fetch(`https://queen-app-api.onrender.com/api/community/${slug}/settings`)
+    fetch(`https://queen-app-api.onrender.com/community/${slug}/settings`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) setSettings(data);
