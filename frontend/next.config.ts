@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://queen-app-api.onrender.com/:path*',
+        destination: 'https://queen-app.onrender.com/:path*',
       },
     ];
   },
