@@ -193,7 +193,7 @@ export default function HomePage() {
           ) : error ? (
             <div className="text-center p-12 flex flex-col items-center">
               <div className="text-red-500 text-sm font-bold mb-4">{error}</div>
-              <button onClick={() => fetchPosts(getToken()!, feedType)} className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded">إعادة المحاولة</button>
+              <button onClick={() => fetchPosts()} className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded">إعادة المحاولة</button>
             </div>
           ) : (
             <div>
