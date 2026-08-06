@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
+// import { API_URL } from '@/lib/api'; // No longer needed, using Supabase
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Sparkles, User, ArrowLeft } from 'lucide-react';
@@ -23,28 +23,46 @@ export default function AuthPage() {
     setSuccessMsg('');
     
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const bodyPayload = isLogin ? { email, password } : { email, username, password };
-      
-      const res = await fetch(`${API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bodyPayload),
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
-        localStorage.setItem('token', data.access_token);
-        setSuccessMsg(isLogin ? 'تم تسجيل الدخول بنجاح! أهلاً بعودتك.' : 'تم إنشاء الحساب بنجاح!');
-        setTimeout(() => {
-          router.push('/home');
-        }, 1000);
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          setErrorMsg(error.message);
+        } else {
+          setSuccessMsg('تم تسجيل الدخول بنجاح! أهلاً بعودتك.');
+          setTimeout(() => {
+            router.push('/home');
+          }, 1000);
+        }
       } else {
-        setErrorMsg(data.message || 'فشلت عملية المصادقة');
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username: username,
+              full_name: username,
+            }
+          }
+        });
+
+        if (error) {
+          setErrorMsg(error.message);
+        } else {
+          setSuccessMsg('تم إنشاء الحساب بنجاح!');
+          setTimeout(() => {
+            router.push('/home');
+          }, 1000);
+        }
       }
     } catch (err) {
-      setErrorMsg('خطأ في الشبكة، يرجى التأكد من تشغيل الخادم.');
+      setErrorMsg('حدث خطأ غير متوقع، يرجى المحاولة لاحقاً.');
     } finally {
       setIsLoading(false);
     }

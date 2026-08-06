@@ -29,48 +29,49 @@ export default function HomePage() {
   const [selectedQuotePost, setSelectedQuotePost] = useState<any>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/');
-      return;
-    }
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(base64));
-      setCurrentUsername(payload.username);
+    const checkAuth = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      fetch(`${API_URL}/users/${payload.username}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.profile?.avatarUrl) {
-          setCurrentUserAvatar(data.profile.avatarUrl);
-        }
-      })
-      .catch(console.error);
-    } catch(e) {}
-    fetchPosts(token, feedType);
+      if (!session) {
+        router.push('/');
+        return;
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (profile) {
+        setCurrentUsername(profile.username);
+        setCurrentUserAvatar(profile.avatar_url);
+      }
+      fetchPosts();
+    };
+    checkAuth();
   }, [router, feedType]);
 
-  const fetchPosts = async (token: string, type: 'all' | 'following') => {
+  const fetchPosts = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const url = type === 'following' ? `${API_URL}/posts?followingOnly=true` : `${API_URL}/posts`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPosts(data);
-      } else if (res.status === 401) {
-        localStorage.removeItem('token');
-        router.push('/');
-      } else {
-        setError('تعذر جلب المنشورات. الخادم قد يكون معطلاً.');
-      }
+      
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          author:profiles!user_id(username, avatar_url)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
     } catch (err) {
       console.error(err);
       setError('حدث خطأ أثناء الاتصال بالخادم.');
@@ -88,56 +89,43 @@ export default function HomePage() {
   };
 
   const fetchBookmarksAndOpenModal = async () => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_URL}/users/bookmarks`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setBookmarksList(await res.json());
-        setIsBookmarksModalOpen(true);
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    // TODO: Implement Supabase bookmarks
+    setBookmarksList([]);
+    setIsBookmarksModalOpen(true);
   };
 
   const handlePostSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newPost.trim() && !mediaFile && !selectedQuotePost) return;
-    const token = getToken();
+    
     try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+
       let mediaUrl = null;
       if (mediaFile) {
-        const formData = new FormData();
-        formData.append('file', mediaFile);
-        const uploadRes = await fetch(`${API_URL}/posts/media`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData
-        });
-        if (uploadRes.ok) {
-          const uploadData = await uploadRes.json();
-          mediaUrl = uploadData.mediaUrl;
-        }
+        // TODO: Implement Supabase Storage upload
+        // For now, no media upload
       }
 
-      const res = await fetch(`${API_URL}/posts`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: newPost, mediaUrl, quotePostId: selectedQuotePost?.id }),
-      });
-      if (res.ok) {
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          content: newPost,
+          media_url: mediaUrl,
+          user_id: session.user.id
+        });
+
+      if (!error) {
         setNewPost('');
         setMediaFile(null);
         setMediaPreview(null);
         setSelectedQuotePost(null);
         setIsComposeOpen(false);
-        fetchPosts(token!, feedType);
+        fetchPosts();
       }
     } catch (err) {
       console.error(err);
@@ -152,8 +140,10 @@ export default function HomePage() {
     setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, content: newContent } : p));
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.push('/');
   };
 

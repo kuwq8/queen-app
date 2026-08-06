@@ -1,4 +1,4 @@
-export const API_URL = 'https://queen-app.onrender.com';
+export const API_URL = ''; // Deprecated, migrating to Supabase
 
 export function getToken() {
   try {

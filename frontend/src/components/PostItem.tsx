@@ -23,12 +23,13 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReposted, setIsReposted] = useState(false);
 
-  const isLiked = post.likes && post.likes.length > 0;
-  const isBookmarked = post.bookmarks && post.bookmarks.length > 0;
+  const isLiked = false; // TODO: Implement likes in Supabase
+  const isBookmarked = false; // TODO: Implement bookmarks in Supabase
   
-  const isEdited = new Date(post.updatedAt).getTime() - new Date(post.createdAt).getTime() > 1000;
+  const isEdited = false; // TODO: Implement updated_at
 
   const formatTime = (dateString: string) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -39,26 +40,24 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     return `منذ ${Math.floor(diffInSeconds / 86400)} يوم`;
   };
 
-  const isOwner = currentUsername === post.author.username;
+  const isOwner = currentUsername === post.author?.username;
 
   const handleEdit = async () => {
     if (editContent.trim() === '' || editContent === post.content) {
       setIsEditing(false);
       return;
     }
-    const token = getToken();
     try {
-      const res = await fetch(`${API_URL}/posts/${post.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ content: editContent })
-      });
-      if (res.ok) {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('posts')
+        .update({ content: editContent })
+        .eq('id', post.id);
+
+      if (!error) {
         onPostEdited(post.id, editContent);
-        setPost((prev: any) => ({ ...prev, content: editContent, updatedAt: new Date().toISOString() }));
+        setPost((prev: any) => ({ ...prev, content: editContent }));
         setIsEditing(false);
       }
     } catch (e) {
@@ -67,14 +66,16 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   };
 
   const handleDelete = async () => {
-    const token = getToken();
     try {
       setIsDeleting(true);
-      const res = await fetch(`${API_URL}/posts/${post.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', post.id);
+
+      if (!error) {
         onPostDeleted(post.id);
       } else {
         setIsDeleting(false);
@@ -87,50 +88,12 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const token = getToken();
-    
-    setPost((prev: any) => {
-      const currentlyLiked = prev.likes && prev.likes.length > 0;
-      return {
-        ...prev,
-        likes: currentlyLiked ? [] : [{ id: 'temp' }],
-        _count: {
-          ...prev._count,
-          likes: currentlyLiked ? prev._count.likes - 1 : prev._count.likes + 1
-        }
-      };
-    });
-
-    try {
-      await fetch(`${API_URL}/posts/${post.id}/like`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    // TODO: Implement Like functionality in Supabase (requires 'likes' table)
   };
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const token = getToken();
-    
-    setPost((prev: any) => {
-      const currentlyBookmarked = prev.bookmarks && prev.bookmarks.length > 0;
-      return {
-        ...prev,
-        bookmarks: currentlyBookmarked ? [] : [{ id: 'temp' }]
-      };
-    });
-
-    try {
-      await fetch(`${API_URL}/posts/${post.id}/bookmark`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    // TODO: Implement Bookmark functionality in Supabase (requires 'bookmarks' table)
   };
 
   const handleShare = (e: React.MouseEvent) => {
@@ -141,28 +104,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
   const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const token = getToken();
-    
-    setPost((prev: any) => {
-      const currentCount = prev._count?.quotedBy || 0;
-      return {
-        ...prev,
-        _count: {
-          ...prev._count,
-          quotedBy: Math.max(0, isReposted ? currentCount - 1 : currentCount + 1)
-        }
-      };
-    });
-    setIsReposted(!isReposted);
-
-    try {
-      await fetch(`${API_URL}/posts/${post.id}/repost`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    // TODO: Implement Repost functionality in Supabase
   };
 
   return (
@@ -174,8 +116,8 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       />
 
       <Link href={`/${post.author.username}`} className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-base border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors z-10 relative overflow-hidden">
-        {post.author.profile?.avatarUrl ? (
-          <img src={post.author.profile.avatarUrl} alt={post.author.username} className="w-full h-full object-cover" />
+        {post.author?.avatar_url ? (
+          <img src={post.author.avatar_url} alt={post.author.username} className="w-full h-full object-cover" />
         ) : (
           <span dir="ltr">{post.author.username.charAt(0).toUpperCase()}</span>
         )}
@@ -264,8 +206,8 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
               >
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-slate-800 overflow-hidden">
-                    {post.quotePost.author?.profile?.avatarUrl ? (
-                      <img src={post.quotePost.author.profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    {post.quotePost.author?.avatar_url ? (
+                      <img src={post.quotePost.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
                       <span className="flex items-center justify-center w-full h-full text-[10px] font-bold" dir="ltr">{post.quotePost.author?.username?.charAt(0).toUpperCase()}</span>
                     )}
