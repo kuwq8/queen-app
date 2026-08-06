@@ -14,6 +14,7 @@ export default function HomePage() {
   const [feedType, setFeedType] = useState<'all' | 'following'>('all');
   const [newPost, setNewPost] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [currentUsername, setCurrentUsername] = useState('');
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export default function HomePage() {
   const fetchPosts = async (token: string, type: 'all' | 'following') => {
     try {
       setIsLoading(true);
+      setError(null);
       const url = type === 'following' ? 'https://queen-app-api.onrender.com/posts?followingOnly=true' : 'https://queen-app-api.onrender.com/posts';
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
@@ -64,9 +66,12 @@ export default function HomePage() {
       } else if (res.status === 401) {
         localStorage.removeItem('token');
         router.push('/');
+      } else {
+        setError('تعذر جلب المنشورات. الخادم قد يكون معطلاً.');
       }
     } catch (err) {
       console.error(err);
+      setError('حدث خطأ أثناء الاتصال بالخادم.');
     } finally {
       setIsLoading(false);
     }
@@ -192,6 +197,11 @@ export default function HomePage() {
           {isLoading ? (
             <div className="flex justify-center p-8">
               <div className="animate-pulse text-cyan-500 text-sm font-bold">جاري تحميل المنشورات...</div>
+            </div>
+          ) : error ? (
+            <div className="text-center p-12 flex flex-col items-center">
+              <div className="text-red-500 text-sm font-bold mb-4">{error}</div>
+              <button onClick={() => fetchPosts(localStorage.getItem('token')!, feedType)} className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded">إعادة المحاولة</button>
             </div>
           ) : (
             <div>
