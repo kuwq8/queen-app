@@ -15,7 +15,7 @@ export default function HomePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [feedType, setFeedType] = useState<'all' | 'following'>('all');
   const [newPost, setNewPost] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [currentUsername, setCurrentUsername] = useState('');

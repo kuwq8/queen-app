@@ -47,11 +47,9 @@ export default function RetroEntryPage() {
     }
   };
 
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#E5E4E2]"><div className="animate-spin"><RefreshCcw size={32} className="text-[#8B5A2B]"/></div></div>;
-  }
 
-  if (!server) {
+
+  if (!server && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#E5E4E2] font-sans" dir="rtl">
         <div className="text-red-600 font-bold mb-4">تعذر الاتصال بالخادم. قد يكون غير متصل (أو في وضع النوم).</div>
@@ -59,6 +57,8 @@ export default function RetroEntryPage() {
       </div>
     );
   }
+
+  const srv = server || { name: 'جاري التحميل...', members: [], _count: { members: 0 } };
 
   return (
     <div className="min-h-screen bg-[#FDF5E6] font-sans flex justify-center py-4 sm:py-10" dir="rtl">
@@ -69,10 +69,10 @@ export default function RetroEntryPage() {
         <div className="w-full sm:w-[250px] bg-[#F5F5DC] border-b sm:border-b-0 sm:border-l border-[#8B5A2B] flex flex-col order-2 sm:order-1 h-[400px] sm:h-auto overflow-hidden">
           <div className="bg-[#8B5A2B] text-white p-2 font-bold text-center border-b border-[#6E4823] flex justify-between items-center">
             <span>المتصلين</span>
-            <span className="bg-green-600 px-2 rounded-sm text-sm">{server._count?.members || 0}</span>
+            <span className="bg-green-600 px-2 rounded-sm text-sm">{srv._count?.members || 0}</span>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-2">
-            {server.members?.map((member: any) => (
+            {srv.members?.map((member: any) => (
               <div key={member.id} className="flex items-center space-x-2 space-x-reverse p-1 hover:bg-[#EAEAD2] cursor-default border-b border-dashed border-[#D2B48C]">
                 <div className="w-8 h-8 rounded-sm bg-white border border-[#8B5A2B] overflow-hidden flex items-center justify-center flex-shrink-0">
                   {member.user.profile?.avatarUrl ? (
@@ -102,7 +102,7 @@ export default function RetroEntryPage() {
           <div className="h-32 bg-[#D2B48C] relative border-b-2 border-[#8B5A2B] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
             <div className="relative z-10 text-center drop-shadow-md">
-              <h1 className="text-3xl font-extrabold text-[#5C4033] mb-1">شات {server.name}</h1>
+              <h1 className="text-3xl font-extrabold text-[#5C4033] mb-1">شات {srv.name}</h1>
               <p className="text-[#8B5A2B] font-bold text-sm tracking-widest flex items-center justify-center">
                 <Globe size={14} className="ml-1" />
                 شات كل العرب
@@ -166,7 +166,7 @@ export default function RetroEntryPage() {
                   <span className="text-sm">تابع مجتمعنا على إكس</span>
                </a>
                <div className="text-xs text-[#8B5A2B] text-center font-bold bg-white/50 px-4 py-1 rounded-full">
-                 جميع الحقوق محفوظة © 2026 - شات {server.name}
+                 جميع الحقوق محفوظة © 2026 - شات {srv.name}
                </div>
             </div>
 
