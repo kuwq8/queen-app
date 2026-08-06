@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users } from 'lucide-react';
@@ -41,14 +43,14 @@ export default function ChatRoomPage() {
     setCurrentUserId(payload.sub);
 
     // Fetch Room Info
-    fetch(`https://queen-app-api.onrender.com/chat/rooms/${roomId}`, {
+    fetch(`${API_URL}/chat/rooms/${roomId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.json())
     .then(data => setRoomInfo(data));
 
     // Fetch initial messages
-    fetch(`https://queen-app-api.onrender.com/chat/${roomId}/messages`, {
+    fetch(`${API_URL}/chat/${roomId}/messages`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -58,7 +60,7 @@ export default function ChatRoomPage() {
     });
 
     // Connect WebSocket
-    const socket = io('https://queen-app-api.onrender.com', {
+    const socket = io(`${API_URL}`, {
       auth: { token: `Bearer ${token}` }
     });
     socketRef.current = socket;
@@ -176,7 +178,7 @@ export default function ChatRoomPage() {
       if (audioBlob) formData.append('file', audioBlob, 'voice-note.webm');
       else if (mediaFile) formData.append('file', mediaFile);
 
-      const uploadRes = await fetch('https://queen-app-api.onrender.com/chat/media', {
+      const uploadRes = await fetch(`${API_URL}/chat/media`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData

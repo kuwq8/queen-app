@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, UserPlus, ArrowRight } from 'lucide-react';
@@ -22,7 +24,7 @@ export default function NotificationsPage() {
 
   const fetchNotifications = async (token: string) => {
     try {
-      const res = await fetch('https://queen-app-api.onrender.com/notifications', {
+      const res = await fetch(`${API_URL}/notifications`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -58,7 +60,7 @@ export default function NotificationsPage() {
     // Mark as read in background
     const token = localStorage.getItem('token');
     if (!notification.read) {
-      fetch(`https://queen-app-api.onrender.com/notifications/${notification.id}/read`, {
+      fetch(`${API_URL}/notifications/${notification.id}/read`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       }).catch(console.error);

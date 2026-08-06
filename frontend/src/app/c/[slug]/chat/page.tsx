@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Settings, Users, Menu, Smile, X, Send, Heart, MessageSquare, Plus, Bell, Volume2, VolumeX, Mic, Lock, Image as ImageIcon, Reply, Camera, LogOut, Palette, BellOff, TrendingUp, Award, Mic2, MessageCircle, Grid, FileText } from 'lucide-react';
@@ -192,7 +194,7 @@ export default function ClassicChatPage() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/users/profile/${uploadType}`, {
+      const res = await fetch(`${API_URL}/users/profile/${uploadType}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: formData
@@ -215,7 +217,7 @@ export default function ClassicChatPage() {
   
   // Fetch settings and server data
   useEffect(() => {
-    fetch(`https://queen-app-api.onrender.com/community/${slug}/settings`)
+    fetch(`${API_URL}/community/${slug}/settings`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) setSettings(data);
@@ -231,7 +233,7 @@ export default function ClassicChatPage() {
       setCurrentUser(payload);
     } catch(e) {}
 
-    fetch(`https://queen-app-api.onrender.com/community/${slug}`)
+    fetch(`${API_URL}/community/${slug}`)
       .then(res => res.json())
       .then(data => {
         setServer(data);
@@ -246,7 +248,7 @@ export default function ClassicChatPage() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    fetch(`https://queen-app-api.onrender.com/community/rooms/${activeRoom.id}/messages`, {
+    fetch(`${API_URL}/community/rooms/${activeRoom.id}/messages`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.json())
@@ -264,7 +266,7 @@ export default function ClassicChatPage() {
       setMessages([]);
     });
 
-    const socket = io('https://queen-app-api.onrender.com', { auth: { token: `Bearer ${token}` } });
+    const socket = io(`${API_URL}`, { auth: { token: `Bearer ${token}` } });
     socketRef.current = socket;
 
     socket.emit('joinCommunityRoom', { roomId: activeRoom.id, slug: slug });
@@ -348,7 +350,7 @@ export default function ClassicChatPage() {
   useEffect(() => {
     if (activePrivateChat) {
       const token = localStorage.getItem('token');
-      fetch(`https://queen-app-api.onrender.com/chat/${activePrivateChat.id}/messages`, {
+      fetch(`${API_URL}/chat/${activePrivateChat.id}/messages`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -1833,7 +1835,7 @@ export default function ClassicChatPage() {
                       return;
                     }
                     try {
-                      const res = await fetch('https://queen-app-api.onrender.com/chat/rooms', {
+                      const res = await fetch(`${API_URL}/chat/rooms`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                         body: JSON.stringify({ participantUsernames: [selectedUser.username] })

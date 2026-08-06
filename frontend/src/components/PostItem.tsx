@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -46,7 +48,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     }
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/posts/${post.id}`, {
+      const res = await fetch(`${API_URL}/posts/${post.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +70,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     const token = localStorage.getItem('token');
     try {
       setIsDeleting(true);
-      const res = await fetch(`https://queen-app-api.onrender.com/posts/${post.id}`, {
+      const res = await fetch(`${API_URL}/posts/${post.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -100,7 +102,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     });
 
     try {
-      await fetch(`https://queen-app-api.onrender.com/posts/${post.id}/like`, {
+      await fetch(`${API_URL}/posts/${post.id}/like`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -122,7 +124,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     });
 
     try {
-      await fetch(`https://queen-app-api.onrender.com/posts/${post.id}/bookmark`, {
+      await fetch(`${API_URL}/posts/${post.id}/bookmark`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -154,7 +156,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     setIsReposted(!isReposted);
 
     try {
-      await fetch(`https://queen-app-api.onrender.com/posts/${post.id}/repost`, {
+      await fetch(`${API_URL}/posts/${post.id}/repost`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });

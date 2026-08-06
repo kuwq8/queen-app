@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Users, LogIn, UserCircle, Globe, RefreshCcw } from 'lucide-react';
@@ -22,7 +24,7 @@ export default function RetroEntryPage() {
       setCurrentUser(payload);
     } catch(e) {}
 
-    fetch(`https://queen-app-api.onrender.com/community/${slug}`)
+    fetch(`${API_URL}/community/${slug}`)
       .then(res => res.json())
       .then(data => {
         setServer(data);
@@ -34,7 +36,7 @@ export default function RetroEntryPage() {
   const handleJoin = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/join`, {
+      const res = await fetch(`${API_URL}/community/${slug}/join`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });

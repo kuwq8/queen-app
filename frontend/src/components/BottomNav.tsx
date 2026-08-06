@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/api';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Home, Search, Bell, MessageCircle, User } from 'lucide-react';
@@ -14,7 +15,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
     const token = localStorage.getItem('token');
     if (!token) return;
     
-    fetch('https://queen-app-api.onrender.com/notifications/unread-count', {
+    fetch(`${API_URL}/notifications/unread-count`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     .then(res => res.ok ? res.json() : { count: 0 })

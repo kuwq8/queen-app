@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, ArrowRight } from 'lucide-react';
@@ -30,7 +32,7 @@ export default function CommunityPage() {
     if (!token) return;
     
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/join`, {
+      const res = await fetch(`${API_URL}/community/${slug}/join`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -46,8 +48,8 @@ export default function CommunityPage() {
     setIsLoading(true);
     try {
       const [allRes, myRes] = await Promise.all([
-        fetch('https://queen-app-api.onrender.com/community', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('https://queen-app-api.onrender.com/community/my-servers', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_URL}/community`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/community/my-servers`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       if (allRes.ok) setServers(await allRes.json());
       if (myRes.ok) setMyServers(await myRes.json());
@@ -62,7 +64,7 @@ export default function CommunityPage() {
     const delayDebounceFn = setTimeout(() => {
       const token = localStorage.getItem('token');
       if (token) {
-        fetch(`https://queen-app-api.onrender.com/community?q=${encodeURIComponent(query)}`, {
+        fetch(`${API_URL}/community?q=${encodeURIComponent(query)}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
         .then(res => res.json())

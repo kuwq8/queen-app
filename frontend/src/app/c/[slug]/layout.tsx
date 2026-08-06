@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/api';
 import { Metadata } from 'next';
 
 type Props = {
@@ -7,7 +8,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}`);
+    const res = await fetch(`${API_URL}/community/${slug}`);
     if (!res.ok) {
       return {
         title: 'شات غير معروف',

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Settings, Users, UserPlus, ShieldAlert, ArrowRight, Save, X, Search, Check, Ban, MessageSquare, Type, Bot, Gift, Globe, Lock, Clock, Smile, Image as ImageIcon } from 'lucide-react';
@@ -40,7 +42,7 @@ export default function AdminDashboard() {
     if (activeTab === 'settings') {
       const token = localStorage.getItem('token');
       if (token) {
-        fetch(`https://queen-app-api.onrender.com/community/${slug}/fake-users`, {
+        fetch(`${API_URL}/community/${slug}/fake-users`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(r => r.json()).then(data => setFakeUsers(data || []));
       }
@@ -56,7 +58,7 @@ export default function AdminDashboard() {
       } catch(e) {}
     }
     
-    fetch(`https://queen-app-api.onrender.com/community/${slug}/settings`)
+    fetch(`${API_URL}/community/${slug}/settings`)
       .then(res => res.json())
       .then(data => {
         if (data && !data.error) setSettings(data);
@@ -66,16 +68,16 @@ export default function AdminDashboard() {
     const headers = { Authorization: `Bearer ${token}` };
 
     Promise.all([
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/shortcuts`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/bots`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/gifts`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/banners`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/domains`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/roles`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/logs`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/bans`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/members`, { headers }).then(res => res.json()),
-      fetch(`https://queen-app-api.onrender.com/community/${slug}/emojis`, { headers }).then(res => res.json())
+      fetch(`${API_URL}/community/${slug}/shortcuts`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/bots`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/gifts`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/banners`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/domains`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/roles`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/logs`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/bans`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/members`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/emojis`, { headers }).then(res => res.json())
     ]).then(([sData, bData, gData, bnData, dData, rData, lData, baData, mData, eData]) => {
       if(Array.isArray(sData)) setShortcuts(sData);
       if(Array.isArray(bData)) setBots(bData);
@@ -94,7 +96,7 @@ export default function AdminDashboard() {
   const handleSaveSettings = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/settings`, {
+      const res = await fetch(`${API_URL}/community/${slug}/settings`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(settings)
@@ -273,7 +275,7 @@ export default function AdminDashboard() {
                     <button onClick={async () => {
                       const token = localStorage.getItem('token');
                       try {
-                        const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/banner`, {
+                        const res = await fetch(`${API_URL}/community/${slug}/banner`, {
                           method: 'PATCH',
                           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                           body: JSON.stringify({ bannerUrl: server.bannerUrl })
@@ -546,7 +548,7 @@ export default function AdminDashboard() {
                  <button onClick={async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/domains`, {
+      const res = await fetch(`${API_URL}/community/${slug}/domains`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(newDomain)
@@ -587,7 +589,7 @@ export default function AdminDashboard() {
                               <button onClick={async () => {
                                 if(confirm('هل أنت متأكد من حذف هذا النطاق؟')) {
                                   const token = localStorage.getItem('token');
-                                  await fetch(`https://queen-app-api.onrender.com/community/${slug}/domains/${d.id}`, {
+                                  await fetch(`${API_URL}/community/${slug}/domains/${d.id}`, {
                                     method: 'DELETE',
                                     headers: { Authorization: `Bearer ${token}` }
                                   });
@@ -691,7 +693,7 @@ export default function AdminDashboard() {
                      onClick={() => {
                        const url = prompt('أدخل رابط الفيس:');
                        if (url) {
-                         fetch(`https://queen-app-api.onrender.com/community/${slug}/emojis`, {
+                         fetch(`${API_URL}/community/${slug}/emojis`, {
                            method: 'POST',
                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                            body: JSON.stringify({ url, type: 'EMOJI' })
@@ -713,7 +715,7 @@ export default function AdminDashboard() {
                        <button 
                          onClick={() => {
                            if(confirm('هل أنت متأكد من حذف هذا الفيس؟')) {
-                             fetch(`https://queen-app-api.onrender.com/community/${slug}/emojis/${emoji.id}`, {
+                             fetch(`${API_URL}/community/${slug}/emojis/${emoji.id}`, {
                                method: 'DELETE',
                                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                              }).then(() => {
@@ -744,7 +746,7 @@ export default function AdminDashboard() {
                      onClick={() => {
                        const url = prompt('أدخل رابط الملصق (يفضل أن يكون بخلفية شفافة أو GIF):');
                        if (url) {
-                         fetch(`https://queen-app-api.onrender.com/community/${slug}/emojis`, {
+                         fetch(`${API_URL}/community/${slug}/emojis`, {
                            method: 'POST',
                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` },
                            body: JSON.stringify({ url, type: 'STICKER' })
@@ -766,7 +768,7 @@ export default function AdminDashboard() {
                        <button 
                          onClick={() => {
                            if(confirm('هل أنت متأكد من حذف هذا الملصق؟')) {
-                             fetch(`https://queen-app-api.onrender.com/community/${slug}/emojis/${emoji.id}`, {
+                             fetch(`${API_URL}/community/${slug}/emojis/${emoji.id}`, {
                                method: 'DELETE',
                                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                              }).then(() => {
@@ -834,7 +836,7 @@ export default function AdminDashboard() {
                               if (newPass && newPass.trim() !== '') {
                                 const token = localStorage.getItem('token');
                                 try {
-                                  const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/members/${member.id}/password`, {
+                                  const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}/password`, {
                                     method: 'PATCH',
                                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                                     body: JSON.stringify({ newPassword: newPass })
@@ -848,7 +850,7 @@ export default function AdminDashboard() {
                               if(confirm('هل أنت متأكد من حذف هذه العضوية بالكامل؟')) {
                                 const token = localStorage.getItem('token');
                                 try {
-                                  const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/members/${member.id}`, {
+                                  const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}`, {
                                     method: 'DELETE',
                                     headers: { Authorization: `Bearer ${token}` }
                                   });
@@ -902,7 +904,7 @@ export default function AdminDashboard() {
                       if (!ip && !device) return alert('يجب إدخال IP أو جهاز');
                       const token = localStorage.getItem('token');
                       try {
-                        const res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/bans`, {
+                        const res = await fetch(`${API_URL}/community/${slug}/bans`, {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                           body: JSON.stringify({ ipAddress: ip, device })
@@ -935,7 +937,7 @@ export default function AdminDashboard() {
                             <td className="p-3">
                               <button onClick={async () => {
                                 const token = localStorage.getItem('token');
-                                await fetch(`https://queen-app-api.onrender.com/community/${slug}/bans/${ban.id}`, {
+                                await fetch(`${API_URL}/community/${slug}/bans/${ban.id}`, {
                                   method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
                                 });
                                 setBans(bans.filter(b => b.id !== ban.id));
@@ -986,7 +988,7 @@ export default function AdminDashboard() {
                       if(confirm('هل أنت متأكد من حذف هذه المجموعة؟')) {
                         const token = localStorage.getItem('token');
                         try {
-                          await fetch(`https://queen-app-api.onrender.com/community/${slug}/roles/${selectedRoleId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+                          await fetch(`${API_URL}/community/${slug}/roles/${selectedRoleId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
                           setRoles(roles.filter(r => r.id !== selectedRoleId));
                           setSelectedRoleId('');
                           setEditingRole(null);
@@ -1077,13 +1079,13 @@ export default function AdminDashboard() {
                          try {
                            let res;
                            if (selectedRoleId === 'new') {
-                             res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/roles`, {
+                             res = await fetch(`${API_URL}/community/${slug}/roles`, {
                                method: 'POST',
                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                                body: JSON.stringify(editingRole)
                              });
                            } else {
-                             res = await fetch(`https://queen-app-api.onrender.com/community/${slug}/roles/${selectedRoleId}`, {
+                             res = await fetch(`${API_URL}/community/${slug}/roles/${selectedRoleId}`, {
                                method: 'PATCH',
                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                                body: JSON.stringify(editingRole)

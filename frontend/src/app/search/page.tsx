@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -25,7 +27,7 @@ export default function SearchPage() {
         setIsSearching(true);
         const token = localStorage.getItem('token');
         try {
-          const res = await fetch(`https://queen-app-api.onrender.com/users/search?q=${encodeURIComponent(query)}`, {
+          const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(query)}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {

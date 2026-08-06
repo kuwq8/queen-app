@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -45,7 +47,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async (token: string | null) => {
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/users/${username}`, {
+      const res = await fetch(`${API_URL}/users/${username}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -63,7 +65,7 @@ export default function ProfilePage() {
 
   const fetchPosts = async (token: string) => {
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/users/${username}/posts`, {
+      const res = await fetch(`${API_URL}/users/${username}/posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -80,7 +82,7 @@ export default function ProfilePage() {
   const handleFollow = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/users/${username}/follow`, {
+      const res = await fetch(`${API_URL}/users/${username}/follow`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -116,7 +118,7 @@ export default function ProfilePage() {
     const token = localStorage.getItem('token');
     setIsSavingProfile(true);
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/users/profile`, {
+      const res = await fetch(`${API_URL}/users/profile`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +150,7 @@ export default function ProfilePage() {
 
     setIsUploading(true);
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/users/profile/${type}`, {
+      const res = await fetch(`${API_URL}/users/profile/${type}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -176,7 +178,7 @@ export default function ProfilePage() {
     const newValue = !allowDMs;
     setAllowDMs(newValue);
     try {
-      await fetch(`https://queen-app-api.onrender.com/users/privacy`, {
+      await fetch(`${API_URL}/users/privacy`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ allowDirectMessages: newValue })

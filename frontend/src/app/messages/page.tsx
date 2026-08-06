@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Users, Plus, Search, Check } from 'lucide-react';
@@ -31,7 +33,7 @@ export default function MessagesPage() {
 
   const fetchRooms = async (token: string) => {
     try {
-      const res = await fetch('https://queen-app-api.onrender.com/chat/rooms', {
+      const res = await fetch(`${API_URL}/chat/rooms`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setRooms(await res.json());
@@ -45,7 +47,7 @@ export default function MessagesPage() {
     // Allow empty search to fetch contacts
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`https://queen-app-api.onrender.com/users/search?q=${q}&followingOnly=true`, {
+      const res = await fetch(`${API_URL}/users/search?q=${q}&followingOnly=true`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setSearchResults(await res.json());
@@ -73,7 +75,7 @@ export default function MessagesPage() {
     setIsCreating(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('https://queen-app-api.onrender.com/chat/rooms', {
+      const res = await fetch(`${API_URL}/chat/rooms`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ usernames, isGroup, name })

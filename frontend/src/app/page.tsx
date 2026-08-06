@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, Sparkles, User, ArrowLeft } from 'lucide-react';
@@ -24,7 +26,7 @@ export default function AuthPage() {
       const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const bodyPayload = isLogin ? { email, password } : { email, username, password };
       
-      const res = await fetch(`https://queen-app-api.onrender.com${endpoint}`, {
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPayload),

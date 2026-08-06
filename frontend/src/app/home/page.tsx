@@ -1,5 +1,7 @@
 'use client';
 
+
+import { API_URL } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -39,7 +41,7 @@ export default function HomePage() {
       const payload = JSON.parse(atob(base64));
       setCurrentUsername(payload.username);
       
-      fetch(`https://queen-app-api.onrender.com/users/${payload.username}`, {
+      fetch(`${API_URL}/users/${payload.username}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => res.json())
@@ -57,7 +59,7 @@ export default function HomePage() {
     try {
       setIsLoading(true);
       setError(null);
-      const url = type === 'following' ? 'https://queen-app-api.onrender.com/posts?followingOnly=true' : 'https://queen-app-api.onrender.com/posts';
+      const url = type === 'following' ? `${API_URL}/posts?followingOnly=true` : `${API_URL}/posts`;
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -90,7 +92,7 @@ export default function HomePage() {
     const token = localStorage.getItem('token');
     if (!token) return;
     try {
-      const res = await fetch('https://queen-app-api.onrender.com/users/bookmarks', {
+      const res = await fetch(`${API_URL}/users/bookmarks`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -111,7 +113,7 @@ export default function HomePage() {
       if (mediaFile) {
         const formData = new FormData();
         formData.append('file', mediaFile);
-        const uploadRes = await fetch('https://queen-app-api.onrender.com/posts/media', {
+        const uploadRes = await fetch(`${API_URL}/posts/media`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
           body: formData
@@ -122,7 +124,7 @@ export default function HomePage() {
         }
       }
 
-      const res = await fetch('https://queen-app-api.onrender.com/posts', {
+      const res = await fetch(`${API_URL}/posts`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
