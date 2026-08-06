@@ -32,7 +32,11 @@ export default function middleware(req: NextRequest) {
   // If we are on production, extract subdomain from gemini-social.onrender.com
   let subdomain = '';
   
-  if (currentHost !== 'localhost' && currentHost !== 'gemini-social.onrender.com') {
+  if (
+    currentHost !== 'localhost' && 
+    currentHost !== 'gemini-social.onrender.com' &&
+    !currentHost.endsWith('.vercel.app')
+  ) {
     if (currentHost.endsWith('.localhost')) {
       subdomain = currentHost.replace('.localhost', '');
     } else if (currentHost.endsWith('.gemini-social.onrender.com')) {
