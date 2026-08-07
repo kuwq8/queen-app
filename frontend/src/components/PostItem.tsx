@@ -21,12 +21,18 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(initialPost.content);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  const [isLiked, setIsLiked] = useState(false);
   const [isReposted, setIsReposted] = useState(false);
-
-  const isLiked = false; // TODO: Implement likes in Supabase
-  const isBookmarked = false; // TODO: Implement bookmarks in Supabase
+  const [isBookmarked, setIsBookmarked] = useState(false);
   
   const isEdited = false; // TODO: Implement updated_at
+  
+  // Check user interaction status on mount if we had user context, but for now we rely on optimism
+  useEffect(() => {
+    // In a full implementation, we'd fetch if the current user liked/reposted/bookmarked this post.
+    // For now we assume false until clicked, or we could fetch it here.
+  }, [post.id]);
 
   const formatTime = (dateString: string) => {
     if (!dateString) return '';
@@ -88,23 +94,75 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement Like functionality in Supabase (requires 'likes' table)
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      if (isLiked) {
+        setIsLiked(false);
+        setPost((prev: any) => ({ ...prev, likes_count: Math.max(0, (prev.likes_count || 0) - 1) }));
+        await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+      } else {
+        setIsLiked(true);
+        setPost((prev: any) => ({ ...prev, likes_count: (prev.likes_count || 0) + 1 }));
+        await supabase.from('likes').insert({ post_id: post.id, user_id: session.user.id });
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement Bookmark functionality in Supabase (requires 'bookmarks' table)
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      if (isBookmarked) {
+        setIsBookmarked(false);
+        setPost((prev: any) => ({ ...prev, bookmarks_count: Math.max(0, (prev.bookmarks_count || 0) - 1) }));
+        await supabase.from('bookmarks').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+      } else {
+        setIsBookmarked(true);
+        setPost((prev: any) => ({ ...prev, bookmarks_count: (prev.bookmarks_count || 0) + 1 }));
+        await supabase.from('bookmarks').insert({ post_id: post.id, user_id: session.user.id });
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigator.clipboard.writeText(`http://localhost:3000/post/${post.id}`);
-    alert('تم نسخ الرابط!');
+    const url = `${window.location.origin}/post/${post.id}`;
+    navigator.clipboard.writeText(url).catch(err => console.error(err));
+    // Alert is removed for better UX. Can add a toast here later.
   };
 
   const handleRepost = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // TODO: Implement Repost functionality in Supabase
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      if (isReposted) {
+        setIsReposted(false);
+        setPost((prev: any) => ({ ...prev, reposts_count: Math.max(0, (prev.reposts_count || 0) - 1) }));
+        await supabase.from('reposts').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+      } else {
+        setIsReposted(true);
+        setPost((prev: any) => ({ ...prev, reposts_count: (prev.reposts_count || 0) + 1 }));
+        await supabase.from('reposts').insert({ post_id: post.id, user_id: session.user.id });
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -119,7 +177,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         {post.author?.avatar_url ? (
           <img src={post.author.avatar_url} alt={post.author.username} className="w-full h-full object-cover" />
         ) : (
-          <span dir="ltr">{post.author.username.charAt(0).toUpperCase()}</span>
+          <span dir="ltr">{post.author?.username?.charAt(0).toUpperCase()}</span>
         )}
       </Link>
       
@@ -131,11 +189,11 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
               className="font-bold text-white text-[15px] hover:underline cursor-pointer"
               dir="ltr"
             >
-              {post.author.username}
+              {post.author?.username}
             </span>
-            <span className="text-slate-500 text-[15px]" dir="ltr">@{post.author.username}</span>
+            <span className="text-slate-500 text-[15px]" dir="ltr">@{post.author?.username}</span>
             <span className="text-slate-500 text-[15px]">·</span>
-            <span className="text-slate-500 text-[14px]">{formatTime(post.createdAt)}</span>
+            <span className="text-slate-500 text-[14px]">{formatTime(post.created_at || post.createdAt)}</span>
             {isEdited && <span className="text-slate-500 text-[11px] italic bg-slate-800/50 px-1.5 py-0.5 rounded-full mr-1">معدلة</span>}
           </div>
           
@@ -193,9 +251,9 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
               <p className="mt-1 text-slate-200 whitespace-pre-wrap break-words text-[15px] leading-relaxed">{post.content}</p>
             )}
 
-            {post.mediaUrl && (
+            {post.media_url && (
               <div className="mt-3 relative rounded-2xl overflow-hidden border border-slate-800/50">
-                <img src={post.mediaUrl} alt="Post media" className="w-full max-h-[500px] object-cover" />
+                <img src={post.media_url} alt="Post media" className="w-full max-h-[500px] object-cover" />
               </div>
             )}
 
@@ -216,9 +274,9 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
                   <span className="text-slate-500 text-[13px]" dir="ltr">@{post.quotePost.author?.username}</span>
                 </div>
                 <p className="mt-1 text-slate-200 text-[14px]">{post.quotePost.content}</p>
-                {post.quotePost.mediaUrl && (
+                {post.quotePost.media_url && (
                    <div className="mt-2 relative rounded-xl overflow-hidden border border-slate-800/50">
-                     <img src={post.quotePost.mediaUrl} alt="Quoted media" className="w-full max-h-[200px] object-cover" />
+                     <img src={post.quotePost.media_url} alt="Quoted media" className="w-full max-h-[200px] object-cover" />
                    </div>
                 )}
               </div>
@@ -232,7 +290,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             className="flex items-center gap-2 hover:text-cyan-500 transition-colors group"
           >
             <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors"><MessageCircle size={18} /></div>
-            <span className="text-sm">{post._count?.comments || 0}</span>
+            <span className="text-sm">{post.comments_count || 0}</span>
           </button>
           
           <button 
@@ -242,7 +300,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
               <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
             </div>
-            <span className="text-sm">{post._count?.likes || 0}</span>
+            <span className="text-sm">{post.likes_count || 0}</span>
           </button>
 
           <button 
@@ -252,7 +310,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
               <Repeat size={18} />
             </div>
-            <span className="text-sm">{post._count?.quotedBy || 0}</span>
+            <span className="text-sm">{post.reposts_count || 0}</span>
           </button>
 
           <button 
@@ -262,6 +320,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors">
               <Bookmark size={18} fill={isBookmarked ? 'currentColor' : 'none'} />
             </div>
+            <span className="text-sm">{post.bookmarks_count || 0}</span>
           </button>
 
           <button 

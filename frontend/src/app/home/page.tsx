@@ -89,8 +89,30 @@ export default function HomePage() {
   };
 
   const fetchBookmarksAndOpenModal = async () => {
-    // TODO: Implement Supabase bookmarks
-    setBookmarksList([]);
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data } = await supabase
+        .from('bookmarks')
+        .select(`
+          post:posts (
+            id,
+            content,
+            author:profiles!user_id(username)
+          )
+        `)
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+        
+      if (data) {
+        setBookmarksList(data.map(b => b.post));
+      }
+    } catch (e) {
+      console.error(e);
+    }
     setIsBookmarksModalOpen(true);
   };
 
