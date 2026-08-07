@@ -226,7 +226,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           </>
         )}
         
-        <div className="flex justify-between items-center text-slate-500 mt-2 max-w-md relative z-10" dir="ltr">
+        <div className="flex justify-between items-center text-slate-500 mt-2 max-w-md relative z-10">
           <button 
             onClick={(e) => { e.stopPropagation(); router.push(`/post/${post.id}`); }}
             className="flex items-center gap-2 hover:text-cyan-500 transition-colors group"
