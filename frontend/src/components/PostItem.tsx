@@ -27,12 +27,6 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const [isBookmarked, setIsBookmarked] = useState(false);
   
   const isEdited = false; // TODO: Implement updated_at
-  
-  // Check user interaction status on mount if we had user context, but for now we rely on optimism
-  useEffect(() => {
-    // In a full implementation, we'd fetch if the current user liked/reposted/bookmarked this post.
-    // For now we assume false until clicked, or we could fetch it here.
-  }, [post.id]);
 
   const formatTime = (dateString: string) => {
     if (!dateString) return '';
