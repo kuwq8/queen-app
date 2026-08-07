@@ -196,7 +196,7 @@ export default function MessagesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20 sm:pb-0 sm:pr-[275px] font-sans text-right">
-      <div className="max-w-[600px] border-x border-slate-800 min-h-screen relative mx-auto">
+      <div className="max-w-[600px] border-x border-slate-800 min-h-screen flex flex-col relative mx-auto">
         {/* Header */}
         <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800 p-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">الرسائل</h1>
@@ -220,7 +220,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Chat List */}
-        <div className="divide-y divide-slate-800">
+        <div className="divide-y divide-slate-800 flex-1 flex flex-col">
           {rooms.map(room => {
             const otherParticipants = room.participants.filter((p: any) => p.user?.id !== currentUserId);
             const isGroup = room.isGroup;
@@ -265,13 +265,13 @@ export default function MessagesPage() {
             );
           })}
           {rooms.length === 0 && (
-            <div className="p-8 text-center text-slate-500 flex flex-col items-center">
-              <MessageSquare size={48} className="mb-4 text-slate-700" />
-              <p className="font-bold">أهلاً بك في صندوق الرسائل!</p>
-              <p className="text-sm mt-2">تواصل وشارك المنشورات والمزيد عبر المحادثات الخاصة.</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500">
+              <MessageSquare size={64} className="mb-6 text-slate-700" strokeWidth={1.5} />
+              <h2 className="text-2xl font-bold text-white mb-2">أهلاً بك في صندوق الرسائل!</h2>
+              <p className="text-slate-400 text-sm">تواصل وشارك المنشورات والمزيد عبر المحادثات الخاصة.</p>
               <button 
                 onClick={() => { setChatMode('private'); setIsNewChatOpen(true); }}
-                className="mt-6 bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-6 rounded-full transition-colors"
+                className="mt-8 bg-white hover:bg-slate-200 text-black font-bold py-3 px-8 rounded-full transition-colors text-lg shadow-lg shadow-white/10"
               >
                 اكتب رسالة
               </button>

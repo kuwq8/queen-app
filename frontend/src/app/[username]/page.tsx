@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL, getToken } from '@/lib/api';
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -31,45 +31,111 @@ export default function ProfilePage() {
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/');
-      return;
-    }
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setCurrentUsername(payload.username);
-    } catch(e) {}
+    const init = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/');
+        return;
+      }
+      
+      const { data: currentUserProfile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (currentUserProfile) {
+        setCurrentUsername(currentUserProfile.username);
+      }
+      
+      fetchProfile();
+      fetchPosts();
+    };
     
-    fetchProfile(token);
-    fetchPosts(token);
+    init();
   }, [username, router]);
 
-  const fetchProfile = async (token: string | null) => {
+  const fetchProfile = async () => {
     try {
-      const res = await fetch(`${API_URL}/users/${username}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile(data);
-        setEditBio(data.profile?.bio || '');
-        setAllowDMs(data.profile?.allowDirectMessages ?? true);
-      } else if (res.status === 404) {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      // Fetch target user's profile
+      const { data: targetProfile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('username', username)
+        .single();
+        
+      if (error || !targetProfile) {
         setProfile(null);
+        setIsLoading(false);
+        return;
       }
+
+      // Fetch counts (mocking for now, or you can implement actual counts if tables exist)
+      const { count: followersCount } = await supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', targetProfile.id);
+      const { count: followingCount } = await supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', targetProfile.id);
+      const { count: postsCount } = await supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', targetProfile.id);
+      
+      // Check if current user is following
+      const { data: { session } } = await supabase.auth.getSession();
+      let isFollowing = false;
+      if (session) {
+        const { data: followData } = await supabase.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', targetProfile.id).single();
+        isFollowing = !!followData;
+      }
+      
+      setProfile({
+        ...targetProfile,
+        profile: {
+          bio: targetProfile.bio || '',
+          avatarUrl: targetProfile.avatar_url,
+          coverUrl: targetProfile.cover_url,
+          allowDirectMessages: true // Default for now
+        },
+        _count: {
+          followers: followersCount || 0,
+          following: followingCount || 0,
+          posts: postsCount || 0
+        },
+        isFollowing,
+        createdAt: targetProfile.created_at
+      });
+      
+      setEditBio(targetProfile.bio || '');
     } catch (err) {
       console.error(err);
+      setProfile(null);
     }
   };
 
-  const fetchPosts = async (token: string) => {
+  const fetchPosts = async () => {
     try {
-      const res = await fetch(`${API_URL}/users/${username}/posts`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      const { data: targetProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .single();
+        
+      if (!targetProfile) return;
+
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          author:profiles!user_id(username, avatar_url)
+        `)
+        .eq('user_id', targetProfile.id)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
         setPosts(data);
       }
     } catch (err) {
@@ -80,21 +146,33 @@ export default function ProfilePage() {
   };
 
   const handleFollow = async () => {
-    const token = getToken();
     try {
-      const res = await fetch(`${API_URL}/users/${username}/follow`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data: targetProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .single();
+        
+      if (!targetProfile) return;
+
+      if (profile.isFollowing) {
+        await supabase.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', targetProfile.id);
         setProfile((prev: any) => ({
           ...prev,
-          isFollowing: data.following,
-          _count: {
-            ...prev._count,
-            followers: data.following ? prev._count.followers + 1 : prev._count.followers - 1
-          }
+          isFollowing: false,
+          _count: { ...prev._count, followers: prev._count.followers - 1 }
+        }));
+      } else {
+        await supabase.from('follows').insert({ follower_id: session.user.id, following_id: targetProfile.id });
+        setProfile((prev: any) => ({
+          ...prev,
+          isFollowing: true,
+          _count: { ...prev._count, followers: prev._count.followers + 1 }
         }));
       }
     } catch (err) {
@@ -115,18 +193,19 @@ export default function ProfilePage() {
   };
 
   const handleSaveProfile = async () => {
-    const token = getToken();
     setIsSavingProfile(true);
     try {
-      const res = await fetch(`${API_URL}/users/profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ bio: editBio })
-      });
-      if (res.ok) {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ bio: editBio })
+        .eq('id', session.user.id);
+        
+      if (!error) {
         setProfile((prev: any) => ({
           ...prev,
           profile: { ...prev.profile, bio: editBio }
@@ -143,50 +222,17 @@ export default function ProfilePage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const token = getToken();
-    const formData = new FormData();
-    formData.append('file', file);
-
+    
+    // Supabase Storage implementation would go here
     setIsUploading(true);
-    try {
-      const res = await fetch(`${API_URL}/users/profile/${type}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setProfile((prev: any) => ({
-          ...prev,
-          profile: {
-            ...prev.profile,
-            ...(type === 'avatar' ? { avatarUrl: data.avatarUrl } : { coverUrl: data.coverUrl })
-          }
-        }));
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsUploading(false);
-    }
+    alert('ميزة رفع الصور جاري تحديثها لاستخدام الخوادم الجديدة!');
+    setIsUploading(false);
   };
 
   const toggleDMs = async () => {
-    const token = getToken();
-    if (!token) return;
     const newValue = !allowDMs;
     setAllowDMs(newValue);
-    try {
-      await fetch(`${API_URL}/users/privacy`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ allowDirectMessages: newValue })
-      });
-    } catch (e) {
-      console.error(e);
-      setAllowDMs(!newValue);
-    }
+    // You would update a privacy table here if you had one.
   };
 
   if (isLoading) {

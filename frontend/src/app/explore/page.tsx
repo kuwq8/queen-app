@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL, getToken } from '@/lib/api';
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, UserPlus, UserCheck, ArrowRight, User } from 'lucide-react';
@@ -44,12 +44,26 @@ export default function ExplorePage() {
   const searchUsers = async (searchQuery: string) => {
     setIsLoading(true);
     try {
-      const token = getToken();
-      const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(searchQuery)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        setResults(await res.json());
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('username', `%${searchQuery}%`)
+        .limit(20);
+        
+      if (!error && data) {
+        setResults(data.map((p: any) => ({
+          id: p.id,
+          username: p.username,
+          profile: { 
+            avatarUrl: p.avatar_url, 
+            firstName: p.first_name || '', 
+            lastName: p.last_name || '', 
+            bio: p.bio 
+          }
+        })));
       }
     } catch (e) {
       console.error(e);

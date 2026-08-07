@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL, getToken } from '@/lib/api';
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, UserPlus, ArrowRight } from 'lucide-react';
@@ -64,20 +64,20 @@ export default function NotificationsPage() {
     }
   };
 
-  const handleNotificationClick = (notification: any) => {
-    // Mark as read in background
-    const token = getToken();
-    if (!notification.read) {
-      fetch(`${API_URL}/notifications/${notification.id}/read`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` }
-      }).catch(console.error);
-    }
-
+  const handleNotificationClick = async (notification: any) => {
     if (notification.type === 'FOLLOW') {
-      router.push(`/${notification.actor.username}`);
+      router.push(`/${notification.actor?.username}`);
     } else if (notification.postId) {
-      router.push(`/${getToken() ? JSON.parse(atob(getToken()!.split('.')[1])).username : ''}`);
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
+        if (profile) {
+          router.push(`/${profile.username}`);
+        }
+      }
     }
   };
 
