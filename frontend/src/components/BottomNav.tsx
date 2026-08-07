@@ -34,22 +34,22 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         </svg>
       </Link>
       
-      <Link href="/explore" className={`p-3 rounded-full transition-colors ${activeTab === 'explore' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
-        <Search size={24} strokeWidth={activeTab === 'explore' ? 2.5 : 2} />
+      <Link href="/explore" className={`p-2 rounded-full transition-colors ${activeTab === 'explore' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+        <Search size={26} strokeWidth={activeTab === 'explore' ? 2.5 : 2} />
       </Link>
       
       <CoffeeButton />
 
-      <Link href="/notifications" className={`relative p-3 rounded-full transition-colors ${activeTab === 'notifications' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
-        <Bell size={24} strokeWidth={activeTab === 'notifications' ? 2.5 : 2} />
+      <Link href="/notifications" className={`relative p-2 rounded-full transition-colors ${activeTab === 'notifications' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+        <Bell size={26} strokeWidth={activeTab === 'notifications' ? 2.5 : 2} />
         {unreadCount > 0 && (
-          <span className="absolute top-2 left-2 w-4 h-4 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-[9px] font-bold text-white">
+          <span className="absolute top-1 left-1 w-4 h-4 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-[9px] font-bold text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </Link>
 
-      <Link href="/messages" className={`p-3 rounded-full transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+      <Link href="/messages" className={`p-2 rounded-full transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
         <MessageCircle size={26} strokeWidth={activeTab === 'messages' ? 2.5 : 1.5} />
       </Link>
     </nav>

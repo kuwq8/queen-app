@@ -15,13 +15,19 @@ export default function ExplorePage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   useEffect(() => {
-    const token = getToken();
-    if (!token) return router.push('/');
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setCurrentUserId(payload.sub);
-    } catch(e) {}
-  }, []);
+    const checkAuth = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/');
+        return;
+      }
+      setCurrentUserId(session.user.id);
+    };
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

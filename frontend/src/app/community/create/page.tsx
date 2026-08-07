@@ -86,7 +86,6 @@ export default function CreateChatPage() {
         .insert({
           name: name,
           slug: slug,
-          is_group: true,
           is_private: isPrivate,
           created_by: session.user.id
         })

@@ -13,14 +13,22 @@ export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/');
-      return;
-    }
-
-    fetchNotifications(token);
-  }, []);
+    const checkAuth = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/');
+        return;
+      }
+      
+      // We don't have a Supabase notifications implementation yet, 
+      // but we will just stop the loading for now to avoid the crash.
+      setIsLoading(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const fetchNotifications = async (token: string) => {
     try {
