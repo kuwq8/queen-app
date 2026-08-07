@@ -11,7 +11,9 @@ export default function ClassicChatPage() {
   
   const [server, setServer] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const isCurrentUserAdmin = server?.members?.some((m: any) => m.user_id === currentUser?.id && ['owner', 'admin', 'OWNER', 'ADMIN'].includes(m.role)) || currentUser?.role === 'admin';
+  const isOwnerRole = server?.members?.some((m: any) => m.user_id === currentUser?.id && ['owner', 'admin', 'OWNER', 'ADMIN'].includes(m.role));
+  const isOnlyMember = server?.members?.length === 1 && server?.members?.[0].user_id === currentUser?.id;
+  const isCurrentUserAdmin = isOwnerRole || isOnlyMember || currentUser?.role === 'admin';
   const [activeRoom, setActiveRoom] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
