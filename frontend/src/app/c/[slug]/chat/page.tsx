@@ -216,8 +216,7 @@ export default function ClassicChatPage() {
         .select(`
           id, name, slug,
           members:channel_members(
-            id, role,
-            user:profiles!user_id(id, username, avatar_url, bio)
+            user:profiles(id, username, avatar_url, bio)
           )
         `)
         .eq('id', slug as string)
@@ -239,7 +238,7 @@ export default function ClassicChatPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from('messages')
-        .select('*, sender:profiles!sender_id(*)')
+        .select('*, sender:profiles(*)')
         .eq('channel_id', activeRoom.id)
         .order('created_at', { ascending: true })
         .limit(50);
@@ -296,7 +295,7 @@ export default function ClassicChatPage() {
         const supabase = createClient();
         const { data } = await supabase
           .from('messages')
-          .select('*, sender:profiles!sender_id(*)')
+          .select('*, sender:profiles(*)')
           .eq('channel_id', activePrivateChat.id)
           .order('created_at', { ascending: true })
           .limit(50);
