@@ -265,13 +265,13 @@ export default function MessagesPage() {
             );
           })}
           {rooms.length === 0 && (
-            <div className="flex flex-col items-center justify-center p-8 text-center text-slate-500 min-h-[75vh]">
-              <MessageSquare size={64} className="mb-6 text-slate-700" strokeWidth={1.5} />
-              <h2 className="text-2xl font-bold text-white mb-2">أهلاً بك في صندوق الرسائل!</h2>
-              <p className="text-slate-400 text-[15px]">تواصل وشارك المنشورات والمزيد عبر المحادثات الخاصة.</p>
+            <div className="flex flex-col items-center justify-center px-8 text-center h-[calc(100vh-180px)]">
+              <MessageSquare size={72} className="mb-4 text-slate-700" strokeWidth={1} />
+              <h2 className="text-[32px] font-extrabold text-white mb-2 leading-tight">أهلاً بك في صندوق الرسائل!</h2>
+              <p className="text-slate-500 text-[15px] mb-8 max-w-[280px]">تواصل وشارك المنشورات والمزيد عبر المحادثات الخاصة.</p>
               <button 
                 onClick={() => { setChatMode('private'); setIsNewChatOpen(true); }}
-                className="mt-8 bg-white hover:bg-slate-200 text-black font-bold py-3.5 px-10 rounded-full transition-colors text-[17px]"
+                className="bg-white hover:bg-slate-200 text-black font-bold py-3.5 px-8 rounded-full transition-colors text-[16px] shadow-lg shadow-white/5"
               >
                 اكتب رسالة
               </button>
