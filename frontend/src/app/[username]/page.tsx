@@ -13,7 +13,7 @@ import BottomNav from '../../components/BottomNav';
 export default function ProfilePage() {
   const router = useRouter();
   const params = useParams();
-  const username = params.username as string;
+  const username = decodeURIComponent(params.username as string);
 
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
