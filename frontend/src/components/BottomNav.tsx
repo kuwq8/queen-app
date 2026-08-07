@@ -1,8 +1,8 @@
-import { API_URL, getToken } from '@/lib/api';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Home, Search, Bell, MessageCircle, User } from 'lucide-react';
 import CoffeeButton from './CoffeeButton';
+import { createClient } from '@/utils/supabase/client';
 
 interface BottomNavProps {
   activeTab: 'home' | 'explore' | 'notifications' | 'messages' | 'profile' | '';
@@ -12,15 +12,21 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
+    const fetchUnread = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { count } = await supabase
+        .from('social_notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .eq('is_read', false);
+        
+      if (count !== null) setUnreadCount(count);
+    };
     
-    fetch(`${API_URL}/notifications/unread-count`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => res.ok ? res.json() : { count: 0 })
-    .then(data => setUnreadCount(data.count))
-    .catch(() => {});
+    fetchUnread();
   }, [activeTab]);
 
   return (

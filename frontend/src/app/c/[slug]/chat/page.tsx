@@ -1,11 +1,9 @@
 'use client';
 
-
-import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Settings, Users, Menu, Smile, X, Send, Heart, MessageSquare, Plus, Bell, Volume2, VolumeX, Mic, Lock, Image as ImageIcon, Reply, Camera, LogOut, Palette, BellOff, TrendingUp, Award, Mic2, MessageCircle, Grid, FileText } from 'lucide-react';
-import io, { Socket } from 'socket.io-client';
+import { createClient } from '@/utils/supabase/client';
 
 export default function ClassicChatPage() {
   const router = useRouter();
@@ -191,190 +189,137 @@ export default function ClassicChatPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !uploadType) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await fetch(`${API_URL}/users/profile/${uploadType}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-        body: formData
-      });
-      if (res.ok) {
-         alert('تم تحديث الصورة بنجاح!');
-         const data = await res.json();
-         setCurrentUser((prev: any) => prev ? {...prev, profile: {...prev.profile, [uploadType === 'avatar' ? 'avatarUrl' : 'coverUrl']: data.url}} : prev);
-         setSelectedUser((prev: any) => prev ? {...prev, profile: {...prev.profile, [uploadType === 'avatar' ? 'avatarUrl' : 'coverUrl']: data.url}} : prev);
-      } else {
-         alert('فشل في رفع الصورة');
-      }
-    } catch (error) {
-       console.error(error);
-    } finally {
-       setUploadType(null);
-       if (fileInputRef.current) fileInputRef.current.value = '';
-    }
+    alert('ميزة رفع الصور جاري تحديثها لاستخدام الخوادم الجديدة (Supabase)!');
+    setUploadType(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
   
-  // Fetch settings and server data
   useEffect(() => {
-    fetch(`${API_URL}/community/${slug}/settings`)
-      .then(res => res.json())
-      .then(data => {
-        if (data && !data.error) setSettings(data);
-      }).catch(err => console.error(err));
-  }, [slug]);
+    const init = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        return router.push('/');
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+        
+      setCurrentUser(profile);
 
-  useEffect(() => {
-    const token = getToken();
-    if (!token) return router.push('/');
-    
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setCurrentUser(payload);
-    } catch(e) {}
-
-    fetch(`${API_URL}/community/${slug}`)
-      .then(res => res.json())
-      .then(data => {
-        setServer(data);
-        if (data.rooms && data.rooms.length > 0) {
-          setActiveRoom(data.rooms[0]);
-        }
-      });
+      const { data: channelData } = await supabase
+        .from('channels')
+        .select(`
+          id, name, slug,
+          members:channel_members(
+            id, role,
+            user:profiles!user_id(id, username, avatar_url, bio)
+          )
+        `)
+        .eq('id', slug as string)
+        .single();
+        
+      if (channelData) {
+        setServer(channelData);
+        // By default, the main channel acts as the room
+        setActiveRoom(channelData);
+      }
+    };
+    init();
   }, [slug, router]);
 
   useEffect(() => {
-    if (!activeRoom) return;
-    const token = getToken();
-    if (!token) return;
+    if (!activeRoom || !currentUser) return;
 
-    fetch(`${API_URL}/community/rooms/${activeRoom.id}/messages`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (Array.isArray(data)) {
-        setMessages(data.reverse());
-      } else {
-        setMessages([]);
-        console.error('Expected messages array, got:', data);
-      }
-      scrollToBottom();
-    })
-    .catch(err => {
-      console.error('Error fetching messages:', err);
-      setMessages([]);
-    });
-
-    const socket = io(`${API_URL}`, { auth: { token: `Bearer ${token}` } });
-    socketRef.current = socket;
-
-    socket.emit('joinCommunityRoom', { roomId: activeRoom.id, slug: slug });
-
-    socket.on('newCommunityMessage', (msg: any) => {
-      if (msg.roomId === activeRoom.id) {
-        setMessages(prev => [...prev, msg].slice(-50));
+    const initMessages = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('messages')
+        .select('*, sender:profiles!sender_id(*)')
+        .eq('channel_id', activeRoom.id)
+        .order('created_at', { ascending: true })
+        .limit(50);
+        
+      if (data) {
+        setMessages(data);
         scrollToBottom();
       }
-    });
 
-    socket.on('newMessage', (msg: any) => {
-      setPrivateMessages(prev => {
-        if (!prev.find(m => m.id === msg.id)) {
-          return [...prev, msg];
+      const channel = supabase.channel(`room:${activeRoom.id}`);
+      
+      channel.on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${activeRoom.id}` },
+        async (payload: any) => {
+          const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.sender_id).single();
+          const newMsg = { ...payload.new, sender: senderData };
+          setMessages(prev => [...prev, newMsg].slice(-50));
+          scrollToBottom();
         }
-        return prev;
-      });
-    });
+      ).subscribe();
 
-    socket.on('receiveAlert', (data: any) => {
-      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
-      if (data.targetUserId === uId) {
-        setReceivedAlertData({ sender: data.sender, message: data.message || 'أرسل لك تنبيهاً' });
-      }
-    });
-
-    socket.on('userKicked', (data: any) => {
-      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
-      if (data.targetUserId === uId) {
-        alert('تم طردك من الغرفة بواسطة الإدارة.');
-        router.push('/community');
-      }
-    });
-
-    socket.on('userBanned', (data: any) => {
-      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
-      if (data.targetUserId === uId) {
-        alert('لقد تم حظرك (باند) من السيرفر.');
-        router.push('/community');
-      }
-    });
-
-    socket.on('userMuted', (data: any) => {
-      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
-      if (data.targetUserId === uId) {
-        alert('لقد تم إسكاتك (Mute) من قبل الإدارة.');
-      }
-    });
-
-    socket.on('userWallMuted', (data: any) => {
-      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
-      if (data.targetUserId === uId) {
-        alert('تم منعك من النشر في الحائط من قبل الإدارة.');
-        setCurrentUser((prev: any) => prev ? {...prev, isWallMuted: true} : prev);
-      }
-    });
-
-    socket.on('profileImageDeleted', (data: any) => {
-      const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
-      if (data.targetUserId === uId) {
-        alert(`تم حذف صورتك (${data.type === 'avatar' ? 'الشخصية' : 'الغلاف'}) من قبل الإدارة.`);
-        setCurrentUser((prev: any) => prev ? {...prev, profile: {...prev.profile, [data.type === 'avatar' ? 'avatarUrl' : 'coverUrl']: null}} : prev);
-      }
-    });
-    
-    socket.on('decorationsCleared', (data: any) => {
-       const uId = JSON.parse(atob(getToken()!.split('.')[1])).sub;
-       if (data.targetUserId === uId) {
-         alert('تم مسح زخارفك (البنر/الحالة/اللون) من قبل الإدارة.');
-         setCurrentUser((prev: any) => prev ? {...prev, nameColor: null, bgColor: null, textColor: null} : prev);
-       }
-    });
+      socketRef.current = {
+        channel,
+        disconnect: () => {
+          channel.unsubscribe();
+        },
+        emit: async (event: string, payload: any) => {
+          if (event === 'sendCommunityMessage') {
+             await supabase.from('messages').insert({
+                channel_id: payload.roomId,
+                sender_id: currentUser.id,
+                content: payload.content
+             });
+          }
+        }
+      } as any;
+    };
+    initMessages();
 
     return () => {
-      socket.emit('leaveCommunityRoom', { roomId: activeRoom.id });
-      socket.disconnect();
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
     };
-  }, [activeRoom]);
+  }, [activeRoom, currentUser]);
+
+
+
 
   useEffect(() => {
     if (activePrivateChat) {
-      const token = getToken();
-      fetch(`${API_URL}/chat/${activePrivateChat.id}/messages`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setPrivateMessages(data.reverse());
-      })
-      .catch(err => console.error(err));
+      const fetchPrivate = async () => {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from('messages')
+          .select('*, sender:profiles!sender_id(*)')
+          .eq('channel_id', activePrivateChat.id)
+          .order('created_at', { ascending: true })
+          .limit(50);
+        if (data) setPrivateMessages(data);
+      };
+      fetchPrivate();
     }
   }, [activePrivateChat]);
 
-  const sendPrivateMessage = () => {
-    if (!newPrivateMessage.trim() || !activePrivateChat) return;
+  const sendPrivateMessage = async () => {
+    if (!newPrivateMessage.trim() || !activePrivateChat || !currentUser) return;
     if (likesThresholds.privateChat > 0 && myLikes < likesThresholds.privateChat) {
       alert(`تحتاج إلى ${likesThresholds.privateChat} لايك لتتمكن من إرسال رسائل خاصة.`);
       return;
     }
-    socketRef.current?.emit('sendMessage', { roomId: activePrivateChat.id, content: newPrivateMessage });
-    setPrivateMessages(prev => [...prev, {
-       id: Date.now().toString(),
-       content: newPrivateMessage,
-       sender: currentUser || { username: 'أنا' },
-       roomId: activePrivateChat.id,
-       createdAt: new Date().toISOString()
-    }]);
+    
+    const supabase = createClient();
+    await supabase.from('messages').insert({
+       channel_id: activePrivateChat.id,
+       sender_id: currentUser.id,
+       content: newPrivateMessage
+    });
+    
     setNewPrivateMessage('');
   };
 
@@ -1835,12 +1780,12 @@ export default function ClassicChatPage() {
                       return;
                     }
                     try {
-                      const res = await fetch(`${API_URL}/chat/rooms`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-                        body: JSON.stringify({ participantUsernames: [selectedUser.username] })
-                      });
-                      const newRoom = await res.json();
+                      const supabase = createClient();
+                      const { data: { session } } = await supabase.auth.getSession();
+                      const u1 = session?.user?.id || 'a';
+                      const u2 = selectedUser.id || 'b';
+                      const dmId = [u1, u2].sort().join('_');
+                      const newRoom = { id: dmId };
                       const chatObj = {
                         id: newRoom.id,
                         userId: selectedUser.id || 99,

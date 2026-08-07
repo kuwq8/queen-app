@@ -1,7 +1,6 @@
 'use client';
 
 
-import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, MessageCircle, UserPlus, ArrowRight } from 'lucide-react';
@@ -23,28 +22,23 @@ export default function NotificationsPage() {
         return;
       }
       
-      // We don't have a Supabase notifications implementation yet, 
-      // but we will just stop the loading for now to avoid the crash.
+      // Fetch Supabase notifications
+      const { data } = await supabase
+        .from('social_notifications')
+        .select(`
+          *,
+          actor:profiles!actor_id(username, avatar_url)
+        `)
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (data) {
+        setNotifications(data);
+      }
       setIsLoading(false);
     };
     checkAuth();
   }, [router]);
-
-  const fetchNotifications = async (token: string) => {
-    try {
-      const res = await fetch(`${API_URL}/notifications`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const getIcon = (type: string) => {
     switch (type) {

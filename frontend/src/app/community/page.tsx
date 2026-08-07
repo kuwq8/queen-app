@@ -73,8 +73,7 @@ export default function CommunityPage() {
     }
   };
 
-  const handleJoinServer = async (e: React.MouseEvent, slug: string) => {
-    e.stopPropagation();
+  const handleJoinServer = async (slug: string) => {
     try {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
@@ -173,7 +172,7 @@ export default function CommunityPage() {
                         key={server.id} 
                         server={server} 
                         isJoined={true} 
-                        onJoin={(slug) => handleJoinServer({ stopPropagation: () => {} } as any, slug)} 
+                        onJoin={(slug) => handleJoinServer(slug)} 
                         currentUser={currentUser} 
                       />
                     ))}
@@ -199,7 +198,7 @@ export default function CommunityPage() {
                           key={server.id} 
                           server={server} 
                           isJoined={isJoined} 
-                          onJoin={(slug) => handleJoinServer({ stopPropagation: () => {} } as any, slug)} 
+                          onJoin={(slug) => handleJoinServer(slug)} 
                           currentUser={currentUser} 
                         />
                       );

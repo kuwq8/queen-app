@@ -265,10 +265,10 @@ export default function MessagesPage() {
             );
           })}
           {rooms.length === 0 && (
-            <div className="flex flex-col items-center justify-center px-8 text-center h-[calc(100vh-180px)]">
-              <MessageSquare size={72} className="mb-4 text-slate-700" strokeWidth={1} />
-              <h2 className="text-[32px] font-extrabold text-white mb-2 leading-tight">أهلاً بك في صندوق الرسائل!</h2>
-              <p className="text-slate-500 text-[15px] mb-8 max-w-[280px]">تواصل وشارك المنشورات والمزيد عبر المحادثات الخاصة.</p>
+            <div className="flex flex-col items-center justify-center px-6 text-center h-[calc(100vh-180px)]">
+              <MessageSquare size={64} className="mb-6 text-slate-700" strokeWidth={1} />
+              <h2 className="text-2xl sm:text-[32px] font-extrabold text-white mb-3 leading-snug">أهلاً بك في صندوق الرسائل!</h2>
+              <p className="text-slate-500 text-sm sm:text-[15px] mb-8 max-w-[300px]">تواصل وشارك المنشورات والمزيد عبر المحادثات الخاصة.</p>
               <button 
                 onClick={() => { setChatMode('private'); setIsNewChatOpen(true); }}
                 className="bg-white hover:bg-slate-200 text-black font-bold py-3.5 px-8 rounded-full transition-colors text-[16px] shadow-lg shadow-white/5"

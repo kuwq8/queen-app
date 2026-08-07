@@ -1,7 +1,5 @@
 'use client';
 
-
-import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, X, Loader2, Globe, Sparkles, MessageCircle } from 'lucide-react';
@@ -16,10 +14,15 @@ export default function CreateChatPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/?redirect=/create-chat');
-    }
+    const checkAuth = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/?redirect=/create-chat');
+      }
+    };
+    checkAuth();
   }, []);
 
   useEffect(() => {
@@ -37,9 +40,16 @@ export default function CreateChatPage() {
     const timer = setTimeout(async () => {
       setIsChecking(true);
       try {
-        const res = await fetch(`${API_URL}/community/check-slug/${slug}`);
-        const data = await res.json();
-        setIsAvailable(data.available);
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        const { data } = await supabase
+          .from('channels')
+          .select('id')
+          .eq('slug', slug)
+          .single();
+        
+        // If data exists, it's taken. If not, it's available.
+        setIsAvailable(!data);
       } catch (err) {
         console.error(err);
       } finally {
@@ -58,21 +68,39 @@ export default function CreateChatPage() {
     setError('');
     
     try {
-      const token = getToken();
-      const res = await fetch(`${API_URL}/community`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ name, slug })
-      });
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (res.ok) {
-        router.push(`/c/${slug}/entry`);
-      } else {
-        const data = await res.json();
-        setError(data.message || 'حدث خطأ أثناء الإنشاء');
+      if (!session) {
+        setError('يجب تسجيل الدخول أولاً');
+        return;
+      }
+      
+      const { data: channel, error: insertError } = await supabase
+        .from('channels')
+        .insert({
+           name,
+           slug,
+           is_group: true,
+           is_private: false,
+           created_by: session.user.id
+        })
+        .select()
+        .single();
+        
+      if (insertError) {
+         setError(insertError.message || 'حدث خطأ أثناء الإنشاء');
+         return;
+      }
+      
+      if (channel) {
+         await supabase.from('channel_members').insert({
+            channel_id: channel.id,
+            user_id: session.user.id,
+            role: 'owner'
+         });
+         router.push(`/c/${slug}/entry`);
       }
     } catch (err) {
       setError('تعذر الاتصال بالخادم');

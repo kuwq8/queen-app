@@ -87,7 +87,8 @@ export default function CreateChatPage() {
           name: name,
           slug: slug,
           is_private: isPrivate,
-          created_by: session.user.id
+          created_by: session.user.id,
+          is_group: true
         })
         .select()
         .single();

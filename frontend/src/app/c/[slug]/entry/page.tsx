@@ -1,7 +1,7 @@
 'use client';
 
 
-import { API_URL, getToken } from '@/lib/api';
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Users, LogIn, UserCircle, Globe, RefreshCcw } from 'lucide-react';
@@ -15,44 +15,71 @@ export default function RetroEntryPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return router.push('/');
-    try {
-      const base64Url = token.split('.')[1];
-      const payload = JSON.parse(atob(base64Url.replace(/-/g, '+').replace(/_/g, '/')));
-      setCurrentUser(payload);
-    } catch(e) {}
+    const init = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        return router.push('/');
+      }
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+        
+      setCurrentUser(profile);
 
-    fetch(`${API_URL}/community/${slug}`)
-      .then(res => res.json())
-      .then(data => {
-        setServer(data);
-      })
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
+      const { data: channelData } = await supabase
+        .from('channels')
+        .select(`
+          id, name,
+          members:channel_members(
+            id, role,
+            user:profiles!user_id(id, username, avatar_url, bio)
+          )
+        `)
+        .eq('id', slug as string)
+        .single();
+        
+      if (channelData) {
+        setServer({
+          ...channelData,
+          _count: { members: channelData.members?.length || 0 }
+        });
+      }
+      setIsLoading(false);
+    };
+    init();
   }, [slug, router]);
 
   const handleJoin = async () => {
-    const token = getToken();
     try {
-      const res = await fetch(`${API_URL}/community/${slug}/join`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        router.push(`/c/${slug}/chat`);
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const isJoined = server?.members?.some((m: any) => m.user?.id === session.user.id);
+      if (!isJoined) {
+        await supabase
+          .from('channel_members')
+          .insert({ channel_id: slug, user_id: session.user.id });
       }
+      
+      router.push(`/c/${slug}/chat`);
     } catch (e) {
       console.error(e);
+      router.push(`/c/${slug}/chat`);
     }
   };
-
-
 
   if (!server && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#E5E4E2] font-sans" dir="rtl">
-        <div className="text-red-600 font-bold mb-4">تعذر الاتصال بالخادم. قد يكون غير متصل (أو في وضع النوم).</div>
+        <div className="text-red-600 font-bold mb-4">تعذر الاتصال بالخادم. قد يكون غير متصل (أو في وضع النوم) أو الحساب غير موجود.</div>
         <button onClick={() => window.location.reload()} className="bg-[#8B5A2B] text-white px-4 py-2 rounded-sm shadow">إعادة المحاولة</button>
       </div>
     );

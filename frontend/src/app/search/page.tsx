@@ -1,7 +1,5 @@
 'use client';
 
-
-import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -15,24 +13,39 @@ export default function SearchPage() {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      router.push('/');
-    }
+    const checkAuth = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) router.push('/');
+    };
+    checkAuth();
   }, [router]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       if (query.trim()) {
         setIsSearching(true);
-        const token = getToken();
         try {
-          const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(query)}`, {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setResults(data);
+          const { createClient } = await import('@/utils/supabase/client');
+          const supabase = createClient();
+          const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .ilike('username', `%${query}%`)
+            .limit(20);
+            
+          if (data) {
+            // Map the flat profile to match what the UI expects: user.profile.avatarUrl
+            const mappedResults = data.map((profile: any) => ({
+              id: profile.id,
+              username: profile.username,
+              profile: {
+                avatarUrl: profile.avatar_url,
+                bio: profile.bio
+              }
+            }));
+            setResults(mappedResults);
           }
         } catch (e) {
           console.error(e);
