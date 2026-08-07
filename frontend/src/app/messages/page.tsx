@@ -195,8 +195,8 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white pb-20 sm:pb-0 sm:pr-[275px] font-sans text-right">
-      <div className="max-w-[600px] border-x border-slate-800 min-h-screen flex flex-col relative mx-auto">
+    <div className="min-h-screen flex justify-center bg-black font-sans text-right">
+      <div className="w-full max-w-[600px] flex flex-col relative pb-[60px] border-x border-slate-800 min-h-screen bg-black">
         {/* Header */}
         <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800 p-4 flex justify-between items-center">
           <h1 className="text-xl font-bold">الرسائل</h1>
