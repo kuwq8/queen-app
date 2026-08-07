@@ -215,14 +215,20 @@ export default function ClassicChatPage() {
         .from('channels')
         .select(`
           id, name, slug,
-          members:channel_members(
-            user:profiles(id, username, avatar_url, bio)
-          )
+          members:channel_members(*)
         `)
         .eq('id', slug as string)
         .single();
         
       if (channelData) {
+        if (channelData.members && channelData.members.length > 0) {
+          const userIds = channelData.members.map((m: any) => m.user_id);
+          const { data: profiles } = await supabase.from('profiles').select('id, username, avatar_url, bio').in('id', userIds);
+          channelData.members = channelData.members.map((m: any) => ({
+            ...m,
+            user: profiles?.find(p => p.id === m.user_id) || null
+          }));
+        }
         setServer(channelData);
         // By default, the main channel acts as the room
         setActiveRoom(channelData);
@@ -238,13 +244,25 @@ export default function ClassicChatPage() {
       const supabase = createClient();
       const { data } = await supabase
         .from('messages')
-        .select('*, sender:profiles(*)')
+        .select('*')
         .eq('channel_id', activeRoom.id)
         .order('created_at', { ascending: true })
         .limit(50);
         
       if (data) {
-        setMessages(data);
+        const senderIds = data.map((m: any) => m.sender_id).filter(Boolean);
+        let profiles: any[] = [];
+        if (senderIds.length > 0) {
+          const { data: p } = await supabase.from('profiles').select('*').in('id', senderIds);
+          profiles = p || [];
+        }
+        
+        const messagesWithProfiles = data.map((m: any) => ({
+          ...m,
+          sender: profiles.find(p => p.id === m.sender_id) || null
+        }));
+        
+        setMessages(messagesWithProfiles);
         scrollToBottom();
       }
 
@@ -295,7 +313,7 @@ export default function ClassicChatPage() {
         const supabase = createClient();
         const { data } = await supabase
           .from('messages')
-          .select('*, sender:profiles(*)')
+          .select('*')
           .eq('channel_id', activePrivateChat.id)
           .order('created_at', { ascending: true })
           .limit(50);
