@@ -111,7 +111,23 @@ export default function ClassicChatPage() {
       clearTimeout(idleTimer);
     };
   }, []);
-  
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (activeRoom && currentUser) {
+        import('@/utils/supabase/client').then(({ createClient }) => {
+          const supabase = createClient();
+          supabase.from('messages').insert({
+            channel_id: activeRoom.id,
+            sender_id: currentUser.id,
+            content: '( هذا المستخدم خرج من الشات )'
+          }).then(() => {});
+        });
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [activeRoom, currentUser]);
+
   const sendSystemMessage = (text: string) => {
     if (activeRoom) {
       socketRef.current?.emit('sendCommunityMessage', { roomId: activeRoom.id, content: text });
@@ -297,6 +313,13 @@ export default function ClassicChatPage() {
           }
         }
       } as any;
+
+      if (!(window as any).hasSentJoinMessage) {
+        (window as any).hasSentJoinMessage = true;
+        setTimeout(() => {
+          socketRef.current?.emit('sendCommunityMessage', { roomId: activeRoom.id, content: `هذا المستخدم دخل الى [${activeRoom.name}]` });
+        }, 1000);
+      }
     };
     initMessages();
 

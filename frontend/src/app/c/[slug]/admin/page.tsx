@@ -10,7 +10,9 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { slug } = useParams();
   
-  const [activeTab, setActiveTab] = useState<'settings' | 'requests' | 'members' | 'logs' | 'permissions' | 'shortcuts' | 'bots' | 'gifts' | 'domains' | 'roles' | 'fake-users' | 'bans' | 'emojis'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'requests' | 'members' | 'logs' | 'permissions' | 'shortcuts' | 'bots' | 'gifts' | 'domains' | 'roles' | 'fake-users' | 'bans' | 'emojis' | 'google-index'>('settings');
+  const [indexingStatus, setIndexingStatus] = useState<'INDEXED' | 'PENDING' | 'FAILED'>('PENDING');
+  const [indexingReason, setIndexingReason] = useState<string>('');
   
   // Mock Data
   const [server, setServer] = useState({
@@ -91,7 +93,26 @@ export default function AdminDashboard() {
       if(Array.isArray(eData)) setEmojis(eData);
     }).catch(console.error);
 
+    const initIndexing = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data } = await supabase.from('channels').select('indexing_status, indexing_reason').eq('id', slug as string).single();
+      if (data) {
+        setIndexingStatus(data.indexing_status || 'PENDING');
+        setIndexingReason(data.indexing_reason || '');
+      }
+    };
+    initIndexing();
   }, [slug]);
+
+  const requestReindex = async () => {
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    await supabase.from('channels').update({ indexing_status: 'PENDING', indexing_reason: null }).eq('id', slug as string);
+    setIndexingStatus('PENDING');
+    setIndexingReason('');
+    alert('تم إرسال طلب إعادة الفهرسة بنجاح!');
+  };
 
   const handleSaveSettings = async () => {
     const token = getToken();
@@ -163,6 +184,12 @@ export default function AdminDashboard() {
             className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'bans' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
           >
             <Ban size={18} /> قائمة الحظر
+          </button>
+          <button 
+            onClick={() => setActiveTab('google-index')}
+            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'google-index' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
+          >
+            <Globe size={18} /> فهرسة قوقل
           </button>
           
           <div className="my-1 border-t border-gray-200"></div>
@@ -242,8 +269,10 @@ export default function AdminDashboard() {
             {activeTab === 'bots' && 'إعدادات البوتات والترحيب'}
             {activeTab === 'gifts' && 'الهدايا والبنرات الإعلانية'}
             {activeTab === 'domains' && 'النطاقات المستضافة (SEO)'}
+            {activeTab === 'bans' && 'قائمة الحظر'}
             {activeTab === 'fake-users' && 'العضويات الوهمية'}
-            {activeTab === 'emojis' && 'الفيسات والملصقات (Emojis & Stickers)'}
+            {activeTab === 'emojis' && 'إدارة الفيسات (Emojis)'}
+            {activeTab === 'google-index' && 'فهرسة قوقل'}
           </h1>
         </div>
 
@@ -1113,6 +1142,56 @@ export default function AdminDashboard() {
                 )}
              </div>
           )}
+
+          {/* Google Index Tab */}
+          {activeTab === 'google-index' && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 flex flex-col gap-6">
+              <div>
+                <h2 className="text-xl font-extrabold text-[#5C4033] mb-2 flex items-center gap-2">
+                  <Globe className="text-blue-500" />
+                  حالة أرشفة الشات في قوقل
+                </h2>
+                <p className="text-gray-600 text-sm">
+                  هذه الصفحة توضح ما إذا كان الشات الخاص بك يظهر في محركات البحث.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {indexingStatus === 'INDEXED' && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                    <Check className="text-green-500 w-16 h-16 mb-2" />
+                    <h3 className="text-xl font-bold text-green-700">تمت الفهرسة بنجاح</h3>
+                    <p className="text-green-600 mt-2">اسم الشات يظهر الآن في نتائج بحث قوقل ويمكن للزوار العثور عليه.</p>
+                  </div>
+                )}
+                
+                {indexingStatus === 'PENDING' && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                    <Clock className="text-blue-500 w-16 h-16 mb-2" />
+                    <h3 className="text-xl font-bold text-blue-700">الشات جديد ولم يتفهرس بعد</h3>
+                    <p className="text-blue-600 mt-2">روبوتات قوقل لم تقم بزيارة وفهرسة غرفتك حتى الآن. قد يستغرق الأمر بعض الوقت.</p>
+                  </div>
+                )}
+
+                {indexingStatus === 'FAILED' && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                    <ShieldAlert className="text-red-500 w-16 h-16 mb-2" />
+                    <h3 className="text-xl font-bold text-red-700">تعذر فهرسة القناة</h3>
+                    <p className="text-red-600 mt-2 font-bold">{indexingReason || 'سبب غير معروف.'}</p>
+                    <p className="text-red-500 mt-1 text-sm">يرجى حل المشكلة ومن ثم طلب إعادة الفهرسة.</p>
+                    
+                    <button 
+                      onClick={requestReindex}
+                      className="mt-6 bg-red-600 text-white px-6 py-2 rounded font-bold hover:bg-red-700 transition-colors shadow-sm"
+                    >
+                      طلب إعادة الفهرسة
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
                   </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ export default function CommunityPage() {
   const [myServers, setMyServers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'joined' | 'explore'>('joined');
 
   useEffect(() => {
     const init = async () => {
@@ -152,6 +153,22 @@ export default function CommunityPage() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
+
+          {/* Tabs */}
+          <div className="flex bg-slate-900 mt-4 rounded-lg p-1 font-bold">
+            <button
+              onClick={() => setActiveTab('explore')}
+              className={`flex-1 py-2 text-center rounded-md transition-colors ${activeTab === 'explore' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              الاستكشاف
+            </button>
+            <button
+              onClick={() => setActiveTab('joined')}
+              className={`flex-1 py-2 text-center rounded-md transition-colors ${activeTab === 'joined' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              المنظم لها
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -163,49 +180,53 @@ export default function CommunityPage() {
           ) : (
             <>
               {/* My Servers */}
-              {!query && myServers.length > 0 && (
+              {activeTab === 'joined' && (
                 <div>
-                  <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-2">السيرفرات المنضم إليها</h2>
-                  <div className="grid gap-3">
-                    {myServers.map(server => (
-                      <ServerCard 
-                        key={server.id} 
-                        server={server} 
-                        isJoined={true} 
-                        onJoin={(slug) => handleJoinServer(slug)} 
-                        currentUser={currentUser} 
-                      />
-                    ))}
-                  </div>
+                  {myServers.length === 0 ? (
+                    <div className="text-center p-8 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800/50 font-bold">
+                      أنت لست منضماً لأي مجتمع بعد.
+                    </div>
+                  ) : (
+                    <div className="grid gap-3">
+                      {myServers.map(server => (
+                        <ServerCard 
+                          key={server.id} 
+                          server={server} 
+                          isJoined={true} 
+                          onJoin={(slug) => handleJoinServer(slug)} 
+                          currentUser={currentUser} 
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Discover Servers */}
-              <div>
-                <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-2">
-                  {query ? 'نتائج البحث' : 'اكتشف'}
-                </h2>
-                {servers.length === 0 ? (
-                  <div className="text-center p-8 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800/50 font-bold">
-                    لم يتم العثور على مجتمعات.
-                  </div>
-                ) : (
-                  <div className="grid gap-3">
-                    {servers.map(server => {
-                      const isJoined = myServers.some(m => m.id === server.id);
-                      return (
-                        <ServerCard 
-                          key={server.id} 
-                          server={server} 
-                          isJoined={isJoined} 
-                          onJoin={(slug) => handleJoinServer(slug)} 
-                          currentUser={currentUser} 
-                        />
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              {activeTab === 'explore' && (
+                <div>
+                  {servers.length === 0 ? (
+                    <div className="text-center p-8 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800/50 font-bold">
+                      لم يتم العثور على مجتمعات.
+                    </div>
+                  ) : (
+                    <div className="grid gap-3">
+                      {servers.map(server => {
+                        const isJoined = myServers.some(m => m.id === server.id);
+                        return (
+                          <ServerCard 
+                            key={server.id} 
+                            server={server} 
+                            isJoined={isJoined} 
+                            onJoin={(slug) => handleJoinServer(slug)} 
+                            currentUser={currentUser} 
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
