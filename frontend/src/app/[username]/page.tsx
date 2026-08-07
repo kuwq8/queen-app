@@ -13,7 +13,10 @@ import BottomNav from '../../components/BottomNav';
 export default function ProfilePage() {
   const router = useRouter();
   const params = useParams();
-  const username = decodeURIComponent(params.username as string);
+  let username = decodeURIComponent(params.username as string);
+  if (username.startsWith('@')) {
+    username = username.substring(1);
+  }
 
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
