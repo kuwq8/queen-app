@@ -1644,7 +1644,7 @@ export default function ClassicChatPage() {
               <input 
                 type="text" 
                 placeholder="اكتب @ للإشارة إلى أحد المستخدمين" 
-                className="flex-1 border border-gray-400 rounded-sm px-2 py-1 h-8 text-[13px] font-bold text-[#000000] focus:outline-none min-w-0 text-right leading-normal"
+                className="flex-1 border border-gray-400 bg-white text-black rounded-sm px-2 py-1 h-8 text-[13px] font-bold focus:outline-none min-w-0 text-right leading-normal"
                 dir="rtl"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -2183,7 +2183,7 @@ export default function ClassicChatPage() {
               <button className="bg-[#5cb85c] hover:bg-[#4cae4c] text-white w-7 h-7 flex items-center justify-center rounded-sm"><Mic size={14}/></button>
               <button className="bg-secondary hover:bg-primary text-white w-7 h-7 flex items-center justify-center rounded-sm"><Plus size={14}/></button>
               <button className="bg-white border border-gray-300 w-7 h-7 flex items-center justify-center rounded-sm"><Smile size={16} className="text-yellow-500"/></button>
-              <input type="text" value={newPrivateMessage} onChange={e => setNewPrivateMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendPrivateMessage()} placeholder="اكتب رسالتك هنا" className="flex-1 h-7 px-2 text-[11px] outline-none rounded-sm border border-gray-300 font-bold" />
+              <input type="text" value={newPrivateMessage} onChange={e => setNewPrivateMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendPrivateMessage()} placeholder="اكتب رسالتك هنا" className="flex-1 bg-white text-black h-7 px-2 text-[11px] outline-none rounded-sm border border-gray-300 font-bold" />
               <button onClick={sendPrivateMessage} className="bg-[#5b4d42] border border-gray-400 text-white w-8 h-7 flex items-center justify-center rounded-sm hover:bg-[#3e2b22]"><Send size={14} className="transform rotate-180"/></button>
             </div>
           </div>

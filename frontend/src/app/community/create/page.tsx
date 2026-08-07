@@ -8,6 +8,7 @@ export default function CreateChatPage() {
   const router = useRouter();
   const [slug, setSlug] = useState('');
   const [name, setName] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,10 +87,12 @@ export default function CreateChatPage() {
           name: name,
           slug: slug,
           is_group: true,
+          is_private: isPrivate,
           created_by: session.user.id
         })
         .select()
         .single();
+
         
       if (channelError) throw channelError;
       
@@ -198,6 +201,24 @@ export default function CreateChatPage() {
                 </div>
               )}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold text-[#5C4033] mb-2">نوع السيرفر (الخصوصية)</label>
+            <div className="flex gap-4">
+              <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${!isPrivate ? 'border-[#8B5A2B] bg-[#8B5A2B]/10 text-[#5C4033]' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
+                <input type="radio" name="privacy" checked={!isPrivate} onChange={() => setIsPrivate(false)} className="hidden" />
+                <Globe size={18} />
+                <span className="font-bold text-sm">عام (يظهر للجميع)</span>
+              </label>
+              <label className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${isPrivate ? 'border-[#8B5A2B] bg-[#8B5A2B]/10 text-[#5C4033]' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
+                <input type="radio" name="privacy" checked={isPrivate} onChange={() => setIsPrivate(true)} className="hidden" />
+                <span className="font-bold text-sm">خاص (بالدعوة فقط)</span>
+              </label>
+            </div>
+            <p className="text-[11px] text-gray-500 mt-2">
+              السيرفرات العامة سيتم أرشفتها تلقائياً لتظهر في نتائج بحث جوجل.
+            </p>
           </div>
 
           <button
