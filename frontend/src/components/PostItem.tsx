@@ -236,16 +236,6 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           </button>
           
           <button 
-            onClick={handleRepost}
-            className={`flex items-center gap-2 hover:text-green-500 transition-colors group ${isReposted ? 'text-green-500' : ''}`}
-          >
-            <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
-              <Repeat size={18} />
-            </div>
-            <span className="text-sm">{post._count?.quotedBy || 0}</span>
-          </button>
-
-          <button 
             onClick={handleLike}
             className={`flex items-center gap-2 hover:text-red-500 transition-colors group ${isLiked ? 'text-red-500' : ''}`}
           >
@@ -253,6 +243,16 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
               <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
             </div>
             <span className="text-sm">{post._count?.likes || 0}</span>
+          </button>
+
+          <button 
+            onClick={handleRepost}
+            className={`flex items-center gap-2 hover:text-green-500 transition-colors group ${isReposted ? 'text-green-500' : ''}`}
+          >
+            <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
+              <Repeat size={18} />
+            </div>
+            <span className="text-sm">{post._count?.quotedBy || 0}</span>
           </button>
 
           <button 

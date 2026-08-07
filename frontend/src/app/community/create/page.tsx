@@ -152,7 +152,7 @@ export default function CreateChatPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="مثال: شات سوالفنا"
-                className="w-full pr-10 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#8B5A2B] focus:ring-4 focus:ring-[#8B5A2B]/10 transition-all outline-none"
+                className="w-full pr-10 pl-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#8B5A2B] focus:ring-4 focus:ring-[#8B5A2B]/10 transition-all outline-none text-black bg-white"
                 required
               />
             </div>
@@ -169,7 +169,7 @@ export default function CreateChatPage() {
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
                 placeholder="my-chat"
-                className={`w-full pr-10 pl-24 py-3 rounded-xl border-2 transition-all outline-none text-left ${
+                className={`w-full pr-10 pl-24 py-3 rounded-xl border-2 transition-all outline-none text-left text-black bg-white ${
                   slug ? (isAvailable ? 'border-green-500 focus:ring-green-500/10' : (isAvailable === false ? 'border-red-500 focus:ring-red-500/10' : 'border-[#8B5A2B] focus:ring-[#8B5A2B]/10')) : 'border-gray-200 focus:border-[#8B5A2B] focus:ring-[#8B5A2B]/10'
                 }`}
                 required
