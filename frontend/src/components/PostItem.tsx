@@ -2,7 +2,7 @@
 
 
 import { API_URL, getToken } from '@/lib/api';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2 } from 'lucide-react';
@@ -28,6 +28,33 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const [isBookmarked, setIsBookmarked] = useState(false);
   
   const isEdited = false; // TODO: Implement updated_at
+
+  const postRef = useRef<HTMLDivElement>(null);
+  const viewLogged = useRef(false);
+
+  useEffect(() => {
+    if (!postRef.current || viewLogged.current) return;
+    
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !viewLogged.current) {
+        viewLogged.current = true;
+        // Optimistically increment locally
+        setPost((prev: any) => ({ ...prev, views_count: (prev.views_count || 0) + 1 }));
+        
+        // Log to database
+        import('@/utils/supabase/client').then(({ createClient }) => {
+          const supabase = createClient();
+          supabase.rpc('increment_post_view', { post_id: post.id }).catch(console.error);
+        });
+      }
+    }, { threshold: 0.5 });
+    
+    observer.observe(postRef.current);
+    
+    return () => {
+      observer.disconnect();
+    };
+  }, [post.id]);
 
   const formatTime = (dateString: string) => {
     if (!dateString) return '';
@@ -180,7 +207,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   };
 
   return (
-    <div className="p-4 border-b border-slate-800 hover:bg-[#111] transition-colors relative flex gap-3 text-right">
+    <div ref={postRef} className="p-4 border-b border-slate-800 hover:bg-[#111] transition-colors relative flex gap-3 text-right">
       {/* Clickable Area for routing (excludes dropdown/buttons) */}
       <div 
         className="absolute inset-0 cursor-pointer z-0" 
