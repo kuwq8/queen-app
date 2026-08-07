@@ -64,23 +64,63 @@ export default function MessagesPage() {
           name,
           is_group,
           created_at,
-          participants:channel_members(
-            user:profiles!user_id(id, username, avatar_url)
-          ),
+          participants:channel_members(*),
           messages(
             id,
             content,
             media_url,
             created_at,
-            sender:profiles!sender_id(id, username)
+            sender_id
           )
         `)
         .in('id', channelIds)
-        .order('created_at', { referencedTable: 'messages', ascending: false });
+        .order('created_at', { ascending: false });
 
-      if (!error && channels) {
+      if (error) {
+        console.error('Error fetching chats:', error);
+        return;
+      }
+
+      if (channels) {
+        // Collect all user IDs to fetch profiles
+        const userIds = new Set<string>();
+        channels.forEach((ch: any) => {
+          ch.participants?.forEach((p: any) => userIds.add(p.user_id));
+          ch.messages?.forEach((m: any) => userIds.add(m.sender_id));
+        });
+
+        let profilesMap: Record<string, any> = {};
+        if (userIds.size > 0) {
+          const { data: profilesData } = await supabase
+            .from('profiles')
+            .select('id, username, avatar_url')
+            .in('id', Array.from(userIds));
+          
+          if (profilesData) {
+            profilesData.forEach(p => { profilesMap[p.id] = p; });
+          }
+        }
+
+        // Reconstruct nested structure manually
+        const processedChannels = channels.map((ch: any) => {
+          const participants = ch.participants?.map((p: any) => ({
+            ...p,
+            user: profilesMap[p.user_id] || null
+          }));
+          const messages = ch.messages?.map((m: any) => ({
+            ...m,
+            sender: profilesMap[m.sender_id] || null
+          }));
+          
+          return {
+            ...ch,
+            participants,
+            messages
+          };
+        });
+
         // Map to match component expectations
-        const formattedRooms = channels.map((c: any) => ({
+        const formattedRooms = processedChannels.map((c: any) => ({
           ...c,
           isGroup: c.is_group,
           // Limit to 1 message just for preview
