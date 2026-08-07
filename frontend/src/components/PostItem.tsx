@@ -5,7 +5,7 @@ import { API_URL, getToken } from '@/lib/api';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark } from 'lucide-react';
+import { MessageCircle, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2 } from 'lucide-react';
 
 interface PostItemProps {
   post: any;
@@ -18,6 +18,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const router = useRouter();
   const [post, setPost] = useState(initialPost);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showShareDropdown, setShowShareDropdown] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(initialPost.content);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -130,11 +131,30 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     }
   };
 
-  const handleShare = (e: React.MouseEvent) => {
+  const toggleShareDropdown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowShareDropdown(!showShareDropdown);
+  };
+
+  const copyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/post/${post.id}`;
     navigator.clipboard.writeText(url).catch(err => console.error(err));
-    // Alert is removed for better UX. Can add a toast here later.
+    setShowShareDropdown(false);
+  };
+
+  const nativeShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/post/${post.id}`;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Share Post',
+        url: url
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(url);
+    }
+    setShowShareDropdown(false);
   };
 
   const handleRepost = async (e: React.MouseEvent) => {
@@ -278,28 +298,18 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           </>
         )}
         
-        <div className="flex justify-between items-center text-slate-500 mt-2 max-w-md relative z-10">
+        <div className="flex justify-between items-center text-slate-500 mt-2 max-w-full relative z-10 pr-2">
           <button 
             onClick={(e) => { e.stopPropagation(); router.push(`/post/${post.id}`); }}
-            className="flex items-center gap-2 hover:text-cyan-500 transition-colors group"
+            className="flex items-center gap-1.5 hover:text-cyan-500 transition-colors group"
           >
             <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors"><MessageCircle size={18} /></div>
             <span className="text-sm">{post.comments_count || 0}</span>
           </button>
           
           <button 
-            onClick={handleLike}
-            className={`flex items-center gap-2 hover:text-red-500 transition-colors group ${isLiked ? 'text-red-500' : ''}`}
-          >
-            <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
-              <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
-            </div>
-            <span className="text-sm">{post.likes_count || 0}</span>
-          </button>
-
-          <button 
             onClick={handleRepost}
-            className={`flex items-center gap-2 hover:text-green-500 transition-colors group ${isReposted ? 'text-green-500' : ''}`}
+            className={`flex items-center gap-1.5 hover:text-green-500 transition-colors group ${isReposted ? 'text-green-500' : ''}`}
           >
             <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
               <Repeat size={18} />
@@ -308,21 +318,61 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           </button>
 
           <button 
-            onClick={handleBookmark}
-            className={`flex items-center gap-2 hover:text-cyan-500 transition-colors group ${isBookmarked ? 'text-cyan-500' : ''}`}
+            onClick={handleLike}
+            className={`flex items-center gap-1.5 hover:text-red-500 transition-colors group ${isLiked ? 'text-red-500' : ''}`}
           >
-            <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors">
-              <Bookmark size={18} fill={isBookmarked ? 'currentColor' : 'none'} />
+            <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
+              <Heart size={18} fill={isLiked ? 'currentColor' : 'none'} />
             </div>
-            <span className="text-sm">{post.bookmarks_count || 0}</span>
+            <span className="text-sm">{post.likes_count || 0}</span>
           </button>
 
           <button 
-            onClick={handleShare}
-            className="flex items-center gap-2 hover:text-cyan-500 transition-colors group"
+            onClick={(e) => { e.stopPropagation(); router.push(`/post/${post.id}`); }}
+            className="flex items-center gap-1.5 hover:text-cyan-500 transition-colors group"
           >
-            <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors"><Share size={18} /></div>
+            <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors">
+              <BarChart2 size={18} />
+            </div>
+            <span className="text-sm">{post.views_count || 0}</span>
           </button>
+
+          <div className="flex items-center">
+            <button 
+              onClick={handleBookmark}
+              className={`flex items-center gap-1.5 hover:text-cyan-500 transition-colors group ${isBookmarked ? 'text-cyan-500' : ''}`}
+            >
+              <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors">
+                <Bookmark size={18} fill={isBookmarked ? 'currentColor' : 'none'} />
+              </div>
+            </button>
+
+            <div className="relative">
+              <button 
+                onClick={toggleShareDropdown}
+                className="flex items-center gap-1.5 hover:text-cyan-500 transition-colors group"
+              >
+                <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors"><Share size={18} /></div>
+              </button>
+              
+              {showShareDropdown && (
+                <div className="absolute right-0 top-10 w-48 bg-black border border-slate-800 rounded-xl shadow-2xl py-1 z-50 text-right">
+                  <button 
+                    onClick={copyLink}
+                    className="w-full text-right px-4 py-3 text-white hover:bg-slate-800 flex items-center gap-3"
+                  >
+                    <Link2 size={18} className="text-slate-400" /> نسخ الرابط
+                  </button>
+                  <button 
+                    onClick={nativeShare}
+                    className="w-full text-right px-4 py-3 text-white hover:bg-slate-800 flex items-center gap-3"
+                  >
+                    <Share size={18} className="text-slate-400" /> مشاركة عبر...
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
