@@ -11,6 +11,7 @@ export default function ClassicChatPage() {
   
   const [server, setServer] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const isCurrentUserAdmin = server?.members?.some((m: any) => m.user_id === currentUser?.id && ['owner', 'admin', 'OWNER', 'ADMIN'].includes(m.role)) || currentUser?.role === 'admin';
   const [activeRoom, setActiveRoom] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -665,7 +666,7 @@ export default function ClassicChatPage() {
                   <button onClick={() => setIsRoomManageOpen(true)} className="w-full bg-white text-primary py-1.5 rounded-sm border border-primary shadow-sm flex items-center justify-center gap-2">إداره الغرفه</button>
 
 
-                  {currentUser?.username === server?.owner?.username && (
+                  {isCurrentUserAdmin && (
                     <button onClick={() => router.push(`/c/${slug}/admin`)} className="w-full bg-primary text-white py-1.5 rounded-sm border border-[#3e2b22] shadow-sm flex justify-center gap-2">لوحة الاداره</button>
                   )}
                   
@@ -1547,7 +1548,7 @@ export default function ClassicChatPage() {
                     <div className="flex-1 min-w-0 flex flex-col items-start pt-0.5 text-left">
                       <div className="flex items-center gap-1 flex-wrap" dir="rtl">
                         <span onClick={() => setSelectedUser(msg.sender)} className="font-extrabold text-[13px] cursor-pointer hover:underline" style={{ color: msg.sender.communityMembers?.[0]?.nameColor || 'black' }}>{msg.sender.username}</span>
-                        {msg.sender.username === server.owner?.username && <span className="text-[10px] bg-red-600 text-white px-1 py-0.5 rounded-sm font-bold shadow-sm">إدارة</span>}
+                        {msg.sender.username === isCurrentUserAdmin ? currentUser?.username : null && <span className="text-[10px] bg-red-600 text-white px-1 py-0.5 rounded-sm font-bold shadow-sm">إدارة</span>}
                       </div>
                       <div className="text-[14px] font-bold leading-relaxed whitespace-pre-wrap mt-0.5 break-words text-left" dir="rtl" style={{ color: msg.sender.communityMembers?.[0]?.textColor || 'black' }}>
                         {msg.content.match(/هذا المستخدم دخل الى \[(.*?)\]/) ? (
@@ -1787,7 +1788,7 @@ export default function ClassicChatPage() {
                 {/* Public Actions (Visible to everyone) */}
                 <button 
                   onClick={async () => { 
-                    const isAdmin = currentUser?.username === server?.owner?.username || currentUser?.role === 'admin';
+                    const isAdmin = isCurrentUserAdmin;
                     if (!isAdmin && (currentUser?.likesCount || 0) < 50) {
                        alert('عفواً، لا يمكنك استخدام محادثة خاصة حتى تملك 50 لايك.');
                        return;
@@ -1824,13 +1825,13 @@ export default function ClassicChatPage() {
                   محادثه خاصه 💬
                 </button>
                 <button onClick={() => { 
-                   const isAdmin = currentUser?.username === server?.owner?.username || currentUser?.role === 'admin';
+                   const isAdmin = isCurrentUserAdmin;
                    if (!isAdmin && (currentUser?.likesCount || 0) < 10) { alert('تحتاج 10 لايكات لإرسال تنبيه.'); return; }
                    setAlertTargetUser(selectedUser); setIsAlertOpen(true); setSelectedUser(null); 
                 }} className="bg-[#f2f2f2] border border-gray-300 rounded-md py-1.5 text-[11px] font-bold text-black shadow-sm hover:bg-gray-100 flex items-center justify-center gap-1">تنبيه ✉️</button>
                 <button 
                   onClick={() => { 
-                    const isAdmin = currentUser?.username === server?.owner?.username || currentUser?.role === 'admin';
+                    const isAdmin = isCurrentUserAdmin;
                     if (!isAdmin && (currentUser?.likesCount || 0) < 5) { alert('تحتاج 5 لايكات لمنح لايك.'); return; }
                     socketRef.current?.emit('sendAlert', { slug, targetUserId: selectedUser.id, type: 'like', message: 'هذا المستخدم أرسل لك ❤️' }); setSelectedUser(null); 
                   }} 
@@ -1840,7 +1841,7 @@ export default function ClassicChatPage() {
                 
                 <button className="bg-[#f2f2f2] border border-gray-300 rounded-md py-1.5 text-[11px] font-bold text-blue-600 shadow-sm hover:bg-gray-100 flex items-center justify-center gap-1">ارسل هديه 💎</button>
                 <button onClick={() => { 
-                  const isAdmin = currentUser?.username === server?.owner?.username || currentUser?.role === 'admin';
+                  const isAdmin = isCurrentUserAdmin;
                   if (!isAdmin && (currentUser?.likesCount || 0) < 20) { alert('تحتاج 20 لايك لتجاهل شخص.'); return; }
                   setIgnoredUserIds(prev => [...prev, selectedUser.id]);
                   socketRef.current?.emit('ignoreMember', { slug, targetUserId: selectedUser.id }); 
@@ -1850,7 +1851,7 @@ export default function ClassicChatPage() {
                 <button onClick={() => { setSelectedUser(null); setIsNicksRevealOpen(true); }} className="bg-[#f2f2f2] border border-gray-300 rounded-md py-1.5 text-[11px] font-bold text-black shadow-sm hover:bg-gray-100 flex items-center justify-center gap-1">كشف النكات 🔍</button>
                 
                 {/* Admin Actions */}
-                {(currentUser?.username === server?.owner?.username || currentUser?.role === 'admin') && (
+                {(isCurrentUserAdmin) && (
                   <>
                     <button onClick={() => { socketRef.current?.emit('deleteProfileImage', { slug, targetUserId: selectedUser.id, type: 'avatar' }); setSelectedUser(null); }} className="bg-[#f2f2f2] border border-gray-300 rounded-md py-1.5 text-[11px] font-bold text-red-700 shadow-sm hover:bg-gray-100 flex items-center justify-center gap-1">الصوره 🚫</button>
                     <button onClick={() => { socketRef.current?.emit('clearDecorations', { slug, targetUserId: selectedUser.id }); setSelectedUser(null); }} className="bg-[#f2f2f2] border border-gray-300 rounded-md py-1.5 text-[11px] font-bold text-pink-500 shadow-sm hover:bg-gray-100 flex items-center justify-center gap-1">البنر 🌟</button>
