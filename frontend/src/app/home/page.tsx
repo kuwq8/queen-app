@@ -339,7 +339,7 @@ export default function HomePage() {
                       onClick={() => { setSelectedQuotePost(post); setIsBookmarksModalOpen(false); }}
                       className="p-3 border border-slate-800 rounded-xl hover:bg-slate-800/50 cursor-pointer transition-colors"
                     >
-                      <div className="font-bold text-white text-sm">{post.author.username}</div>
+                      <div className="font-bold text-white text-sm">{post.author?.username || 'مستخدم غير معروف'}</div>
                       <div className="text-slate-300 text-sm mt-1 line-clamp-2">{post.content}</div>
                     </div>
                   ))

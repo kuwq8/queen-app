@@ -170,14 +170,14 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       {/* Clickable Area for routing (excludes dropdown/buttons) */}
       <div 
         className="absolute inset-0 cursor-pointer z-0" 
-        onClick={() => router.push(`/${post.author.username}`)}
+        onClick={() => router.push(`/${post.author?.username || 'unknown'}`)}
       />
 
-      <Link href={`/${post.author.username}`} className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-base border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors z-10 relative overflow-hidden">
+      <Link href={`/${post.author?.username || 'unknown'}`} className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-base border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors z-10 relative overflow-hidden">
         {post.author?.avatar_url ? (
-          <img src={post.author.avatar_url} alt={post.author.username} className="w-full h-full object-cover" />
+          <img src={post.author.avatar_url} alt={post.author?.username || 'User'} className="w-full h-full object-cover" />
         ) : (
-          <span dir="ltr">{post.author?.username?.charAt(0).toUpperCase()}</span>
+          <span dir="ltr">{post.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
         )}
       </Link>
       
@@ -185,13 +185,13 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span 
-              onClick={(e) => { e.stopPropagation(); router.push(`/${post.author.username}`); }}
+              onClick={(e) => { e.stopPropagation(); router.push(`/${post.author?.username || 'unknown'}`); }}
               className="font-bold text-white text-[15px] hover:underline cursor-pointer"
               dir="ltr"
             >
-              {post.author?.username}
+              {post.author?.username || 'مستخدم غير معروف'}
             </span>
-            <span className="text-slate-500 text-[15px]" dir="ltr">@{post.author?.username}</span>
+            <span className="text-slate-500 text-[15px]" dir="ltr">@{post.author?.username || 'unknown'}</span>
             <span className="text-slate-500 text-[15px]">·</span>
             <span className="text-slate-500 text-[14px]">{formatTime(post.created_at || post.createdAt)}</span>
             {isEdited && <span className="text-slate-500 text-[11px] italic bg-slate-800/50 px-1.5 py-0.5 rounded-full mr-1">معدلة</span>}
@@ -267,11 +267,11 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
                     {post.quotePost.author?.avatar_url ? (
                       <img src={post.quotePost.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="flex items-center justify-center w-full h-full text-[10px] font-bold" dir="ltr">{post.quotePost.author?.username?.charAt(0).toUpperCase()}</span>
+                      <span className="flex items-center justify-center w-full h-full text-[10px] font-bold" dir="ltr">{post.quotePost.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
                     )}
                   </div>
-                  <span className="font-bold text-white text-[13px]" dir="ltr">{post.quotePost.author?.username}</span>
-                  <span className="text-slate-500 text-[13px]" dir="ltr">@{post.quotePost.author?.username}</span>
+                  <span className="font-bold text-white text-[13px]" dir="ltr">{post.quotePost.author?.username || 'Unknown'}</span>
+                  <span className="text-slate-500 text-[13px]" dir="ltr">@{post.quotePost.author?.username || 'unknown'}</span>
                 </div>
                 <p className="mt-1 text-slate-200 text-[14px]">{post.quotePost.content}</p>
                 {post.quotePost.media_url && (
