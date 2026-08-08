@@ -73,7 +73,7 @@ export default function ChatRoomPage() {
         .from('messages')
         .select(`
           *,
-          sender:profiles!sender_id(id, username, avatar_url),
+          sender:profiles!sender_id(id, username, full_name, avatar_url),
           message_deletions(user_id),
           message_reactions(*),
           message_viewers(user_id)
@@ -100,7 +100,7 @@ export default function ChatRoomPage() {
          if (!msgId) return;
          
          const { data: updatedMsg } = await supabase.from('messages')
-            .select('*, sender:profiles!sender_id(id, username, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)')
+            .select('*, sender:profiles!sender_id(id, username, full_name, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)')
             .eq('id', msgId).single();
             
          if (updatedMsg) {
@@ -271,7 +271,7 @@ export default function ChatRoomPage() {
       media_url: finalMediaUrl,
       is_view_once: isViewOnceEnabled,
       expires_at: expiresAt
-    }).select('*, sender:profiles!sender_id(id, username, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)').single();
+    }).select('*, sender:profiles!sender_id(id, username, full_name, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)').single();
     
     if (insertError) {
        console.error("Message insert error:", insertError);
@@ -385,7 +385,7 @@ export default function ChatRoomPage() {
       <div className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden">
         {messages.map((msg, idx) => {
           const isMe = msg.sender?.id === currentUserId;
-          const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
+          const showAvatar = idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id;
           
           // Filter out deleted for me
           if (msg.message_deletions?.some((d: any) => d.user_id === currentUserId)) {

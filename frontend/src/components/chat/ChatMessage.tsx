@@ -46,11 +46,11 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
              if (top < 10) top = 10; // Keep it on screen
          }
          
+         // Calculate exact alignment with the message bubble
          setMenuPos({ 
            top, 
-           // In RTL: isMe means right-aligned. So we anchor right.
-           right: isMe ? 16 : undefined, 
-           left: isMe ? undefined : 16 
+           right: isMe ? window.innerWidth - rect.right : undefined, 
+           left: isMe ? undefined : rect.left 
          });
          setShowMenu(true);
       }
@@ -130,22 +130,25 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     <>
       <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3`}>
         <div className="flex max-w-[85%] items-end gap-2">
-          {!isMe && (
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
-              {showAvatar ? (
-                msg.sender?.avatar_url ? (
-                  <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xs font-bold text-slate-300" dir="ltr">{msg.sender?.username?.charAt(0).toUpperCase() || '?'}</span>
-                )
-              ) : null}
+          {/* Always show Avatar if showAvatar is true, even for my messages */}
+          {showAvatar ? (
+            <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-700">
+              {msg.sender?.avatar_url ? (
+                <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[14px] font-bold text-slate-300" dir="ltr">
+                  {msg.sender?.username?.charAt(0).toUpperCase() || '?'}
+                </span>
+              )}
             </div>
+          ) : (
+            <div className="w-8 h-8 flex-shrink-0" /> {/* Empty spacer for consecutive messages */}
           )}
 
-          <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'}`}>
-            {!isMe && showAvatar && (
+          <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} max-w-full`}>
+            {showAvatar && (
               <span className="text-[13px] text-cyan-500 mr-1 mb-1 font-bold" dir="ltr">
-                {msg.sender?.username}
+                {msg.sender?.full_name || msg.sender?.username}
               </span>
             )}
             
@@ -218,7 +221,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
       {/* Context Menu (Compact) */}
       {showMenu && menuPos && (
         <div 
-          className="fixed z-[100] w-[260px] bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-100 overflow-hidden flex flex-col"
+          className="fixed z-[100] w-[240px] sm:w-[260px] bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden flex flex-col"
           style={{ top: menuPos.top, left: menuPos.left, right: menuPos.right }}
           onClick={e => e.stopPropagation()}
         >
