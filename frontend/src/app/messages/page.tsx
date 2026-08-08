@@ -190,34 +190,56 @@ export default function MessagesPage() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
+      
+      let channelIdToNavigate = null;
 
-      // 1. Create channel
-      const { data: channel, error: channelError } = await supabase
-        .from('channels')
-        .insert({ is_group: isGroup, name })
-        .select()
-        .single();
+      if (chatMode === 'private') {
+        const { data: existingChat, error: rpcError } = await supabase.rpc('get_or_create_private_chat', { other_user_id: users[0].id });
+        if (existingChat) {
+          channelIdToNavigate = existingChat;
+        } else {
+          // Fallback if RPC fails or isn't installed
+          const { data: channel, error: channelError } = await supabase.from('channels').insert({ is_group: false }).select().single();
+          if (channelError) throw channelError;
+          
+          // Deduplicate members (in case user selected themselves, though search filters it out, just to be safe)
+          const memberIds = Array.from(new Set([session.user.id, users[0].id]));
+          const members = memberIds.map(id => ({ channel_id: channel.id, user_id: id }));
+          
+          const { error: membersError } = await supabase.from('channel_members').insert(members);
+          if (membersError) throw membersError;
+          
+          channelIdToNavigate = channel.id;
+        }
+      } else {
+        // 1. Create group channel
+        const { data: channel, error: channelError } = await supabase
+          .from('channels')
+          .insert({ is_group: true, name })
+          .select()
+          .single();
 
-      if (channelError) throw channelError;
+        if (channelError) throw channelError;
 
-      // 2. Add members
-      const members = [
-        { channel_id: channel.id, user_id: session.user.id },
-        ...users.map(u => ({ channel_id: channel.id, user_id: u.id }))
-      ];
+        // 2. Add members, ensuring no duplicates
+        const memberIds = Array.from(new Set([session.user.id, ...users.map(u => u.id)]));
+        const members = memberIds.map(id => ({ channel_id: channel.id, user_id: id }));
 
-      const { error: membersError } = await supabase
-        .from('channel_members')
-        .insert(members);
+        const { error: membersError } = await supabase
+          .from('channel_members')
+          .insert(members);
 
-      if (membersError) throw membersError;
+        if (membersError) throw membersError;
+        
+        channelIdToNavigate = channel.id;
+      }
 
       setIsNewChatOpen(false);
       setSelectedUsers([]);
       setGroupName('');
       setSearchQuery('');
       setSearchResults([]);
-      router.push(`/messages/${channel.id}`);
+      router.push(`/messages/${channelIdToNavigate}`);
     } catch (e: any) {
       console.error(e);
       alert('حدث خطأ: ' + JSON.stringify(e));
