@@ -54,17 +54,18 @@ export default function ChatRoomPage() {
       // Fetch Room Info
       const { data: roomData } = await supabase
         .from('channels')
-        .select(`
-          *,
-          participants:channel_members(
-             user_id,
-             user:profiles(id, username, avatar_url, bio)
-          )
-        `)
+        .select(`*, participants:channel_members(user_id)`)
         .eq('id', roomId as string)
         .single();
         
       if (roomData) {
+        if (!roomData.is_group) {
+          const otherUserId = roomData.participants?.find((p: any) => p.user_id !== myId)?.user_id;
+          if (otherUserId) {
+             const { data: otherProfile } = await supabase.from('profiles').select('*').eq('id', otherUserId).single();
+             roomData.otherProfile = otherProfile;
+          }
+        }
         setRoomInfo(roomData);
       }
 
@@ -316,9 +317,9 @@ export default function ChatRoomPage() {
       chatTitle = roomInfo.name || 'دردشة جماعية';
       chatSubtext = `${roomInfo.participants.length} أعضاء`;
     } else {
-      const otherUser = roomInfo.participants.find((p: any) => p.user_id !== currentUserId)?.user;
+      const otherUser = roomInfo.otherProfile;
       if (otherUser) {
-        chatTitle = otherUser.username;
+        chatTitle = otherUser.full_name || otherUser.username;
         chatAvatar = otherUser.avatar_url;
         chatSubtext = 'متصل';
       }
