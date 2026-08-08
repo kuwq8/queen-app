@@ -142,7 +142,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               onTouchEnd={handleEnd}
               onTouchMove={handleMove}
               onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
-              className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1d9bf0] text-white rounded-br-sm' : 'bg-[#202327] text-white rounded-bl-sm'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-[#1d9bf0]/50' : ''}`}
+              className={`px-4 py-1.5 rounded-[20px] ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-[4px]' : 'bg-[#13121c] text-white rounded-bl-[4px]'} shadow-sm relative cursor-pointer w-fit active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-white/10' : ''}`}
             >
               {msg.is_view_once ? (
                 <div 
@@ -173,16 +173,16 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
                 </p>
               )}
               
-              <div className="flex items-center justify-end gap-1 text-[10px] opacity-80 mt-1 select-none text-white">
+              <div className="flex items-center justify-end gap-1 text-[10px] opacity-60 mt-0.5 select-none text-white">
                 <span dir="ltr">
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
-                {isMe && <CheckCheck size={13} className="text-white" />}
+                {isMe && <CheckCheck size={12} className="text-white" />}
               </div>
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-2 ${isMe ? 'right-2' : 'left-2'} z-10 flex items-center justify-center gap-1 bg-[#15202b] border border-gray-700/60 rounded-full px-1.5 py-0.5 shadow-lg`}>
+                <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-2'} z-10 flex items-center justify-center gap-1 bg-[#15202b] border border-gray-700/60 rounded-full px-1.5 py-0.5 shadow-lg`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
                     <span key={i} className="text-[11px] leading-none">{reaction}</span>
                   ))}
