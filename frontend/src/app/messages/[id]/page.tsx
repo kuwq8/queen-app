@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile } from 'lucide-react';
+import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile, Timer } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import ChatMessage from '@/components/chat/ChatMessage';
 
 export default function ChatRoomPage() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function ChatRoomPage() {
   const mediaInputRef = useRef<HTMLInputElement>(null);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [isViewOnceEnabled, setIsViewOnceEnabled] = useState(false);
 
   const supabaseRef = useRef<any>(null);
   const channelRef = useRef<any>(null);
@@ -71,7 +73,10 @@ export default function ChatRoomPage() {
         .from('messages')
         .select(`
           *,
-          sender:profiles!sender_id(id, username, avatar_url)
+          sender:profiles!sender_id(id, username, avatar_url),
+          message_deletions(user_id),
+          message_reactions(*),
+          message_viewers(user_id)
         `)
         .eq('channel_id', roomId as string)
         .order('created_at', { ascending: true });
@@ -85,29 +90,35 @@ export default function ChatRoomPage() {
       const channel = supabase.channel(`room:${roomId}`);
       channelRef.current = channel;
       
+      const handleRealtimeUpdate = async (payload: any) => {
+         if (payload.eventType === 'DELETE' && payload.table === 'messages') {
+            setMessages(prev => prev.filter(m => m.id !== payload.old.id));
+            return;
+         }
+         
+         const msgId = payload.table === 'messages' ? payload.new.id : payload.new.message_id;
+         if (!msgId) return;
+         
+         const { data: updatedMsg } = await supabase.from('messages')
+            .select('*, sender:profiles!sender_id(id, username, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)')
+            .eq('id', msgId).single();
+            
+         if (updatedMsg) {
+            setMessages(prev => {
+               if (prev.find(m => m.id === msgId)) {
+                  return prev.map(m => m.id === msgId ? updatedMsg : m);
+               }
+               return [...prev, updatedMsg].sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+            });
+            if (payload.table === 'messages' && payload.eventType === 'INSERT') scrollToBottom();
+         }
+      };
+      
       channel
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'messages', filter: `channel_id=eq.${roomId}` },
-          async (payload: any) => {
-            if (payload.eventType === 'INSERT') {
-               // Only add if we didn't add it locally (to avoid duplicates)
-               // But usually realtime triggers after insert, so we can just re-fetch sender
-               const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.sender_id).single();
-               const newMsg = { ...payload.new, sender: senderData };
-               
-               setMessages(prev => {
-                  if (prev.find(m => m.id === newMsg.id)) return prev;
-                  return [...prev, newMsg];
-               });
-               scrollToBottom();
-            } else if (payload.eventType === 'UPDATE') {
-               setMessages(prev => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
-            } else if (payload.eventType === 'DELETE') {
-               setMessages(prev => prev.filter(m => m.id !== payload.old.id));
-            }
-          }
-        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `channel_id=eq.${roomId}` }, handleRealtimeUpdate)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions' }, handleRealtimeUpdate)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'message_deletions' }, handleRealtimeUpdate)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'message_viewers' }, handleRealtimeUpdate)
         .on('presence', { event: 'sync' }, () => {
            const state = channel.presenceState();
            const typers: string[] = [];
@@ -191,6 +202,7 @@ export default function ChatRoomPage() {
     setAudioBlob(null);
     setMediaFile(null);
     setMediaPreview(null);
+    setIsViewOnceEnabled(false);
   };
 
   const sendMessage = async () => {
@@ -216,17 +228,39 @@ export default function ChatRoomPage() {
       const fileExt = audioBlob ? 'webm' : file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `chat/${roomId}/${fileName}`;
+      
+      const bucketName = isViewOnceEnabled ? 'private_media' : 'media';
 
       const { data, error } = await supabase.storage
-        .from('media') // MUST create a 'media' bucket in Supabase!
+        .from(bucketName)
         .upload(filePath, file);
 
       if (!error && data) {
-        const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
-        finalMediaUrl = publicUrlData.publicUrl;
+        if (isViewOnceEnabled) {
+           finalMediaUrl = filePath; // For private_media, we store the path to generate signed URLs later
+        } else {
+           const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
+           finalMediaUrl = publicUrlData.publicUrl;
+        }
       } else {
-        alert('حدث خطأ أثناء رفع الملف. هل تأكدت من إنشاء سلة (Bucket) باسم media في Supabase؟ التفاصيل: ' + JSON.stringify(error));
+        alert('حدث خطأ أثناء رفع الملف. هل تأكدت من إنشاء سلة (Bucket) في Supabase؟ التفاصيل: ' + JSON.stringify(error));
         return;
+      }
+    }
+    
+    // Calculate expires_at if disappearing messages are enabled
+    let expiresAt = null;
+    if (roomInfo?.disappearing_timer && roomInfo.disappearing_timer !== 'OFF') {
+      const timerMap: Record<string, number> = {
+        '30 seconds': 30 * 1000,
+        '5 minutes': 5 * 60 * 1000,
+        '1 hour': 60 * 60 * 1000,
+        '24 hours': 24 * 60 * 60 * 1000,
+        '7 days': 7 * 24 * 60 * 60 * 1000
+      };
+      const ms = timerMap[roomInfo.disappearing_timer] || null;
+      if (ms) {
+         expiresAt = new Date(Date.now() + ms).toISOString();
       }
     }
 
@@ -234,8 +268,10 @@ export default function ChatRoomPage() {
       channel_id: roomId,
       sender_id: currentUserId,
       content: newMessage,
-      media_url: finalMediaUrl
-    }).select('*, sender:profiles!sender_id(id, username, avatar_url)').single();
+      media_url: finalMediaUrl,
+      is_view_once: isViewOnceEnabled,
+      expires_at: expiresAt
+    }).select('*, sender:profiles!sender_id(id, username, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)').single();
     
     if (insertError) {
        console.error("Message insert error:", insertError);
@@ -351,65 +387,21 @@ export default function ChatRoomPage() {
           const isMe = msg.sender?.id === currentUserId;
           const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
           
+          // Filter out deleted for me
+          if (msg.message_deletions?.some((d: any) => d.user_id === currentUserId)) {
+            return null;
+          }
+
           return (
-            <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} group`}>
-              <div className="flex max-w-[75%] items-end gap-2">
-                {/* Avatar for others */}
-                {!isMe && (
-                  <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                    {showAvatar ? (
-                      msg.sender?.avatar_url ? (
-                        <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-xs font-bold" dir="ltr">{msg.sender?.username?.charAt(0).toUpperCase() || '?'}</span>
-                      )
-                    ) : null}
-                  </div>
-                )}
-
-                {/* Bubble */}
-                <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'}`}>
-                  {!isMe && showAvatar && roomInfo?.is_group && <span className="text-xs text-slate-500 mr-1 mb-1 font-bold" dir="ltr">{msg.sender?.username}</span>}
-                  
-                  {isMe && (
-                    <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/bubble:opacity-100 flex items-center gap-1 transition-opacity">
-                      {msg.content && (
-                        <button onClick={() => { setEditingMessageId(msg.id); setNewMessage(msg.content); }} className="p-1.5 bg-slate-800 text-slate-400 hover:text-white rounded-full">
-                          <Edit2 size={14}/>
-                        </button>
-                      )}
-                      <button onClick={() => deleteMessage(msg.id)} className="p-1.5 bg-slate-800 text-slate-400 hover:text-red-400 rounded-full">
-                        <Trash2 size={14}/>
-                      </button>
-                    </div>
-                  )}
-
-                  <div className={`p-3 rounded-2xl ${isMe ? 'bg-cyan-600 rounded-bl-sm' : 'bg-slate-800 rounded-br-sm'} shadow-sm relative`}>
-                      <>
-                        {msg.media_url && (
-                          <div className="mb-2">
-                            {msg.media_url.endsWith('.webm') ? (
-                              <audio src={msg.media_url} controls className="h-10 w-[200px]" />
-                            ) : msg.media_url.match(/\.(mp4|mov|webm)$/i) ? (
-                              <video src={msg.media_url} controls className="max-w-full rounded-xl max-h-[300px]" />
-                            ) : (
-                              <img src={msg.media_url} className="max-w-full rounded-xl max-h-[300px] object-cover" />
-                            )}
-                          </div>
-                        )}
-                        {msg.content && (
-                          <p className={`text-[15px] leading-relaxed break-words ${isMe ? 'text-white' : 'text-slate-200'}`}>
-                            {msg.content}
-                          </p>
-                        )}
-                      </>
-                  </div>
-                  <span className="text-[10px] text-slate-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                    <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  </span>
-                </div>
-              </div>
-            </div>
+            <ChatMessage 
+              key={msg.id} 
+              msg={msg} 
+              isMe={isMe} 
+              showAvatar={showAvatar} 
+              currentUserId={currentUserId!} 
+              roomInfo={roomInfo} 
+              onEdit={() => { setEditingMessageId(msg.id); setNewMessage(msg.content); }}
+            />
           );
         })}
         <div ref={messagesEndRef} />
@@ -418,12 +410,22 @@ export default function ChatRoomPage() {
       {/* Input Area */}
       <div className="border-t border-slate-800 px-2 sm:px-3 py-2 bg-black">
         {(audioBlob || mediaPreview) && (
-          <div className="mb-2 flex items-center gap-3 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+          <div className="mb-2 flex items-center gap-3 bg-slate-900/80 p-2 rounded-xl border border-slate-800 relative">
             {audioBlob ? (
               <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
             ) : (
               <img src={mediaPreview!} className="h-16 w-auto rounded-lg object-cover" />
             )}
+            
+            {!audioBlob && (
+              <button 
+                onClick={() => setIsViewOnceEnabled(!isViewOnceEnabled)} 
+                className={`ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors ${isViewOnceEnabled ? 'bg-cyan-900/40 border-cyan-500 text-cyan-400' : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-white'}`}
+              >
+                <Timer size={14}/> {isViewOnceEnabled ? 'تعرض مرة واحدة' : 'عادية'}
+              </button>
+            )}
+
             <button onClick={cancelMedia} className="p-2 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-full">
               <Trash2 size={18} />
             </button>
