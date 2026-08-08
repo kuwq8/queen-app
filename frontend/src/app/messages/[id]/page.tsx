@@ -56,7 +56,7 @@ export default function ChatRoomPage() {
           *,
           participants:channel_members(
              user_id,
-             user:profiles!user_id(id, username, avatar_url, bio)
+             user:profiles(id, username, avatar_url, bio)
           )
         `)
         .eq('id', roomId as string)
@@ -346,7 +346,7 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden">
         {messages.map((msg, idx) => {
           const isMe = msg.sender?.id === currentUserId;
           const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
@@ -458,7 +458,7 @@ export default function ChatRoomPage() {
                 }
               }}
               disabled={isRecording}
-              className="flex-1 bg-transparent text-white focus:outline-none text-[15px] resize-none py-[10px] min-h-[40px] max-h-[120px] leading-tight"
+              className="flex-1 bg-transparent text-white focus:outline-none text-[15px] resize-none py-[10px] min-h-[40px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden"
               rows={1}
               style={{ overflowY: 'auto' }}
             />
