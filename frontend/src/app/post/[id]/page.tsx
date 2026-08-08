@@ -56,6 +56,7 @@ export default function PostDetailPage() {
         
       if (postData) {
         setPost(postData);
+        supabase.rpc('increment_post_views', { post_id_val: postId }).catch(console.error);
       }
 
       // Fetch comments (if table exists)
