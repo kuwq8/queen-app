@@ -218,9 +218,9 @@ export default function MessagesPage() {
       setSearchQuery('');
       setSearchResults([]);
       router.push(`/messages/${channel.id}`);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert('حدث خطأ في الشبكة.');
+      alert('حدث خطأ: ' + JSON.stringify(e));
     } finally {
       setIsCreating(false);
     }

@@ -41,20 +41,21 @@ export default function NotificationsPage() {
   }, [router]);
 
   const getIcon = (type: string) => {
-    switch (type) {
-      case 'LIKE': return <Heart size={20} className="text-pink-500 fill-pink-500" />;
-      case 'COMMENT': return <MessageCircle size={20} className="text-cyan-500 fill-cyan-500" />;
-      case 'FOLLOW': return <UserPlus size={20} className="text-purple-500" />;
+    switch (type.toLowerCase()) {
+      case 'like': return <Heart size={20} className="text-pink-500 fill-pink-500" />;
+      case 'comment': return <MessageCircle size={20} className="text-cyan-500 fill-cyan-500" />;
+      case 'follow': return <UserPlus size={20} className="text-purple-500" />;
       default: return null;
     }
   };
 
   const getMessage = (notification: any) => {
-    switch (notification.type) {
-      case 'LIKE': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> أعجبه منشورك</span>;
-      case 'COMMENT': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> علق على منشورك</span>;
-      case 'FOLLOW': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> بدأ بمتابعتك</span>;
-      default: return null;
+    if (!notification.actor) return <span>مستخدم مجهول</span>;
+    switch (notification.type.toLowerCase()) {
+      case 'like': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> أعجبه منشورك</span>;
+      case 'comment': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> علق على منشورك</span>;
+      case 'follow': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> بدأ بمتابعتك</span>;
+      default: return <span>إشعار جديد</span>;
     }
   };
 
