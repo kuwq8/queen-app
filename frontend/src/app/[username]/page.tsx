@@ -255,7 +255,7 @@ export default function ProfilePage() {
       <div className="min-h-screen flex justify-center bg-black font-sans text-right">
         <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black">
           {/* Skeleton Header */}
-          <header className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center px-4 py-2 gap-6 border-b border-slate-800/50">
+          <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md flex items-center px-4 py-2 gap-6 border-b border-slate-800/50">
             <div className="w-9 h-9 rounded-full bg-slate-800 animate-pulse"></div>
             <div className="flex flex-col gap-2">
               <div className="w-24 h-5 bg-slate-800 rounded animate-pulse"></div>
@@ -308,7 +308,7 @@ export default function ProfilePage() {
       <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black">
         
         {/* Sticky Header */}
-        <header className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center px-4 py-2 gap-6 border-b border-slate-800/50">
+        <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md flex items-center px-4 py-2 gap-6 border-b border-slate-800/50">
           <button onClick={() => router.back()} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors">
             <ArrowRight className="text-white" size={20} />
           </button>

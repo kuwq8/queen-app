@@ -174,7 +174,7 @@ export default function HomePage() {
       <div className="w-full max-w-[600px] flex flex-col relative pb-[60px] border-x border-slate-800 min-h-screen bg-black">
         
         {/* Top Header */}
-        <header className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-slate-800 p-3 px-4 flex items-center justify-between">
+        <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800 p-3 px-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-cyan-500">Gemini Social</h2>
           <div className="flex items-center gap-4">
             <button onClick={handleLogout} className="text-red-400 text-xs font-bold hover:underline">تسجيل الخروج</button>
@@ -189,7 +189,7 @@ export default function HomePage() {
         </header>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-800 bg-black/80 backdrop-blur-md sticky top-[60px] z-10">
+        <div className="flex border-b border-slate-800 bg-black/80 backdrop-blur-md sticky top-[60px] z-40">
           <button 
             onClick={() => setFeedType('all')}
             className={`flex-1 py-4 text-sm font-bold text-center transition-colors relative ${feedType === 'all' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
