@@ -8,9 +8,10 @@ import Link from 'next/link';
 import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link as LinkIcon, User, Camera } from 'lucide-react';
 import { useRef } from 'react';
 import PostItem from '../../components/PostItem';
-import BottomNav from '../../components/BottomNav';
+import { createClient } from '@/utils/supabase/client';
 
 export default function ProfilePage() {
+  const supabase = createClient();
   const router = useRouter();
   const params = useParams();
   let username = decodeURIComponent(params.username as string);
@@ -36,8 +37,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const init = async () => {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -64,9 +63,7 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      setDebugMsg('Step 1: createClient');
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
+      setDebugMsg('Step 1: start');
       
       setDebugMsg('Step 2: fetching profile data');
       const { data: targetProfile, error } = await supabase
@@ -138,8 +135,6 @@ export default function ProfilePage() {
 
   const fetchPosts = async () => {
     try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
       
       const { data: targetProfile } = await supabase
         .from('profiles')
@@ -170,8 +165,6 @@ export default function ProfilePage() {
 
   const handleFollow = async () => {
     try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       
@@ -218,8 +211,6 @@ export default function ProfilePage() {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       
