@@ -71,7 +71,7 @@ export default function ChatRoomPage() {
         .from('messages')
         .select(`
           *,
-          sender:profiles!sender_id(id, username, avatar_url)
+          sender:profiles!user_id(id, username, avatar_url)
         `)
         .eq('channel_id', roomId as string)
         .order('created_at', { ascending: true });
@@ -93,7 +93,7 @@ export default function ChatRoomPage() {
             if (payload.eventType === 'INSERT') {
                // Only add if we didn't add it locally (to avoid duplicates)
                // But usually realtime triggers after insert, so we can just re-fetch sender
-               const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.sender_id).single();
+               const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.user_id).single();
                const newMsg = { ...payload.new, sender: senderData };
                
                setMessages(prev => {
@@ -232,10 +232,10 @@ export default function ChatRoomPage() {
 
     const { data: insertData, error: insertError } = await supabase.from('messages').insert({
       channel_id: roomId,
-      sender_id: currentUserId,
+      user_id: currentUserId,
       content: newMessage,
       media_url: finalMediaUrl
-    }).select('*, sender:profiles!sender_id(id, username, avatar_url)').single();
+    }).select('*, sender:profiles!user_id(id, username, avatar_url)').single();
     
     if (insertError) {
        console.error("Message insert error:", insertError);

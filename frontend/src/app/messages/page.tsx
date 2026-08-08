@@ -70,7 +70,7 @@ export default function MessagesPage() {
             content,
             media_url,
             created_at,
-            sender_id
+            user_id
           )
         `)
         .in('id', channelIds)
@@ -86,7 +86,7 @@ export default function MessagesPage() {
         const userIds = new Set<string>();
         channels.forEach((ch: any) => {
           ch.participants?.forEach((p: any) => userIds.add(p.user_id));
-          ch.messages?.forEach((m: any) => userIds.add(m.sender_id));
+          ch.messages?.forEach((m: any) => userIds.add(m.user_id));
         });
 
         let profilesMap: Record<string, any> = {};
@@ -109,7 +109,7 @@ export default function MessagesPage() {
           }));
           const messages = ch.messages?.map((m: any) => ({
             ...m,
-            sender: profilesMap[m.sender_id] || null
+            sender: profilesMap[m.user_id] || null
           }));
           
           return {
