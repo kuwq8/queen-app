@@ -157,7 +157,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               onTouchEnd={handleEnd}
               onTouchMove={handleMove}
               onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
-              className={`px-3 py-2 rounded-2xl ${isMe ? 'bg-cyan-600 rounded-bl-sm' : 'bg-slate-800 rounded-br-sm'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-cyan-500/50' : ''}`}
+              className={`px-4 pt-2.5 pb-3 rounded-2xl ${isMe ? 'bg-[#3b3861] text-white rounded-tr-sm' : 'bg-[#1e1d2b] text-gray-100 rounded-tl-sm'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-[#3b3861]/50' : ''}`}
             >
               {msg.is_view_once ? (
                 <div 
@@ -183,13 +183,13 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               ) : null}
 
               {msg.content && (
-                <p className={`text-[14px] leading-relaxed break-words ${isMe ? 'text-white' : 'text-slate-100'}`}>
+                <p className={`text-[15px] leading-snug font-normal break-words ${isMe ? 'text-white' : 'text-gray-100'}`}>
                   {msg.content}
                 </p>
               )}
               
-              <div className="flex items-center gap-2 mt-1 justify-end opacity-70">
-                <span className="text-[10px] font-medium" dir="ltr">
+              <div className="text-[11px] text-gray-400 mt-1 flex items-center justify-end gap-1 select-none min-w-[50px]">
+                <span dir="ltr">
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
                 {msg.expires_at && <Clock size={10} className="text-cyan-600" title="رسالة مؤقتة"/>}
@@ -197,9 +197,9 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-2 ${isMe ? 'right-3' : 'left-3'} bg-[#1a1a24] border-2 border-black rounded-full px-1.5 py-0.5 text-xs shadow-md z-10 flex items-center justify-center gap-1 min-w-[28px] h-6`}>
+                <div className={`absolute -bottom-3 ${isMe ? 'right-3' : 'left-3'} z-10 flex items-center gap-1 bg-[#252338] border border-[#3d3a5a] rounded-full px-2 py-0.5 shadow-lg`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i} className="text-[12px] leading-none">{reaction}</span>
+                    <span key={i} className="text-xs leading-none">{reaction}</span>
                   ))}
                   {msg.message_reactions.length > 1 && <span className="text-slate-300 font-bold ml-0.5 text-[10px] leading-none">{msg.message_reactions.length}</span>}
                 </div>
