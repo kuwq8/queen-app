@@ -125,7 +125,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
   return (
     <>
       <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3 w-full`}>
-        <div className="flex w-full max-w-[80%] sm:max-w-[320px] items-end gap-2">
+        <div className="flex w-full max-w-[75%] sm:max-w-[280px] items-end gap-2">
           <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} w-full`}>
             {!isMe && roomInfo?.is_group && showAvatar && (
               <span className="text-[13px] text-cyan-500 mr-1 mb-1 font-bold" dir="ltr">
@@ -142,7 +142,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               onTouchEnd={handleEnd}
               onTouchMove={handleMove}
               onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
-              className={`pt-2.5 px-3.5 pb-2 rounded-2xl ${isMe ? 'bg-[#12583b] text-white rounded-tr-[4px]' : 'bg-[#202c33] text-white rounded-tl-[4px]'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-[#12583b]/50' : ''}`}
+              className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1d9bf0] text-white rounded-br-sm' : 'bg-[#202327] text-white rounded-bl-sm'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-[#1d9bf0]/50' : ''}`}
             >
               {msg.is_view_once ? (
                 <div 
@@ -168,25 +168,25 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               ) : null}
 
               {msg.content && (
-                <p className={`text-[15px] leading-[1.35] font-normal break-words text-white`}>
+                <p className={`text-[14px] leading-snug font-normal break-words text-white`}>
                   {msg.content}
                 </p>
               )}
               
-              <div className="flex items-center justify-end gap-1 text-[11px] text-gray-300/80 mt-1 select-none">
+              <div className="flex items-center justify-end gap-1 text-[10px] opacity-80 mt-1 select-none text-white">
                 <span dir="ltr">
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
-                {isMe && <CheckCheck size={14} className="text-[#53bdeb]" />}
+                {isMe && <CheckCheck size={13} className="text-white" />}
               </div>
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-2.5 ${isMe ? 'right-3' : 'left-3'} z-10 flex items-center justify-center gap-1 bg-[#182229] border border-[#222d34] rounded-full px-2 py-0.5 shadow-md`}>
+                <div className={`absolute -bottom-2 ${isMe ? 'right-2' : 'left-2'} z-10 flex items-center justify-center gap-1 bg-[#15202b] border border-gray-700/60 rounded-full px-1.5 py-0.5 shadow-lg`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i} className="text-[12px] leading-none">{reaction}</span>
+                    <span key={i} className="text-[11px] leading-none">{reaction}</span>
                   ))}
-                  {msg.message_reactions.length > 1 && <span className="text-slate-300 font-bold ml-0.5 text-[10px] leading-none">{msg.message_reactions.length}</span>}
+                  {msg.message_reactions.length > 1 && <span className="text-gray-300 font-bold ml-0.5 text-[10px] leading-none">{msg.message_reactions.length}</span>}
                 </div>
               )}
             </div>
