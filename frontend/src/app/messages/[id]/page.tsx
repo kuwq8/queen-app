@@ -265,10 +265,39 @@ export default function ChatRoomPage() {
       }
     }
 
-    const { data: insertData, error: insertError } = await supabase.from('messages').insert({
+    const tempId = crypto.randomUUID();
+    const tempMsg = {
+      id: tempId,
       channel_id: roomId,
       sender_id: currentUserId,
       content: newMessage,
+      media_url: finalMediaUrl,
+      is_view_once: isViewOnceEnabled,
+      expires_at: expiresAt,
+      created_at: new Date().toISOString(),
+      sender: {
+        id: currentUserId,
+        username: myUsername,
+        full_name: myProfile?.full_name,
+        avatar_url: myProfile?.avatar_url
+      },
+      message_reactions: [],
+      message_deletions: [],
+      message_viewers: []
+    };
+
+    setMessages(prev => [...prev, tempMsg]);
+    scrollToBottom();
+    
+    const currentMessageText = newMessage;
+    setNewMessage('');
+    cancelMedia();
+
+    const { data: insertData, error: insertError } = await supabase.from('messages').insert({
+      id: tempId,
+      channel_id: roomId,
+      sender_id: currentUserId,
+      content: currentMessageText,
       media_url: finalMediaUrl,
       is_view_once: isViewOnceEnabled,
       expires_at: expiresAt
@@ -276,17 +305,15 @@ export default function ChatRoomPage() {
     
     if (insertError) {
        console.error("Message insert error:", insertError);
+       setMessages(prev => prev.filter(m => m.id !== tempId));
+       setNewMessage(currentMessageText);
        alert('فشل إرسال الرسالة: ' + JSON.stringify(insertError));
        return;
     }
 
     if (insertData) {
-       setMessages(prev => [...prev, insertData]);
-       scrollToBottom();
+       setMessages(prev => prev.map(m => m.id === tempId ? insertData : m));
     }
-
-    setNewMessage('');
-    cancelMedia();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -306,6 +333,17 @@ export default function ChatRoomPage() {
   
   const deleteMessage = async (id: string) => {
      await supabaseRef.current.from('messages').delete().eq('id', id);
+  };
+
+  const handleReaction = (msgId: string, reaction: string) => {
+    // Optimistic update
+    setMessages(prev => prev.map(m => {
+      if (m.id === msgId) {
+        const newReactions = [...(m.message_reactions || []), { message_id: msgId, user_id: currentUserId, reaction }];
+        return { ...m, message_reactions: newReactions };
+      }
+      return m;
+    }));
   };
 
   let chatTitle = 'دردشة';
@@ -402,6 +440,7 @@ export default function ChatRoomPage() {
               currentUserId={currentUserId!} 
               roomInfo={roomInfo} 
               onEdit={() => { setEditingMessageId(msg.id); setNewMessage(msg.content); }}
+              onReact={handleReaction}
             />
           );
         })}

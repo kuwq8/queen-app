@@ -10,9 +10,10 @@ interface ChatMessageProps {
   currentUserId: string;
   roomInfo: any;
   onEdit: () => void;
+  onReact?: (msgId: string, reaction: string) => void;
 }
 
-export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, roomInfo, onEdit }: ChatMessageProps) {
+export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, roomInfo, onEdit, onReact }: ChatMessageProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showFullPicker, setShowFullPicker] = useState(false);
   const [menuPos, setMenuPos] = useState<any>(null);
@@ -69,9 +70,16 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
   };
   
   const addReaction = async (reaction: string) => {
-    const supabase = createClient();
-    await supabase.from('message_reactions').insert({ message_id: msg.id, user_id: currentUserId, reaction });
+    if (onReact) {
+      onReact(msg.id, reaction);
+    }
     setShowMenu(false);
+    
+    const supabase = createClient();
+    const { error } = await supabase.from('message_reactions').insert({ message_id: msg.id, user_id: currentUserId, reaction });
+    if (error) {
+       console.error("Failed to add reaction:", error);
+    }
   };
 
   const openViewOnce = async () => {
