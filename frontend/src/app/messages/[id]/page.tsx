@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users } from 'lucide-react';
+import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ChatRoomPage() {
@@ -416,9 +416,9 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-slate-800 p-3 bg-black">
+      <div className="border-t border-slate-800 px-2 sm:px-3 py-2 bg-black">
         {(audioBlob || mediaPreview) && (
-          <div className="mb-3 flex items-center gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div className="mb-2 flex items-center gap-3 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
             {audioBlob ? (
               <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
             ) : (
@@ -430,57 +430,79 @@ export default function ChatRoomPage() {
           </div>
         )}
 
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-[6px]">
           <input type="file" ref={mediaInputRef} accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
           <button 
             onClick={() => mediaInputRef.current?.click()}
-            className="p-2.5 text-cyan-500 hover:bg-slate-800 rounded-full transition-colors flex-shrink-0"
+            className="w-[40px] h-[40px] flex items-center justify-center bg-slate-800 text-cyan-500 hover:bg-slate-700 rounded-full transition-colors flex-shrink-0"
           >
-            <ImageIcon size={20} />
+            <Plus size={20} />
           </button>
           
-          <div className="flex-1 bg-slate-900 rounded-3xl border border-slate-800 focus-within:border-cyan-500 transition-colors flex items-center px-4 py-1.5 min-h-[44px] relative">
-            <input
-              type="text"
-              placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة"}
+          <div className="flex-1 bg-slate-900 rounded-[20px] border border-slate-800 focus-within:border-cyan-500 transition-colors flex items-end px-[14px] min-h-[40px] relative">
+            <textarea
+              placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
               value={newMessage}
               onChange={handleInputChange}
-              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage();
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                }
+              }}
               disabled={isRecording}
-              className="flex-1 bg-transparent text-white focus:outline-none text-[15px]"
+              className="flex-1 bg-transparent text-white focus:outline-none text-[15px] resize-none py-[10px] min-h-[40px] max-h-[120px] leading-tight"
+              rows={1}
+              style={{ overflowY: 'auto' }}
             />
-            {editingMessageId && (
-              <button 
-                onClick={() => { setEditingMessageId(null); setNewMessage(''); }}
-                className="absolute left-3 text-slate-400 hover:text-white"
-              >
-                ✕
+            <div className="flex items-center h-[40px]">
+              {editingMessageId && (
+                <button 
+                  onClick={() => { setEditingMessageId(null); setNewMessage(''); }}
+                  className="mr-2 text-slate-400 hover:text-white"
+                >
+                  ✕
+                </button>
+              )}
+              <button className="w-[32px] h-[40px] flex items-center justify-center text-slate-400 hover:text-cyan-500 transition-colors -ml-2">
+                 <Smile size={22} />
               </button>
-            )}
+            </div>
           </div>
 
           {!audioBlob && !mediaFile && !newMessage.trim() && !editingMessageId ? (
             isRecording ? (
               <button 
                 onClick={stopRecording}
-                className="p-2.5 bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors animate-pulse flex-shrink-0 shadow-lg shadow-red-500/20"
+                className="w-[40px] h-[40px] flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors animate-pulse flex-shrink-0 shadow-lg shadow-red-500/20"
               >
                 <Square size={20} fill="currentColor" />
               </button>
             ) : (
               <button 
                 onClick={startRecording}
-                className="p-2.5 bg-slate-800 text-cyan-500 hover:bg-slate-700 rounded-full transition-colors flex-shrink-0"
+                className="w-[40px] h-[40px] flex items-center justify-center bg-cyan-600 text-white hover:bg-cyan-700 rounded-full transition-colors flex-shrink-0 shadow-lg shadow-cyan-600/20"
               >
                 <Mic size={20} />
               </button>
             )
           ) : (
             <button 
-              onClick={sendMessage}
-              className={`p-2.5 text-white rounded-full transition-colors flex-shrink-0 shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-cyan-600 hover:bg-cyan-700 shadow-cyan-600/20'}`}
+              onClick={(e) => {
+                sendMessage();
+                const textarea = document.querySelector('textarea');
+                if (textarea) textarea.style.height = 'auto';
+              }}
+              className={`w-[40px] h-[40px] flex items-center justify-center text-white rounded-full transition-colors flex-shrink-0 shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-cyan-600 hover:bg-cyan-700 shadow-cyan-600/20'}`}
             >
-              {editingMessageId ? <Check size={20} /> : <Send size={20} className="transform rotate-180" />}
+              {editingMessageId ? <Check size={20} /> : <Send size={20} className="transform rotate-180 -ml-1" />}
             </button>
           )}
         </div>
