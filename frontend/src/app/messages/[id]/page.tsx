@@ -18,6 +18,7 @@ export default function ChatRoomPage() {
   const [isInfoPaneOpen, setIsInfoPaneOpen] = useState(false);
   const [roomInfo, setRoomInfo] = useState<any>(null);
   const [myUsername, setMyUsername] = useState<string>('');
+  const [myProfile, setMyProfile] = useState<any>(null);
   
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [isTypingState, setIsTypingState] = useState(false);
@@ -48,8 +49,11 @@ export default function ChatRoomPage() {
       const myId = session.user.id;
       
       // Get my profile for presence
-      const { data: myProfile } = await supabase.from('profiles').select('username').eq('id', myId).single();
-      if (myProfile) setMyUsername(myProfile.username);
+      const { data: myProfileData } = await supabase.from('profiles').select('*').eq('id', myId).single();
+      if (myProfileData) {
+         setMyUsername(myProfileData.username);
+         setMyProfile(myProfileData);
+      }
 
       // Fetch Room Info
       const { data: roomData } = await supabase
