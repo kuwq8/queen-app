@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, Copy, Forward, Eye, Check, Reply, Clock, Pin, CheckCircle } from 'lucide-react';
+import { Trash2, Copy, Forward, Eye, Check, Reply, Clock, Pin, CheckCircle, ChevronDown, Search } from 'lucide-react';
+import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 import { createClient } from '@/utils/supabase/client';
 
 interface ChatMessageProps {
@@ -13,6 +14,7 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, roomInfo, onEdit }: ChatMessageProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [showFullPicker, setShowFullPicker] = useState(false);
   const [menuPos, setMenuPos] = useState<any>(null);
   
   const [isViewingMedia, setIsViewingMedia] = useState(false);
@@ -132,7 +134,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
           ) : null}
 
           <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} max-w-full`}>
-            {showAvatar && (
+            {!isMe && showAvatar && (
               <span className="text-[13px] text-cyan-500 mr-1 mb-1 font-bold" dir="ltr">
                 {msg.sender?.full_name || msg.sender?.username}
               </span>
@@ -177,23 +179,23 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
                   {msg.content}
                 </p>
               )}
+              
+              <div className="flex items-center gap-2 mt-1 justify-end opacity-70">
+                <span className="text-[10px] font-medium" dir="ltr">
+                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+                {msg.expires_at && <Clock size={10} className="text-cyan-600" title="رسالة مؤقتة"/>}
+              </div>
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-2 ${isMe ? '-left-2' : '-right-2'} bg-[#181824] rounded-full border border-gray-700 flex items-center justify-center text-xs shadow-md h-7 min-w-[28px] px-1.5 z-10 gap-1`}>
+                <div className={`absolute -bottom-2 ${isMe ? 'right-3' : 'left-3'} bg-[#1a1a24] border-2 border-black rounded-full px-1.5 py-0.5 text-xs shadow-md z-10 flex items-center justify-center gap-1 min-w-[28px] h-6`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i} className="text-[13px]">{reaction}</span>
+                    <span key={i} className="text-[12px] leading-none">{reaction}</span>
                   ))}
-                  {msg.message_reactions.length > 1 && <span className="text-slate-300 font-bold ml-0.5">{msg.message_reactions.length}</span>}
+                  {msg.message_reactions.length > 1 && <span className="text-slate-300 font-bold ml-0.5 text-[10px] leading-none">{msg.message_reactions.length}</span>}
                 </div>
               )}
-            </div>
-            
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-[11px] text-slate-500 font-medium">
-                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-              {msg.expires_at && <Clock size={10} className="text-cyan-600 opacity-70" title="رسالة مؤقتة"/>}
             </div>
           </div>
         </div>
@@ -206,18 +208,36 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
           
           <div className="flex flex-col items-center gap-4 w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-10" onClick={e => e.stopPropagation()}>
             
-            {/* 1. Emoji Bar */}
-            <div className="flex items-center justify-center gap-2 bg-[#1e1e2e] p-2.5 rounded-full border border-white/10 shadow-xl w-full">
-              {['❤️', '👍', '👎', '🔥', '🥰', '👏', '😄'].map(emoji => (
+            {/* 1. Emoji Bar or Full Picker */}
+            {showFullPicker ? (
+              <div className="bg-[#181824] rounded-2xl p-1 border border-white/10 shadow-2xl w-full flex flex-col items-center">
+                <EmojiPicker 
+                  theme={Theme.DARK} 
+                  onEmojiClick={(emojiData: EmojiClickData) => { addReaction(emojiData.emoji); setShowFullPicker(false); }}
+                  width="100%"
+                  height={350}
+                  searchPlaceHolder="بحث..."
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2 bg-[#1e1e2e] p-2.5 rounded-full border border-white/10 shadow-xl w-full">
+                {['❤️', '👍', '👎', '🔥', '🥰', '👏', '😄'].map(emoji => (
+                  <button 
+                    key={emoji} 
+                    onClick={() => addReaction(emoji)} 
+                    className="text-[22px] hover:scale-125 transition-transform active:scale-95 w-9 h-9 flex items-center justify-center"
+                  >
+                    {emoji}
+                  </button>
+                ))}
                 <button 
-                  key={emoji} 
-                  onClick={() => addReaction(emoji)} 
-                  className="text-[22px] hover:scale-125 transition-transform active:scale-95 w-9 h-9 flex items-center justify-center"
+                  onClick={() => setShowFullPicker(true)} 
+                  className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-full transition-colors ml-1 text-slate-400"
                 >
-                  {emoji}
+                  <ChevronDown size={20} />
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
 
             {/* 2. Message Preview */}
             <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'}`}>
