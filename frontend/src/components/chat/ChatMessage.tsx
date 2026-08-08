@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, Heart, Copy, Bookmark, Forward, Info, Eye, Play, Check } from 'lucide-react';
+import { Trash2, Heart, Copy, Bookmark, Forward, Info, Eye, Play, Check, Reply, Clock } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 interface ChatMessageProps {
