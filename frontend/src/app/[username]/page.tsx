@@ -29,6 +29,7 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [debugMsg, setDebugMsg] = useState('Init');
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -63,10 +64,11 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
+      setDebugMsg('Step 1: createClient');
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
       
-      // Fetch target user's profile
+      setDebugMsg('Step 2: fetching profile data');
       const { data: targetProfile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -74,33 +76,35 @@ export default function ProfilePage() {
         .single();
         
       if (error || !targetProfile) {
-        console.error("Profile fetch error:", error);
-        if (typeof window !== 'undefined') (window as any).profileError = error ? JSON.stringify(error) : 'Not found';
+        setDebugMsg(`Step 2 Error: ${JSON.stringify(error)}`);
         setProfile(null);
         setIsLoading(false);
         return;
       }
 
-      // Fetch counts (mocking for now, or you can implement actual counts if tables exist)
+      setDebugMsg('Step 3: fetching counts');
       const { count: followersCount } = await supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', targetProfile.id);
       const { count: followingCount } = await supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', targetProfile.id);
       const { count: postsCount } = await supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', targetProfile.id);
       
-      // Check if current user is following
+      setDebugMsg('Step 4: getSession');
       const { data: { session } } = await supabase.auth.getSession();
+      
+      setDebugMsg('Step 5: fetch followData');
       let isFollowing = false;
       if (session) {
         const { data: followData } = await supabase.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', targetProfile.id).single();
         isFollowing = !!followData;
       }
       
+      setDebugMsg('Step 6: setProfile');
       setProfile({
         ...targetProfile,
         profile: {
           bio: targetProfile.bio || '',
           avatarUrl: targetProfile.avatar_url,
           coverUrl: targetProfile.cover_url,
-          allowDirectMessages: true // Default for now
+          allowDirectMessages: true
         },
         _count: {
           followers: followersCount || 0,
@@ -112,8 +116,9 @@ export default function ProfilePage() {
       });
       
       setEditBio(targetProfile.bio || '');
+      setDebugMsg('Step 7: done');
     } catch (err) {
-      console.error(err);
+      setDebugMsg(`Catch Error: ${String(err)}`);
       setProfile(null);
     }
   };
@@ -250,7 +255,7 @@ export default function ProfilePage() {
         <h1 className="text-2xl font-bold mb-4">الحساب غير موجود</h1>
         <p className="text-gray-400 mb-6 font-mono border border-gray-700 p-2 rounded text-center">
           @{username}<br/>
-          Error: {typeof window !== 'undefined' ? (window as any).profileError : ''}
+          Debug: {debugMsg}
         </p>
         <button onClick={() => router.back()} className="text-cyan-500 hover:underline">العودة</button>
       </div>
