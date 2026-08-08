@@ -142,7 +142,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               )}
             </div>
           ) : (
-            <div className="w-8 h-8 flex-shrink-0" /> {/* Empty spacer for consecutive messages */}
+            <div className="w-8 h-8 flex-shrink-0" />
           )}
 
           <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} max-w-full`}>
