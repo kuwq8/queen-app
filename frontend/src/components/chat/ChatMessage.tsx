@@ -58,7 +58,11 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
   const deleteForEveryone = async () => {
     const supabase = createClient();
-    await supabase.from('messages').update({ is_deleted: true, deleted_by: currentUserId, deleted_at: new Date().toISOString() }).eq('id', msg.id);
+    const { error } = await supabase.from('messages').update({ is_deleted: true, deleted_by: currentUserId, deleted_at: new Date().toISOString() }).eq('id', msg.id);
+    if (error) {
+      alert('فشل الحذف لدى الجميع، ربما لا تملك الصلاحية أو أن الأعمدة (is_deleted) غير موجودة بالجدول: ' + error.message);
+      console.error(error);
+    }
     setShowMenu(false);
   };
   
@@ -235,16 +239,16 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
             {/* 3. Action List */}
             <div className="w-56 bg-[#181824] p-2 rounded-2xl border border-white/10 shadow-2xl flex flex-col text-right">
-              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+              <button onClick={() => { alert('ميزة الرد قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
                 <Reply size={18} className="text-slate-400" /> رد
               </button>
-              <button onClick={() => { navigator.clipboard.writeText(msg.content); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+              <button onClick={() => { navigator.clipboard.writeText(msg.content || ''); alert('تم النسخ!'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
                 <Copy size={18} className="text-slate-400" /> نسخ
               </button>
-              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+              <button onClick={() => { alert('ميزة التثبيت قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
                 <Pin size={18} className="text-slate-400" /> تثبيت
               </button>
-              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+              <button onClick={() => { alert('ميزة التحويل قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
                 <Forward size={18} className="text-slate-400" /> تحويل
               </button>
               
@@ -262,7 +266,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               
               <div className="h-px bg-white/5 my-1 mx-2"></div>
               
-              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+              <button onClick={() => { alert('ميزة التحديد قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
                 <CheckCircle size={18} className="text-slate-400" /> تحديد
               </button>
             </div>
