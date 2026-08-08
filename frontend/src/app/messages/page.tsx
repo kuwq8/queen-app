@@ -74,6 +74,7 @@ export default function MessagesPage() {
           )
         `)
         .in('id', channelIds)
+        .eq('is_group', false)
         .order('created_at', { ascending: false });
 
       if (error) {

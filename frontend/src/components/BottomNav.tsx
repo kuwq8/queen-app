@@ -35,17 +35,28 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
 
       if (myMemberships && myMemberships.length > 0) {
         const channelIds = myMemberships.map(m => m.channel_id);
-        const { data: unreadMsgs } = await supabase
-          .from('messages')
-          .select('id, message_viewers(user_id)')
-          .in('channel_id', channelIds)
-          .neq('sender_id', session.user.id)
-          .order('created_at', { ascending: false })
-          .limit(100);
+        
+        // Filter to only private channels
+        const { data: privateChannels } = await supabase
+          .from('channels')
+          .select('id')
+          .in('id', channelIds)
+          .eq('is_group', false);
           
-        if (unreadMsgs) {
-           const actualUnread = unreadMsgs.filter(m => !m.message_viewers.some((v: any) => v.user_id === session.user.id)).length;
-           setUnreadMessagesCount(actualUnread);
+        if (privateChannels && privateChannels.length > 0) {
+          const privateChannelIds = privateChannels.map(c => c.id);
+          const { data: unreadMsgs } = await supabase
+            .from('messages')
+            .select('id, message_viewers(user_id)')
+            .in('channel_id', privateChannelIds)
+            .neq('sender_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(100);
+            
+          if (unreadMsgs) {
+             const actualUnread = unreadMsgs.filter(m => !m.message_viewers.some((v: any) => v.user_id === session.user.id)).length;
+             setUnreadMessagesCount(actualUnread);
+          }
         }
       }
     };
