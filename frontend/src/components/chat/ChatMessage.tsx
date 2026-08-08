@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, Copy, Forward, Eye, Check, Reply, Clock, Pin, CheckCircle, ChevronDown, Search } from 'lucide-react';
+import { Trash2, Copy, Forward, Eye, Check, CheckCheck, Reply, Clock, Pin, CheckCircle, ChevronDown, Search } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 import { createClient } from '@/utils/supabase/client';
 
@@ -124,25 +124,10 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
   return (
     <>
-      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3`}>
-        <div className="flex max-w-[85%] items-end gap-2">
-          {/* Show Avatar only for received messages (if showAvatar is true). Never show for my own messages. */}
-          {!isMe && showAvatar ? (
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-700 mt-auto">
-              {msg.sender?.avatar_url ? (
-                <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-[14px] font-bold text-slate-300" dir="ltr">
-                  {msg.sender?.username?.charAt(0).toUpperCase() || '?'}
-                </span>
-              )}
-            </div>
-          ) : !isMe ? (
-            <div className="w-8 h-8 flex-shrink-0" />
-          ) : null}
-
-          <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} max-w-full`}>
-            {!isMe && showAvatar && (
+      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3 w-full`}>
+        <div className="flex w-full max-w-[80%] sm:max-w-[320px] items-end gap-2">
+          <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} w-full`}>
+            {!isMe && roomInfo?.is_group && showAvatar && (
               <span className="text-[13px] text-cyan-500 mr-1 mb-1 font-bold" dir="ltr">
                 {msg.sender?.full_name || msg.sender?.username}
               </span>
@@ -157,7 +142,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               onTouchEnd={handleEnd}
               onTouchMove={handleMove}
               onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
-              className={`px-4 pt-2.5 pb-3 rounded-2xl ${isMe ? 'bg-[#3b3861] text-white rounded-tr-sm' : 'bg-[#1e1d2b] text-gray-100 rounded-tl-sm'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-[#3b3861]/50' : ''}`}
+              className={`pt-2.5 px-3.5 pb-2 rounded-2xl ${isMe ? 'bg-[#12583b] text-white rounded-tr-[4px]' : 'bg-[#202c33] text-white rounded-tl-[4px]'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-[#12583b]/50' : ''}`}
             >
               {msg.is_view_once ? (
                 <div 
@@ -183,23 +168,23 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               ) : null}
 
               {msg.content && (
-                <p className={`text-[15px] leading-snug font-normal break-words ${isMe ? 'text-white' : 'text-gray-100'}`}>
+                <p className={`text-[15px] leading-[1.35] font-normal break-words text-white`}>
                   {msg.content}
                 </p>
               )}
               
-              <div className="text-[11px] text-gray-400 mt-1 flex items-center justify-end gap-1 select-none min-w-[50px]">
+              <div className="flex items-center justify-end gap-1 text-[11px] text-gray-300/80 mt-1 select-none">
                 <span dir="ltr">
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
-                {msg.expires_at && <Clock size={10} className="text-cyan-600" title="رسالة مؤقتة"/>}
+                {isMe && <CheckCheck size={14} className="text-[#53bdeb]" />}
               </div>
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-3 ${isMe ? 'right-3' : 'left-3'} z-10 flex items-center gap-1 bg-[#252338] border border-[#3d3a5a] rounded-full px-2 py-0.5 shadow-lg`}>
+                <div className={`absolute -bottom-2.5 ${isMe ? 'right-3' : 'left-3'} z-10 flex items-center justify-center gap-1 bg-[#182229] border border-[#222d34] rounded-full px-2 py-0.5 shadow-md`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i} className="text-xs leading-none">{reaction}</span>
+                    <span key={i} className="text-[12px] leading-none">{reaction}</span>
                   ))}
                   {msg.message_reactions.length > 1 && <span className="text-slate-300 font-bold ml-0.5 text-[10px] leading-none">{msg.message_reactions.length}</span>}
                 </div>
