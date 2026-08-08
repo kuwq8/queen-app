@@ -10,6 +10,7 @@ interface BottomNavProps {
 
 export default function BottomNav({ activeTab }: BottomNavProps) {
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -17,6 +18,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       
+      // Fetch generic notifications
       const { count } = await supabase
         .from('social_notifications')
         .select('*', { count: 'exact', head: true })
@@ -24,6 +26,28 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         .eq('is_read', false);
         
       if (count !== null) setUnreadCount(count);
+
+      // Fetch unread messages
+      const { data: myMemberships } = await supabase
+        .from('channel_members')
+        .select('channel_id')
+        .eq('user_id', session.user.id);
+
+      if (myMemberships && myMemberships.length > 0) {
+        const channelIds = myMemberships.map(m => m.channel_id);
+        const { data: unreadMsgs } = await supabase
+          .from('messages')
+          .select('id, message_viewers(user_id)')
+          .in('channel_id', channelIds)
+          .neq('sender_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+          
+        if (unreadMsgs) {
+           const actualUnread = unreadMsgs.filter(m => !m.message_viewers.some((v: any) => v.user_id === session.user.id)).length;
+           setUnreadMessagesCount(actualUnread);
+        }
+      }
     };
     
     fetchUnread();
@@ -55,8 +79,13 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         )}
       </Link>
 
-      <Link href="/messages" className={`p-2 rounded-full transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+      <Link href="/messages" className={`relative p-2 rounded-full transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
         <MessageCircle size={26} strokeWidth={activeTab === 'messages' ? 2.5 : 1.5} />
+        {unreadMessagesCount > 0 && (
+          <span className="absolute top-1 left-1 w-4 h-4 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-[9px] font-bold text-white">
+            {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
+          </span>
+        )}
       </Link>
     </nav>
   );

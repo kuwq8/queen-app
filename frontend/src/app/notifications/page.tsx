@@ -34,6 +34,12 @@ export default function NotificationsPage() {
 
       if (data) {
         setNotifications(data);
+        
+        // Mark as read
+        const unreadIds = data.filter(n => !n.is_read).map(n => n.id);
+        if (unreadIds.length > 0) {
+          supabase.from('social_notifications').update({ is_read: true }).in('id', unreadIds).then();
+        }
       }
       setIsLoading(false);
     };
@@ -104,18 +110,18 @@ export default function NotificationsPage() {
                 <div 
                   key={notification.id} 
                   onClick={() => handleNotificationClick(notification)}
-                  className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-slate-900 transition-colors ${!notification.read ? 'bg-cyan-950/10' : ''}`}
+                  className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-slate-900 transition-colors ${!notification.is_read ? 'bg-cyan-950/20' : ''}`}
                 >
                   <div className="w-10 flex justify-start pl-2 pt-1">
                     {getIcon(notification.type)}
                   </div>
                   <div className="flex-1">
-                    <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden mb-2">
-                      {notification.actor.profile?.avatarUrl ? (
-                        <img src={notification.actor.profile.avatarUrl} className="w-full h-full object-cover" />
+                    <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden mb-2 border border-slate-700">
+                      {notification.actor?.avatar_url ? (
+                        <img src={notification.actor.avatar_url} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-slate-300">
-                          {notification.actor.username.charAt(0).toUpperCase()}
+                        <div className="w-full h-full flex items-center justify-center font-bold text-slate-300" dir="ltr">
+                          {notification.actor?.username?.charAt(0).toUpperCase() || 'U'}
                         </div>
                       )}
                     </div>
