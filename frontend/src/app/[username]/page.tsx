@@ -259,7 +259,41 @@ export default function ProfilePage() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-black"><div className="animate-pulse text-cyan-500 font-bold">جاري تحميل الحساب...</div></div>;
+    return (
+      <div className="min-h-screen flex justify-center bg-black font-sans text-right">
+        <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black">
+          {/* Skeleton Header */}
+          <header className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center px-4 py-2 gap-6 border-b border-slate-800/50">
+            <div className="w-9 h-9 rounded-full bg-slate-800 animate-pulse"></div>
+            <div className="flex flex-col gap-2">
+              <div className="w-24 h-5 bg-slate-800 rounded animate-pulse"></div>
+              <div className="w-16 h-3 bg-slate-800 rounded animate-pulse"></div>
+            </div>
+          </header>
+
+          {/* Skeleton Cover & Avatar */}
+          <div className="relative">
+            <div className="h-32 sm:h-48 bg-slate-900 animate-pulse"></div>
+            <div className="px-4 pb-4">
+              <div className="flex justify-between items-start">
+                <div className="-mt-12 sm:-mt-16 relative">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-slate-800 border-4 border-black animate-pulse"></div>
+                </div>
+                <div className="mt-14 sm:mt-20">
+                  <div className="w-24 h-8 rounded-full bg-slate-800 animate-pulse"></div>
+                </div>
+              </div>
+              
+              <div className="mt-4 flex flex-col gap-3">
+                <div className="w-32 h-6 bg-slate-800 rounded animate-pulse"></div>
+                <div className="w-20 h-4 bg-slate-800 rounded animate-pulse"></div>
+                <div className="w-full h-16 bg-slate-800 rounded animate-pulse mt-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!profile) {
