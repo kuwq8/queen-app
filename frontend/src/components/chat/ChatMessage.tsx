@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, Heart, Copy, Bookmark, Forward, Info, Eye, Play, Check, Reply, Clock } from 'lucide-react';
+import { Trash2, Copy, Forward, Eye, Check, Reply, Clock } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 interface ChatMessageProps {
@@ -13,28 +13,59 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, roomInfo, onEdit }: ChatMessageProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number, left?: number, right?: number } | null>(null);
+  
   const [isViewingMedia, setIsViewingMedia] = useState(false);
   const [viewOnceUrl, setViewOnceUrl] = useState<string | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef(0);
 
   // Check if media is viewed
   const isViewed = msg.message_viewers?.some((v: any) => v.user_id === currentUserId);
   const isDeleted = msg.is_deleted;
 
-  const handleTouchStart = () => {
+  const handleStart = (e: React.TouchEvent | React.MouseEvent) => {
+    if (e.type === 'touchstart') {
+        touchStartY.current = (e as React.TouchEvent).touches[0].clientY;
+    }
+    
     timerRef.current = setTimeout(() => {
-      setShowMenu(true);
+      if (messageRef.current) {
+         const rect = messageRef.current.getBoundingClientRect();
+         
+         // Menu height approx 260px
+         const menuHeight = 260;
+         let top = rect.bottom + 8;
+         
+         // If there's no space below, open above
+         if (window.innerHeight - rect.bottom < menuHeight) {
+             top = rect.top - menuHeight - 8; 
+             if (top < 10) top = 10; // Keep it on screen
+         }
+         
+         setMenuPos({ 
+           top, 
+           // In RTL: isMe means right-aligned. So we anchor right.
+           right: isMe ? 16 : undefined, 
+           left: isMe ? undefined : 16 
+         });
+         setShowMenu(true);
+      }
     }, 500);
   };
 
-  const handleTouchEnd = () => {
+  const handleEnd = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   };
 
-  const handleTouchMove = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+  const handleMove = (e: React.TouchEvent) => {
+    const currentY = e.touches[0].clientY;
+    if (Math.abs(currentY - touchStartY.current) > 5) {
+       if (timerRef.current) clearTimeout(timerRef.current);
+    }
   };
 
   const deleteForMe = async () => {
@@ -82,8 +113,8 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
   if (isDeleted) {
     return (
-      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
-        <div className={`p-3 rounded-2xl ${isMe ? 'bg-cyan-900/50 text-cyan-200' : 'bg-slate-800/50 text-slate-400'} border border-dashed border-slate-700 text-[13px] italic flex items-center gap-2`}>
+      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-3`}>
+        <div className={`px-3 py-2 rounded-2xl ${isMe ? 'bg-cyan-900/50 text-cyan-200' : 'bg-slate-800/50 text-slate-400'} border border-dashed border-slate-700 text-[13px] italic flex items-center gap-2`}>
            🚫 تم حذف هذه الرسالة
         </div>
       </div>
@@ -97,9 +128,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
   return (
     <>
-      <div 
-        className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-4`}
-      >
+      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3`}>
         <div className="flex max-w-[85%] items-end gap-2">
           {!isMe && (
             <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
@@ -107,111 +136,128 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
                 msg.sender?.avatar_url ? (
                   <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-xs font-bold" dir="ltr">{msg.sender?.username?.charAt(0).toUpperCase() || '?'}</span>
+                  <span className="text-xs font-bold text-slate-300" dir="ltr">{msg.sender?.username?.charAt(0).toUpperCase() || '?'}</span>
                 )
               ) : null}
             </div>
           )}
 
           <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'}`}>
-            {!isMe && showAvatar && roomInfo?.is_group && <span className="text-xs text-slate-500 mr-1 mb-1 font-bold" dir="ltr">{msg.sender?.username}</span>}
+            {!isMe && showAvatar && (
+              <span className="text-[13px] text-cyan-500 mr-1 mb-1 font-bold" dir="ltr">
+                {msg.sender?.username}
+              </span>
+            )}
             
             <div 
-              onMouseDown={handleTouchStart}
-              onMouseUp={handleTouchEnd}
-              onMouseLeave={handleTouchEnd}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              onTouchMove={handleTouchMove}
-              onContextMenu={(e) => { e.preventDefault(); setShowMenu(true); }}
-              className={`p-3 rounded-2xl ${isMe ? 'bg-cyan-600 rounded-bl-sm' : 'bg-slate-800 rounded-br-sm'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-transform`}
+              ref={messageRef}
+              onMouseDown={handleStart}
+              onMouseUp={handleEnd}
+              onMouseLeave={handleEnd}
+              onTouchStart={handleStart}
+              onTouchEnd={handleEnd}
+              onTouchMove={handleMove}
+              onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
+              className={`px-3 py-2 rounded-2xl ${isMe ? 'bg-cyan-600 rounded-bl-sm' : 'bg-slate-800 rounded-br-sm'} shadow-sm relative cursor-pointer active:scale-[0.98] transition-transform ${showMenu ? 'scale-[0.98] opacity-80' : ''}`}
             >
               {msg.is_view_once ? (
                 <div 
                   onClick={openViewOnce}
-                  className="flex items-center gap-2 bg-black/20 p-3 rounded-xl cursor-pointer hover:bg-black/30 transition-colors"
+                  className="flex items-center gap-2 bg-black/20 px-3 py-2 rounded-xl cursor-pointer hover:bg-black/30 transition-colors"
                 >
                    {isViewed ? (
-                     <><Check size={18} className="text-slate-400"/><span className="text-slate-400 text-sm">تمت المشاهدة</span></>
+                     <><Check size={16} className="text-slate-400"/><span className="text-slate-400 text-[13px]">تمت المشاهدة</span></>
                    ) : (
-                     <><Eye size={18} className="text-white animate-pulse"/><span className="text-white text-sm font-bold">مشاهدة مرة واحدة</span></>
+                     <><Eye size={16} className="text-white animate-pulse"/><span className="text-white text-[13px] font-bold">مشاهدة مرة واحدة</span></>
                    )}
                 </div>
               ) : msg.media_url ? (
-                <div className="mb-2">
+                <div className="mb-1">
                   {msg.media_url.endsWith('.webm') ? (
                     <audio src={msg.media_url} controls className="h-10 w-[200px]" />
                   ) : msg.media_url.match(/\.(mp4|mov|webm)$/i) ? (
-                    <video src={msg.media_url} controls className="max-w-full rounded-xl max-h-[300px]" />
+                    <video src={msg.media_url} controls className="max-w-full rounded-xl max-h-[250px]" />
                   ) : (
-                    <img src={msg.media_url} className="max-w-full rounded-xl max-h-[300px] object-cover" />
+                    <img src={msg.media_url} className="max-w-full rounded-xl max-h-[250px] object-cover" />
                   )}
                 </div>
               ) : null}
 
               {msg.content && (
-                <p className={`text-[15px] leading-relaxed break-words ${isMe ? 'text-white' : 'text-slate-200'}`}>
+                <p className={`text-[14px] leading-relaxed break-words ${isMe ? 'text-white' : 'text-slate-100'}`}>
                   {msg.content}
                 </p>
               )}
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-3 ${isMe ? 'left-2' : 'right-2'} bg-slate-900 border border-slate-700 rounded-full px-2 py-0.5 text-xs flex gap-1 shadow-lg z-10`}>
+                <div className={`absolute -bottom-3 ${isMe ? 'left-2' : 'right-2'} bg-slate-900 border border-slate-700 rounded-full px-1.5 py-0.5 text-[11px] flex items-center gap-1 shadow-md z-10`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i}>{reaction}</span>
+                    <span key={i} className="text-[14px]">{reaction}</span>
                   ))}
-                  {msg.message_reactions.length > 1 && <span className="text-slate-400 ml-1">{msg.message_reactions.length}</span>}
+                  {msg.message_reactions.length > 1 && <span className="text-slate-400 ml-1 font-bold">{msg.message_reactions.length}</span>}
                 </div>
               )}
             </div>
             
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-slate-500">
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-[11px] text-slate-500 font-medium">
                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
-              {msg.expires_at && <Clock size={10} className="text-cyan-500" title="رسالة مؤقتة"/>}
+              {msg.expires_at && <Clock size={10} className="text-cyan-600 opacity-70" title="رسالة مؤقتة"/>}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Context Menu / Bottom Sheet */}
+      {/* Context Menu Backdrop */}
       {showMenu && (
-        <div className="fixed inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center p-4" onClick={() => setShowMenu(false)}>
-          <div 
-            className="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-200"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="p-4 border-b border-slate-800 bg-slate-800/50 flex justify-center gap-4 text-2xl">
-              {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
-                <button key={emoji} onClick={() => addReaction(emoji)} className="hover:scale-125 transition-transform active:scale-95">{emoji}</button>
-              ))}
-            </div>
+        <div className="fixed inset-0 z-[90]" onClick={() => setShowMenu(false)} />
+      )}
+
+      {/* Context Menu (Compact) */}
+      {showMenu && menuPos && (
+        <div 
+          className="fixed z-[100] w-[260px] bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-100 overflow-hidden flex flex-col"
+          style={{ top: menuPos.top, left: menuPos.left, right: menuPos.right }}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Reactions Row */}
+          <div className="p-2 border-b border-slate-800 flex justify-between items-center bg-slate-800/30">
+            {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
+              <button 
+                key={emoji} 
+                onClick={() => addReaction(emoji)} 
+                className="text-[22px] hover:scale-125 transition-transform active:scale-95 w-8 h-8 flex items-center justify-center"
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+          
+          {/* Action List */}
+          <div className="flex flex-col p-1 text-right">
+            <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2 flex items-center gap-3 hover:bg-slate-800/80 rounded-lg transition-colors text-slate-200 text-[14px] font-medium">
+              <Reply size={18} className="text-slate-400" /> رد
+            </button>
+            <button onClick={() => { navigator.clipboard.writeText(msg.content); setShowMenu(false); }} className="w-full text-right px-3 py-2 flex items-center gap-3 hover:bg-slate-800/80 rounded-lg transition-colors text-slate-200 text-[14px] font-medium">
+              <Copy size={18} className="text-slate-400" /> نسخ
+            </button>
+            <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2 flex items-center gap-3 hover:bg-slate-800/80 rounded-lg transition-colors text-slate-200 text-[14px] font-medium">
+              <Forward size={18} className="text-slate-400" /> إعادة توجيه
+            </button>
             
-            <div className="p-2 flex flex-col text-right">
-              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-colors text-slate-300">
-                <Reply size={18} /> رد
+            <div className="h-px bg-slate-800/50 my-1 mx-2"></div>
+            
+            <button onClick={deleteForMe} className="w-full text-right px-3 py-2 flex items-center gap-3 hover:bg-slate-800/80 rounded-lg transition-colors text-red-400 text-[14px] font-medium">
+              <Trash2 size={18} /> حذف لدي فقط
+            </button>
+            
+            {isMe && (
+              <button onClick={deleteForEveryone} className="w-full text-right px-3 py-2 flex items-center gap-3 hover:bg-red-900/30 rounded-lg transition-colors text-red-500 text-[14px] font-bold">
+                <Trash2 size={18} /> حذف لدى الجميع
               </button>
-              <button onClick={() => { navigator.clipboard.writeText(msg.content); setShowMenu(false); }} className="w-full text-right px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-colors text-slate-300">
-                <Copy size={18} /> نسخ
-              </button>
-              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-colors text-slate-300">
-                <Forward size={18} /> إعادة توجيه
-              </button>
-              
-              <div className="h-px bg-slate-800 my-1"></div>
-              
-              <button onClick={deleteForMe} className="w-full text-right px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-colors text-red-400">
-                <Trash2 size={18} /> حذف لدي فقط
-              </button>
-              
-              {isMe && (
-                <button onClick={deleteForEveryone} className="w-full text-right px-4 py-3 flex items-center gap-3 hover:bg-slate-800 transition-colors text-red-500 font-bold">
-                  <Trash2 size={18} /> حذف لدى الجميع
-                </button>
-              )}
-            </div>
+            )}
           </div>
         </div>
       )}
