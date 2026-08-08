@@ -45,7 +45,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           supabase.rpc('increment_post_view', { post_id: post.id }).catch(console.error);
         });
       }
-    }, { threshold: 0.5 });
+    }, { threshold: 0.1 });
     
     observer.observe(postRef.current);
     
