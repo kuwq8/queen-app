@@ -386,7 +386,7 @@ export default function ChatRoomPage() {
       <div className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden">
         {messages.map((msg, idx) => {
           const isMe = msg.sender?.id === currentUserId;
-          const showAvatar = idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id;
+          const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
           
           // Filter out deleted for me
           if (msg.message_deletions?.some((d: any) => d.user_id === currentUserId)) {

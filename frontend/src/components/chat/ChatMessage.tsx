@@ -13,7 +13,7 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, roomInfo, onEdit }: ChatMessageProps) {
   const [showMenu, setShowMenu] = useState(false);
-  const [menuPos, setMenuPos] = useState<{ top: number, emojiTop: number, left?: number, right?: number } | null>(null);
+  const [menuPos, setMenuPos] = useState<any>(null);
   
   const [isViewingMedia, setIsViewingMedia] = useState(false);
   const [viewOnceUrl, setViewOnceUrl] = useState<string | null>(null);
@@ -34,38 +34,6 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     
     timerRef.current = setTimeout(() => {
       if (messageRef.current) {
-         const rect = messageRef.current.getBoundingClientRect();
-         
-         // Menu height approx 220px, Emoji bar approx 50px
-         const menuHeight = 220;
-         const emojiHeight = 50;
-         const padding = 8;
-         
-         let menuTop = rect.bottom + padding;
-         let emojiTop = rect.top - emojiHeight - padding;
-         
-         // If there's no space below for the menu
-         if (window.innerHeight - rect.bottom < menuHeight) {
-             menuTop = rect.top - menuHeight - padding; 
-             emojiTop = menuTop - emojiHeight - padding; // Put emoji bar above the menu
-             
-             if (emojiTop < 10) {
-                 emojiTop = rect.bottom + padding; // Fallback if no space above
-             }
-         } else {
-             // Normal: menu below, emoji above
-             if (emojiTop < 10) {
-                 emojiTop = menuTop + menuHeight + padding; // Put emoji below menu if no space above
-             }
-         }
-         
-         // Calculate exact alignment with the message bubble
-         setMenuPos({ 
-           top: menuTop, 
-           emojiTop: emojiTop,
-           right: isMe ? window.innerWidth - rect.right : undefined, 
-           left: isMe ? undefined : rect.left 
-         });
          setShowMenu(true);
       }
     }, 500);
@@ -144,9 +112,9 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     <>
       <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3`}>
         <div className="flex max-w-[85%] items-end gap-2">
-          {/* Always show Avatar if showAvatar is true, even for my messages */}
-          {showAvatar ? (
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-700">
+          {/* Show Avatar only for received messages (if showAvatar is true). Never show for my own messages. */}
+          {!isMe && showAvatar ? (
+            <div className="w-8 h-8 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden flex items-center justify-center border border-slate-700 mt-auto">
               {msg.sender?.avatar_url ? (
                 <img src={msg.sender.avatar_url} className="w-full h-full object-cover" />
               ) : (
@@ -155,9 +123,9 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
                 </span>
               )}
             </div>
-          ) : (
+          ) : !isMe ? (
             <div className="w-8 h-8 flex-shrink-0" />
-          )}
+          ) : null}
 
           <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} max-w-full`}>
             {showAvatar && (
@@ -227,68 +195,78 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
         </div>
       </div>
 
-      {/* Context Menu Backdrop */}
+      {/* Centered Context Menu Modal */}
       {showMenu && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]" onClick={() => setShowMenu(false)} />
-      )}
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4" onClick={() => setShowMenu(false)}>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-0" />
+          
+          <div className="flex flex-col items-center gap-4 w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-10" onClick={e => e.stopPropagation()}>
+            
+            {/* 1. Emoji Bar */}
+            <div className="flex items-center justify-center gap-2 bg-[#1e1e2e] p-2.5 rounded-full border border-white/10 shadow-xl w-full">
+              {['❤️', '👍', '👎', '🔥', '🥰', '👏', '😄'].map(emoji => (
+                <button 
+                  key={emoji} 
+                  onClick={() => addReaction(emoji)} 
+                  className="text-[22px] hover:scale-125 transition-transform active:scale-95 w-9 h-9 flex items-center justify-center"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
 
-      {/* Emoji Bar */}
-      {showMenu && menuPos && (
-        <div 
-          className="fixed z-[100] bg-[#1e1e2e] p-2 rounded-full shadow-lg animate-in fade-in zoom-in-95 duration-150 flex items-center gap-2 border border-white/5"
-          style={{ top: menuPos.emojiTop, left: menuPos.left, right: menuPos.right }}
-          onClick={e => e.stopPropagation()}
-        >
-          {['❤️', '👍', '👎', '🔥', '🥰', '👏', '😄'].map(emoji => (
-            <button 
-              key={emoji} 
-              onClick={() => addReaction(emoji)} 
-              className="text-[22px] hover:scale-125 transition-transform active:scale-95 w-8 h-8 flex items-center justify-center"
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-      )}
+            {/* 2. Message Preview */}
+            <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+              <div className="max-w-[85%] bg-[#2a2a3c] p-3 rounded-2xl text-white shadow-lg relative break-words text-right">
+                {msg.media_url ? (
+                  <div className="mb-2">
+                    {msg.media_url.endsWith('.webm') ? (
+                      <audio src={msg.media_url} controls className="h-10 w-[200px]" />
+                    ) : msg.media_url.match(/\.(mp4|mov|webm)$/i) ? (
+                      <video src={msg.media_url} controls className="max-w-full rounded-xl max-h-[150px]" />
+                    ) : (
+                      <img src={msg.media_url} className="max-w-full rounded-xl max-h-[150px] object-cover" />
+                    )}
+                  </div>
+                ) : null}
+                <p className="text-[14.5px] leading-relaxed break-words">{msg.content || 'رسالة...'}</p>
+              </div>
+            </div>
 
-      {/* Context Menu */}
-      {showMenu && menuPos && (
-        <div 
-          className="fixed z-[100] w-48 bg-[#181824] border border-white/5 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden flex flex-col p-1"
-          style={{ top: menuPos.top, left: menuPos.left, right: menuPos.right }}
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="flex flex-col text-right">
-            <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-              <Reply size={18} className="text-slate-400" /> رد
-            </button>
-            <button onClick={() => { navigator.clipboard.writeText(msg.content); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-              <Copy size={18} className="text-slate-400" /> نسخ
-            </button>
-            <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-              <Pin size={18} className="text-slate-400" /> تثبيت
-            </button>
-            <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-              <Forward size={18} className="text-slate-400" /> تحويل
-            </button>
-            
-            <div className="h-px bg-white/5 my-1 mx-2"></div>
-            
-            <button onClick={deleteForMe} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-red-400/90 text-[14px] font-medium">
-              <Trash2 size={18} /> حذف لدي فقط
-            </button>
-            
-            {isMe && (
-              <button onClick={deleteForEveryone} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-red-500/10 rounded-xl transition-colors text-red-500 text-[14px] font-bold">
-                <Trash2 size={18} /> حذف لدى الجميع
+            {/* 3. Action List */}
+            <div className="w-56 bg-[#181824] p-2 rounded-2xl border border-white/10 shadow-2xl flex flex-col text-right">
+              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+                <Reply size={18} className="text-slate-400" /> رد
               </button>
-            )}
+              <button onClick={() => { navigator.clipboard.writeText(msg.content); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+                <Copy size={18} className="text-slate-400" /> نسخ
+              </button>
+              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+                <Pin size={18} className="text-slate-400" /> تثبيت
+              </button>
+              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+                <Forward size={18} className="text-slate-400" /> تحويل
+              </button>
+              
+              <div className="h-px bg-white/5 my-1 mx-2"></div>
+              
+              <button onClick={deleteForMe} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-red-400/90 text-[14px] font-medium">
+                <Trash2 size={18} /> حذف لدي فقط
+              </button>
+              
+              {isMe && (
+                <button onClick={deleteForEveryone} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-red-500/10 rounded-xl transition-colors text-red-500 text-[14px] font-bold">
+                  <Trash2 size={18} /> حذف لدى الجميع
+                </button>
+              )}
+              
+              <div className="h-px bg-white/5 my-1 mx-2"></div>
+              
+              <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+                <CheckCircle size={18} className="text-slate-400" /> تحديد
+              </button>
+            </div>
             
-            <div className="h-px bg-white/5 my-1 mx-2"></div>
-            
-            <button onClick={() => { setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-              <CheckCircle size={18} className="text-slate-400" /> تحديد
-            </button>
           </div>
         </div>
       )}
