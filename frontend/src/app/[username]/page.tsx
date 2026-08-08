@@ -74,6 +74,8 @@ export default function ProfilePage() {
         .single();
         
       if (error || !targetProfile) {
+        console.error("Profile fetch error:", error);
+        if (typeof window !== 'undefined') (window as any).profileError = error ? JSON.stringify(error) : 'Not found';
         setProfile(null);
         setIsLoading(false);
         return;
@@ -246,7 +248,10 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
         <h1 className="text-2xl font-bold mb-4">الحساب غير موجود</h1>
-        <p className="text-gray-400 mb-6 font-mono border border-gray-700 p-2 rounded">@{username}</p>
+        <p className="text-gray-400 mb-6 font-mono border border-gray-700 p-2 rounded text-center">
+          @{username}<br/>
+          Error: {typeof window !== 'undefined' ? (window as any).profileError : ''}
+        </p>
         <button onClick={() => router.back()} className="text-cyan-500 hover:underline">العودة</button>
       </div>
     );
