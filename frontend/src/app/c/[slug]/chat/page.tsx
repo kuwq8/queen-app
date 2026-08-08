@@ -118,7 +118,7 @@ export default function ClassicChatPage() {
           const supabase = createClient();
           supabase.from('messages').insert({
             channel_id: activeRoom.id,
-            sender_id: currentUser.id,
+            user_id: currentUser.id,
             content: '( هذا المستخدم خرج من الشات )'
           }).then(() => {});
         });
@@ -269,7 +269,7 @@ export default function ClassicChatPage() {
         .limit(50);
         
       if (data) {
-        const senderIds = data.map((m: any) => m.sender_id).filter(Boolean);
+        const senderIds = data.map((m: any) => m.user_id).filter(Boolean);
         let profiles: any[] = [];
         if (senderIds.length > 0) {
           const { data: p } = await supabase.from('profiles').select('*').in('id', senderIds);
@@ -278,7 +278,7 @@ export default function ClassicChatPage() {
         
         const messagesWithProfiles = data.map((m: any) => ({
           ...m,
-          sender: profiles.find(p => p.id === m.sender_id) || null
+          sender: profiles.find(p => p.id === m.user_id) || null
         }));
         
         setMessages(messagesWithProfiles);
@@ -291,7 +291,7 @@ export default function ClassicChatPage() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${activeRoom.id}` },
         async (payload: any) => {
-          const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.sender_id).single();
+          const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.user_id).single();
           const newMsg = { ...payload.new, sender: senderData };
           setMessages(prev => [...prev, newMsg].slice(-50));
           scrollToBottom();
@@ -307,7 +307,7 @@ export default function ClassicChatPage() {
           if (event === 'sendCommunityMessage') {
              await supabase.from('messages').insert({
                 channel_id: payload.roomId,
-                sender_id: currentUser.id,
+                user_id: currentUser.id,
                 content: payload.content
              });
           }
@@ -359,7 +359,7 @@ export default function ClassicChatPage() {
     const supabase = createClient();
     await supabase.from('messages').insert({
        channel_id: activePrivateChat.id,
-       sender_id: currentUser.id,
+       user_id: currentUser.id,
        content: newPrivateMessage
     });
     
