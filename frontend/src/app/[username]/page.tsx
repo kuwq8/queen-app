@@ -352,25 +352,45 @@ export default function ProfilePage() {
                   <div className="flex items-center gap-2">
                     <button 
                       onClick={async () => {
-                        const { createClient } = await import('@/utils/supabase/client');
-                        const supabase = createClient();
-                        const { data: { session } } = await supabase.auth.getSession();
-                        if (!session) return;
-                        
-                        // Check if private chat exists or create one
-                        const { data: existingChat } = await supabase.rpc('get_or_create_private_chat', { other_user_id: profile.id });
-                        if (existingChat) {
-                          router.push(`/messages/${existingChat}`);
-                        } else {
-                          // Fallback to manual creation if RPC is missing
-                          const { data: channel } = await supabase.from('channels').insert({ is_group: false }).select().single();
-                          if (channel) {
-                            await supabase.from('channel_members').insert([
-                              { channel_id: channel.id, user_id: session.user.id },
-                              { channel_id: channel.id, user_id: profile.id }
-                            ]);
-                            router.push(`/messages/${channel.id}`);
+                        try {
+                          const { createClient } = await import('@/utils/supabase/client');
+                          const supabase = createClient();
+                          const { data: { session } } = await supabase.auth.getSession();
+                          if (!session) return;
+                          
+                          // Check if private chat exists or create one
+                          const { data: existingChat, error: rpcError } = await supabase.rpc('get_or_create_private_chat', { other_user_id: profile.id });
+                          
+                          if (existingChat) {
+                            router.push(`/messages/${existingChat}`);
+                          } else {
+                            if (rpcError) {
+                              console.error("RPC Error:", rpcError);
+                            }
+                            
+                            // Fallback to manual creation if RPC is missing
+                            const { data: channel, error: channelError } = await supabase.from('channels').insert({ is_group: false }).select().single();
+                            if (channelError) {
+                              alert('فشل إنشاء المحادثة: ' + JSON.stringify(channelError));
+                              return;
+                            }
+                            
+                            if (channel) {
+                              const { error: membersError } = await supabase.from('channel_members').insert([
+                                { channel_id: channel.id, user_id: session.user.id },
+                                { channel_id: channel.id, user_id: profile.id }
+                              ]);
+                              
+                              if (membersError) {
+                                alert('فشل إضافة الأعضاء: ' + JSON.stringify(membersError));
+                                return;
+                              }
+                              
+                              router.push(`/messages/${channel.id}`);
+                            }
                           }
+                        } catch (err: any) {
+                          alert('حدث خطأ غير متوقع: ' + err.message);
                         }
                       }}
                       className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
