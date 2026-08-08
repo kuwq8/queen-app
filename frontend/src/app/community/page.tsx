@@ -155,16 +155,16 @@ export default function CommunityPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex bg-slate-900 mt-4 rounded-lg p-1 font-bold">
+          <div className="flex items-center gap-2 mt-4 font-bold overflow-x-auto [&::-webkit-scrollbar]:hidden pb-2">
             <button
               onClick={() => setActiveTab('explore')}
-              className={`flex-1 py-2 text-center rounded-md transition-colors ${activeTab === 'explore' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-5 py-1.5 text-[15px] rounded-full transition-all border ${activeTab === 'explore' ? 'bg-[#27272a] text-white border-[#3f3f46]' : 'bg-[#18181b] text-zinc-400 border-[#27272a] hover:bg-[#27272a]/50'}`}
             >
               الاستكشاف
             </button>
             <button
               onClick={() => setActiveTab('joined')}
-              className={`flex-1 py-2 text-center rounded-md transition-colors ${activeTab === 'joined' ? 'bg-cyan-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+              className={`px-5 py-1.5 text-[15px] rounded-full transition-all border ${activeTab === 'joined' ? 'bg-[#27272a] text-white border-[#3f3f46]' : 'bg-[#18181b] text-zinc-400 border-[#27272a] hover:bg-[#27272a]/50'}`}
             >
               المنظم لها
             </button>
