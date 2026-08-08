@@ -331,7 +331,7 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="flex h-screen bg-black text-white max-w-[900px] mx-auto border-x border-slate-800 relative overflow-hidden font-sans text-right">
+    <div className="w-full h-dvh max-w-full flex flex-col bg-black overflow-hidden text-white relative font-sans text-right">
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
@@ -409,7 +409,7 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-slate-800 px-2 sm:px-3 py-2 bg-black">
+      <div className="p-2 bg-[#0f0f15] border-t border-gray-800 flex flex-col w-full sticky bottom-0 z-40">
         {(audioBlob || mediaPreview) && (
           <div className="mb-2 flex items-center gap-3 bg-slate-900/80 p-2 rounded-xl border border-slate-800 relative">
             {audioBlob ? (
@@ -442,7 +442,7 @@ export default function ChatRoomPage() {
             <Plus size={20} />
           </button>
           
-          <div className="flex-1 bg-slate-900 rounded-[20px] border border-slate-800 focus-within:border-cyan-500 transition-colors flex items-end px-[14px] min-h-[40px] relative">
+          <div className="flex-1 bg-[#1a1a24] text-white rounded-[24px] focus-within:ring-1 focus-within:ring-cyan-500 transition-colors flex items-end px-3 py-1 min-h-[40px] relative">
             <textarea
               placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
               value={newMessage}
@@ -461,7 +461,7 @@ export default function ChatRoomPage() {
                 }
               }}
               disabled={isRecording}
-              className="flex-1 bg-transparent text-white focus:outline-none text-[15px] resize-none py-[10px] min-h-[40px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden"
+              className="flex-1 bg-transparent text-white focus:outline-none text-sm resize-none py-[6px] min-h-[20px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden"
               rows={1}
               style={{ overflowY: 'auto' }}
             />
@@ -503,7 +503,7 @@ export default function ChatRoomPage() {
                 const textarea = document.querySelector('textarea');
                 if (textarea) textarea.style.height = 'auto';
               }}
-              className={`w-[40px] h-[40px] flex items-center justify-center text-white rounded-full transition-colors flex-shrink-0 shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-cyan-600 hover:bg-cyan-700 shadow-cyan-600/20'}`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 transition-all shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-sky-500 hover:bg-sky-600'}`}
             >
               {editingMessageId ? <Check size={20} /> : <Send size={20} className="transform rotate-180 -ml-1" />}
             </button>

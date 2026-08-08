@@ -180,11 +180,11 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-3 ${isMe ? 'left-2' : 'right-2'} bg-slate-900 border border-slate-700 rounded-full px-1.5 py-0.5 text-[11px] flex items-center gap-1 shadow-md z-10`}>
+                <div className={`absolute -bottom-2 ${isMe ? '-left-2' : '-right-2'} bg-[#181824] rounded-full border border-gray-700 flex items-center justify-center text-xs shadow-md h-7 min-w-[28px] px-1.5 z-10 gap-1`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i} className="text-[14px]">{reaction}</span>
+                    <span key={i} className="text-[13px]">{reaction}</span>
                   ))}
-                  {msg.message_reactions.length > 1 && <span className="text-slate-400 ml-1 font-bold">{msg.message_reactions.length}</span>}
+                  {msg.message_reactions.length > 1 && <span className="text-slate-300 font-bold ml-0.5">{msg.message_reactions.length}</span>}
                 </div>
               )}
             </div>
