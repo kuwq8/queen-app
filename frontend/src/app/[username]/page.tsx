@@ -369,7 +369,7 @@ export default function ProfilePage() {
                             }
                             
                             // Fallback to manual creation if RPC is missing
-                            const { data: channel, error: channelError } = await supabase.from('channels').insert({ is_group: false }).select().single();
+                            const { data: channel, error: channelError } = await supabase.from('channels').insert({ is_group: false, name: '' }).select().single();
                             if (channelError) {
                               alert('فشل إنشاء المحادثة: ' + JSON.stringify(channelError));
                               return;

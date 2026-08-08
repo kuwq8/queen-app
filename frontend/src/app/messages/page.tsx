@@ -199,7 +199,7 @@ export default function MessagesPage() {
           channelIdToNavigate = existingChat;
         } else {
           // Fallback if RPC fails or isn't installed
-          const { data: channel, error: channelError } = await supabase.from('channels').insert({ is_group: false }).select().single();
+          const { data: channel, error: channelError } = await supabase.from('channels').insert({ is_group: false, name: '' }).select().single();
           if (channelError) throw channelError;
           
           // Deduplicate members (in case user selected themselves, though search filters it out, just to be safe)
