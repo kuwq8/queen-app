@@ -82,22 +82,8 @@ export default function ProfilePage() {
         return;
       }
 
-      setDebugMsg('Step 3: fetching counts');
-      const { count: followersCount } = await supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', targetProfile.id);
-      const { count: followingCount } = await supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', targetProfile.id);
-      const { count: postsCount } = await supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', targetProfile.id);
-      
-      setDebugMsg('Step 4: getSession');
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      setDebugMsg('Step 5: fetch followData');
-      let isFollowing = false;
-      if (session) {
-        const { data: followData } = await supabase.from('follows').select('*').eq('follower_id', session.user.id).eq('following_id', targetProfile.id).single();
-        isFollowing = !!followData;
-      }
-      
-      setDebugMsg('Step 6: setProfile');
+      setDebugMsg('Step 3: setting initial profile');
+      // Set the profile IMMEDIATELY so the UI renders!
       setProfile({
         ...targetProfile,
         profile: {
@@ -106,20 +92,47 @@ export default function ProfilePage() {
           coverUrl: targetProfile.cover_url,
           allowDirectMessages: true
         },
-        _count: {
-          followers: followersCount || 0,
-          following: followingCount || 0,
-          posts: postsCount || 0
-        },
-        isFollowing,
+        _count: { followers: 0, following: 0, posts: 0 },
+        isFollowing: false,
         createdAt: targetProfile.created_at
       });
-      
       setEditBio(targetProfile.bio || '');
-      setDebugMsg('Step 7: done');
+      setIsLoading(false);
+
+      try {
+        setDebugMsg('Step 4: fetching counts & session');
+        const [followersRes, followingRes, postsRes, sessionRes] = await Promise.all([
+          supabase.from('follows').select('*', { count: 'exact', head: true }).eq('following_id', targetProfile.id),
+          supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', targetProfile.id),
+          supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', targetProfile.id),
+          supabase.auth.getSession()
+        ]);
+
+        let isFollowing = false;
+        if (sessionRes.data.session) {
+          const { data: followData } = await supabase.from('follows').select('*').eq('follower_id', sessionRes.data.session.user.id).eq('following_id', targetProfile.id).single();
+          isFollowing = !!followData;
+        }
+
+        setProfile((prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            _count: {
+              followers: followersRes.count || 0,
+              following: followingRes.count || 0,
+              posts: postsRes.count || 0
+            },
+            isFollowing
+          };
+        });
+        setDebugMsg('Step 7: done');
+      } catch (e) {
+        console.error("Error fetching extra profile data:", e);
+      }
     } catch (err) {
       setDebugMsg(`Catch Error: ${String(err)}`);
-      setProfile(null);
+      // Don't set profile to null here if we already fetched it successfully
     }
   };
 
