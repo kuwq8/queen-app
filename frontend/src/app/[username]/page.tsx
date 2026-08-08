@@ -5,7 +5,7 @@ import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link as LinkIcon, User, Camera } from 'lucide-react';
+import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link as LinkIcon, User, Camera, Mail } from 'lucide-react';
 import { useRef } from 'react';
 import PostItem from '../../components/PostItem';
 import BottomNav from '../../components/BottomNav';
@@ -108,7 +108,7 @@ export default function ProfilePage() {
 
         let isFollowing = false;
         if (sessionRes.data.session) {
-          const { data: followData } = await supabase.from('follows').select('*').eq('follower_id', sessionRes.data.session.user.id).eq('following_id', targetProfile.id).single();
+          const { data: followData } = await supabase.from('follows').select('*').eq('follower_id', sessionRes.data.session.user.id).eq('following_id', targetProfile.id).maybeSingle();
           isFollowing = !!followData;
         }
 
@@ -349,21 +349,51 @@ export default function ProfilePage() {
                     تعديل الحساب
                   </button>
                 ) : (
-                  <button 
-                    onClick={handleFollow}
-                    className={`px-4 py-1.5 rounded-full font-bold text-[15px] transition-colors border ${
-                      profile.isFollowing 
-                        ? 'bg-transparent border-slate-600 text-white hover:border-red-500 hover:text-red-500 group' 
-                        : 'bg-white border-white text-black hover:bg-slate-200'
-                    }`}
-                  >
-                    {profile.isFollowing ? (
-                      <span className="group-hover:hidden">متابَع</span>
-                    ) : 'متابعة'}
-                    {profile.isFollowing && (
-                      <span className="hidden group-hover:inline">إلغاء المتابعة</span>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={async () => {
+                        const { createClient } = await import('@/utils/supabase/client');
+                        const supabase = createClient();
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session) return;
+                        
+                        // Check if private chat exists or create one
+                        const { data: existingChat } = await supabase.rpc('get_or_create_private_chat', { other_user_id: profile.id });
+                        if (existingChat) {
+                          router.push(`/messages/${existingChat}`);
+                        } else {
+                          // Fallback to manual creation if RPC is missing
+                          const { data: channel } = await supabase.from('channels').insert({ is_group: false }).select().single();
+                          if (channel) {
+                            await supabase.from('channel_members').insert([
+                              { channel_id: channel.id, user_id: session.user.id },
+                              { channel_id: channel.id, user_id: profile.id }
+                            ]);
+                            router.push(`/messages/${channel.id}`);
+                          }
+                        }
+                      }}
+                      className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
+                      title="مراسلة"
+                    >
+                      <Mail size={18} />
+                    </button>
+                    <button 
+                      onClick={handleFollow}
+                      className={`px-4 py-1.5 rounded-full font-bold text-[15px] transition-colors border ${
+                        profile.isFollowing 
+                          ? 'bg-transparent border-slate-600 text-white hover:border-red-500 hover:text-red-500 group' 
+                          : 'bg-white border-white text-black hover:bg-slate-200'
+                      }`}
+                    >
+                      {profile.isFollowing ? (
+                        <span className="group-hover:hidden">متابَع</span>
+                      ) : 'متابعة'}
+                      {profile.isFollowing && (
+                        <span className="hidden group-hover:inline">إلغاء المتابعة</span>
+                      )}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
