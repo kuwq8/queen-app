@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link as LinkIcon, User, Camera } from 'lucide-react';
 import { useRef } from 'react';
 import PostItem from '../../components/PostItem';
+import BottomNav from '../../components/BottomNav';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ProfilePage() {
