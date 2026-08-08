@@ -246,6 +246,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
         <h1 className="text-2xl font-bold mb-4">الحساب غير موجود</h1>
+        <p className="text-gray-400 mb-6 font-mono border border-gray-700 p-2 rounded">@{username}</p>
         <button onClick={() => router.back()} className="text-cyan-500 hover:underline">العودة</button>
       </div>
     );
