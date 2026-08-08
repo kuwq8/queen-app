@@ -225,7 +225,7 @@ export default function ChatRoomPage() {
         const { data: publicUrlData } = supabase.storage.from('media').getPublicUrl(filePath);
         finalMediaUrl = publicUrlData.publicUrl;
       } else {
-        alert('حدث خطأ أثناء رفع الملف.');
+        alert('حدث خطأ أثناء رفع الملف. هل تأكدت من إنشاء سلة (Bucket) باسم media في Supabase؟ التفاصيل: ' + JSON.stringify(error));
         return;
       }
     }
@@ -237,6 +237,12 @@ export default function ChatRoomPage() {
       media_url: finalMediaUrl
     }).select('*, sender:profiles!sender_id(id, username, avatar_url)').single();
     
+    if (insertError) {
+       console.error("Message insert error:", insertError);
+       alert('فشل إرسال الرسالة: ' + JSON.stringify(insertError));
+       return;
+    }
+
     if (insertData) {
        setMessages(prev => [...prev, insertData]);
        scrollToBottom();
