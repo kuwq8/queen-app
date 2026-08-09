@@ -9,12 +9,31 @@ export default function CreateCommunityPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setCoverPreview(URL.createObjectURL(e.target.files[0]));
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAvatarPreview(URL.createObjectURL(e.target.files[0]));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
-    // Mock successful creation, route back or to the new community
-    router.push('/home');
+    if (!name.trim() || isLoading) return;
+    
+    setIsLoading(true);
+    // Mock successful creation with delay
+    setTimeout(() => {
+      router.push('/communities/3');
+    }, 1500);
   };
 
   return (
@@ -28,23 +47,36 @@ export default function CreateCommunityPage() {
         </div>
         <button 
           onClick={handleSubmit}
-          disabled={!name.trim()}
-          className="bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white text-sm font-bold px-4 py-1.5 rounded-full transition-colors"
+          disabled={!name.trim() || isLoading}
+          className="bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white text-sm font-bold px-4 py-1.5 rounded-full transition-colors flex items-center justify-center min-w-[70px]"
         >
-          إنشاء
+          {isLoading ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          ) : (
+            'إنشاء'
+          )}
         </button>
       </header>
 
       <main className="flex-1 p-4 flex flex-col gap-6 animate-fade-in-up">
         {/* Cover & Avatar Upload Mock */}
-        <div className="relative w-full h-32 bg-slate-900 rounded-2xl border border-slate-800 flex items-center justify-center overflow-hidden group cursor-pointer">
-          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors z-10 flex flex-col items-center justify-center gap-2">
-            <Camera className="text-white" size={24} />
-            <span className="text-white text-xs font-bold">إضافة غلاف</span>
-          </div>
-          <div className="absolute -bottom-6 right-4 w-16 h-16 bg-slate-800 rounded-full border-4 border-black z-20 flex items-center justify-center cursor-pointer hover:bg-slate-700 transition-colors">
-            <Camera className="text-white" size={20} />
-          </div>
+        <div className="relative w-full h-32 bg-slate-900 rounded-2xl border border-slate-800 flex items-center justify-center overflow-visible group">
+          <label className="absolute inset-0 z-10 flex flex-col items-center justify-center cursor-pointer bg-black/40 hover:bg-black/60 transition-colors rounded-2xl overflow-hidden">
+            <input type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
+            {coverPreview && (
+              <img src={coverPreview} className="w-full h-full object-cover absolute inset-0 -z-10" />
+            )}
+            <Camera className="text-white drop-shadow-md" size={24} />
+            <span className="text-white text-xs font-bold mt-2 drop-shadow-md">إضافة غلاف</span>
+          </label>
+          <label className="absolute -bottom-6 right-4 w-16 h-16 bg-slate-800 rounded-full border-4 border-black z-20 flex items-center justify-center cursor-pointer hover:bg-slate-700 transition-colors overflow-hidden shadow-lg">
+            <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+            {avatarPreview ? (
+              <img src={avatarPreview} className="w-full h-full object-cover" />
+            ) : (
+              <Camera className="text-white" size={20} />
+            )}
+          </label>
         </div>
 
         <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>

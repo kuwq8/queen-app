@@ -10,6 +10,18 @@ export default function CommunityPage() {
   const router = useRouter();
   const [isJoined, setIsJoined] = useState(false);
   const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'rules'>('posts');
+  const [showSearch, setShowSearch] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+
+  const handleSearchClick = () => {
+    setShowSearch(!showSearch);
+    setShowMoreMenu(false);
+  };
+
+  const handleMoreClick = () => {
+    setShowMoreMenu(!showMoreMenu);
+    setShowSearch(false);
+  };
   
   // Mock data for the requested community
   const communityId = params.id;
@@ -35,14 +47,31 @@ export default function CommunityPage() {
             <button onClick={() => router.push('/home')} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
               <ChevronRight size={20} />
             </button>
+            {showSearch && (
+              <input 
+                type="text" 
+                placeholder="ابحث في المجتمع..." 
+                className="bg-black/50 backdrop-blur-md border border-white/20 text-white rounded-full px-4 py-1.5 text-sm focus:outline-none focus:border-cyan-500 w-[140px] sm:w-48 animate-fade-in-up"
+                autoFocus
+              />
+            )}
           </div>
-          <div className="flex items-center gap-3">
-            <button className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
+          <div className="flex items-center gap-3 relative">
+            <button onClick={handleSearchClick} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
               <Search size={18} />
             </button>
-            <button className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
+            <button onClick={handleMoreClick} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
               <MoreHorizontal size={18} />
             </button>
+            
+            {/* Dropdown Menu */}
+            {showMoreMenu && (
+              <div className="absolute top-10 left-0 bg-[#1a1a26] border border-slate-700 rounded-xl shadow-2xl overflow-hidden w-44 flex flex-col z-50 animate-fade-in-up text-right">
+                <button className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">دعوة أصدقاء</button>
+                <button className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">إعدادات المجتمع</button>
+                <button className="px-4 py-3 text-sm font-bold text-red-400 hover:bg-slate-800 text-right border-t border-slate-700 transition-colors">مغادرة المجتمع</button>
+              </div>
+            )}
           </div>
         </header>
       </div>
