@@ -13,7 +13,7 @@ import BottomNav from '../../components/BottomNav';
 export default function HomePage() {
   const router = useRouter();
   const [posts, setPosts] = useState<any[]>([]);
-  const [feedType, setFeedType] = useState<'all' | 'following'>('all');
+  const [feedType, setFeedType] = useState<'all' | 'following' | 'communities'>('all');
   const [newPost, setNewPost] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -201,11 +201,40 @@ export default function HomePage() {
           >
             متابَعون
           </button>
+          <button 
+            onClick={() => setFeedType('communities')}
+            className={`whitespace-nowrap px-4 py-1.5 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${feedType === 'communities' ? 'bg-white text-black' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
+          >
+            <Users size={16} /> المجتمعات
+          </button>
         </div>
 
         {/* Main Feed */}
         <main className="flex-1">
-          {isLoading ? (
+          {feedType === 'communities' ? (
+             <div className="flex flex-col gap-3 p-4 animate-fade-in-up">
+                {[
+                  { name: 'عشاق القهوة', desc: 'مجتمع يجمع محبي القهوة لتبادل الوصفات والتجارب اليومية.', members: '12K', img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80' },
+                  { name: 'مبرمجي كويت', desc: 'نادي المطورين والمبرمجين في الكويت لتبادل الخبرات والبرمجيات.', members: '3.4K', img: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=100&q=80' },
+                  { name: 'تصوير فوتوغرافي', desc: 'شارك أفضل لقطاتك، وتعلم أساسيات التصوير وتعديل الصور.', members: '8.1K', img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=100&q=80' },
+                  { name: 'جيمرز العرب', desc: 'أخبار الألعاب، تقييمات، وبطولات إلكترونية.', members: '25K', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=100&q=80' },
+                ].map((community, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 bg-[#111] border border-slate-800 rounded-2xl hover:bg-slate-900/50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <img src={community.img} className="w-[56px] h-[56px] rounded-full object-cover border border-slate-700 shrink-0" />
+                      <div className="flex flex-col min-w-0 text-right">
+                        <h4 className="font-bold text-white text-[15px] truncate">{community.name}</h4>
+                        <p className="text-slate-400 text-[13px] truncate">{community.desc}</p>
+                        <span className="text-cyan-500 text-[11px] font-bold mt-0.5">{community.members} عضو</span>
+                      </div>
+                    </div>
+                    <button className="ml-2 shrink-0 bg-white/5 hover:bg-white/10 text-white font-bold text-xs px-4 py-2 rounded-full transition-colors border border-white/10">
+                      انضمام
+                    </button>
+                  </div>
+                ))}
+             </div>
+          ) : isLoading ? (
             <div className="flex justify-center p-8">
               <div className="animate-pulse text-cyan-500 text-sm font-bold">جاري تحميل المنشورات...</div>
             </div>
