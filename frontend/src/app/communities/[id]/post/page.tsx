@@ -10,6 +10,7 @@ export default function CommunityPostPage() {
   const communityId = params.id;
   
   const [content, setContent] = useState('');
+  const [disableComments, setDisableComments] = useState(false);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,13 +64,25 @@ export default function CommunityPostPage() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 pt-4 mt-2 flex items-center gap-4">
-          <button className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors">
-            <ImageIcon size={22} />
-          </button>
-          <button className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors">
-            <Camera size={22} />
-          </button>
+        <div className="border-t border-slate-800 pt-4 mt-2 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors">
+              <ImageIcon size={22} />
+            </button>
+            <button className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors">
+              <Camera size={22} />
+            </button>
+          </div>
+          
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <span className="text-slate-400 text-[13px] font-bold group-hover:text-white transition-colors">إيقاف التعليقات</span>
+            <input 
+              type="checkbox" 
+              checked={disableComments}
+              onChange={(e) => setDisableComments(e.target.checked)}
+              className="accent-cyan-500 w-4 h-4 cursor-pointer"
+            />
+          </label>
         </div>
       </main>
     </div>

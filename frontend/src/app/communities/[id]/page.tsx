@@ -12,7 +12,14 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'rules'>('posts');
   const [showSearch, setShowSearch] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   
+  // Settings Modal State
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editPrivacy, setEditPrivacy] = useState('public');
+
   const communityId = params.id as string;
   const [community, setCommunity] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
@@ -23,16 +30,21 @@ export default function CommunityPage() {
     const found = local.find((c: any) => c.id === communityId);
     if (found) {
       setCommunity(found);
+      setEditName(found.name);
+      setEditDesc(found.desc || '');
     } else {
       // fallback to mock
-      setCommunity({
+      const mock = {
         id: communityId,
         name: communityId === '1' ? 'عشاق القهوة' : communityId === '2' ? 'مبرمجي كويت' : 'مجتمع مخصص',
         desc: 'مجتمع يجمع المحبين لتبادل الخبرات والنقاشات الهادفة يومياً.',
         members: '12K',
         cover: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1000&q=80',
         img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80'
-      });
+      };
+      setCommunity(mock);
+      setEditName(mock.name);
+      setEditDesc(mock.desc);
     }
 
     // Load posts
@@ -52,25 +64,38 @@ export default function CommunityPage() {
 
   const handleInvite = () => {
     setShowMoreMenu(false);
-    if (navigator.share) {
-      navigator.share({
-        title: `انضم إلى مجتمع ${community.name}`,
-        url: window.location.href,
-      }).catch(console.error);
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('تم نسخ رابط المجتمع!');
-    }
+    navigator.clipboard.writeText(window.location.href);
+    setToastMessage('تم نسخ رابط الدعوة بنجاح!');
+    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const handleSettings = () => {
     setShowMoreMenu(false);
-    alert('إعدادات المجتمع قيد التطوير');
+    setShowSettingsModal(true);
+  };
+
+  const handleSaveSettings = () => {
+    const local = JSON.parse(localStorage.getItem('local_communities') || '[]');
+    const index = local.findIndex((c: any) => c.id === communityId);
+    if (index !== -1) {
+      local[index].name = editName;
+      local[index].desc = editDesc;
+      localStorage.setItem('local_communities', JSON.stringify(local));
+      setCommunity({ ...community, name: editName, desc: editDesc });
+    } else {
+      // If mock, just update local state
+      setCommunity({ ...community, name: editName, desc: editDesc });
+    }
+    setShowSettingsModal(false);
+    setToastMessage('تم تحديث الإعدادات!');
+    setTimeout(() => setToastMessage(''), 3000);
   };
 
   const handleLeave = () => {
     setShowMoreMenu(false);
     setIsJoined(false);
+    setToastMessage('تمت مغادرة المجتمع');
+    setTimeout(() => setToastMessage(''), 3000);
   };
 
   if (!community) return <div className="min-h-screen bg-black" />;
@@ -78,6 +103,59 @@ export default function CommunityPage() {
   return (
     <div className="w-full flex flex-col relative pb-[60px] min-h-screen bg-black font-sans text-right">
       
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-cyan-600 text-white px-6 py-3 rounded-full shadow-lg z-[60] animate-fade-in-up font-bold text-sm whitespace-nowrap">
+          {toastMessage}
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#1a1a26] border border-slate-700 rounded-2xl w-full max-w-md p-5 flex flex-col gap-4 animate-fade-in-up shadow-2xl shadow-cyan-500/10">
+            <h2 className="text-xl font-bold text-white text-right mb-2">إعدادات المجتمع</h2>
+            
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-slate-300 text-right font-bold">اسم المجتمع</label>
+              <input 
+                value={editName} 
+                onChange={e => setEditName(e.target.value)} 
+                className="w-full bg-black border border-slate-700 rounded-xl p-3 text-white text-right focus:border-cyan-500 outline-none transition-colors" 
+              />
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-slate-300 text-right font-bold">النبذة</label>
+              <textarea 
+                value={editDesc} 
+                onChange={e => setEditDesc(e.target.value)} 
+                className="w-full bg-black border border-slate-700 rounded-xl p-3 text-white text-right focus:border-cyan-500 outline-none resize-none transition-colors" 
+                rows={3} 
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-slate-300 text-right font-bold">الخصوصية</label>
+              <select 
+                value={editPrivacy} 
+                onChange={e => setEditPrivacy(e.target.value)} 
+                className="w-full bg-black border border-slate-700 rounded-xl p-3 text-white text-right focus:border-cyan-500 outline-none transition-colors appearance-none"
+                style={{ direction: 'rtl' }}
+              >
+                <option value="public">عام (يمكن لأي شخص الانضمام)</option>
+                <option value="private">مغلق (يتطلب موافقة المشرفين)</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button onClick={() => setShowSettingsModal(false)} className="px-5 py-2 text-slate-400 hover:text-white font-bold transition-colors bg-slate-800 rounded-full">إلغاء</button>
+              <button onClick={handleSaveSettings} className="px-8 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full font-bold transition-colors">حفظ</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cover Image and Header */}
       <div className="relative w-full h-48 bg-slate-900 border-b border-slate-800">
         <img src={community.cover} className="w-full h-full object-cover opacity-60" />
