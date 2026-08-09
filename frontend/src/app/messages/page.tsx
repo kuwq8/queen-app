@@ -4,7 +4,7 @@
 // Imports updated
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, Users, Plus, Search, Check } from 'lucide-react';
+import { MessageSquare, Users, Plus, Search, Check, Pin, BellOff, Trash2, PinOff } from 'lucide-react';
 import BottomNav from '../../components/BottomNav';
 
 export default function MessagesPage() {
@@ -19,6 +19,19 @@ export default function MessagesPage() {
   const [groupName, setGroupName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Context Menu / Action Sheet State
+  const [selectedChatOptions, setSelectedChatOptions] = useState<any>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const [pinnedChats, setPinnedChats] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useEffect(() => {
+    const savedPins = localStorage.getItem('pinned_chats');
+    if (savedPins) {
+      try { setPinnedChats(JSON.parse(savedPins)); } catch(e){}
+    }
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -128,10 +141,13 @@ export default function MessagesPage() {
           messages: c.messages && c.messages.length > 0 ? [c.messages[0]] : []
         }));
         
-        // Sort rooms by last message date
+        // Sort rooms by last message date and pinned status
         formattedRooms.sort((a, b) => {
           const aTime = a.messages[0] ? new Date(a.messages[0].created_at).getTime() : new Date(a.created_at).getTime();
           const bTime = b.messages[0] ? new Date(b.messages[0].created_at).getTime() : new Date(b.created_at).getTime();
+          const aPinned = pinnedChats.includes(a.id) ? 1 : 0;
+          const bPinned = pinnedChats.includes(b.id) ? 1 : 0;
+          if (aPinned !== bPinned) return bPinned - aPinned;
           return bTime - aTime;
         });
         
@@ -249,12 +265,79 @@ export default function MessagesPage() {
     }
   };
 
+  };
+
   const closeNewChat = () => {
     setIsNewChatOpen(false);
     setSelectedUsers([]);
     setGroupName('');
     setSearchQuery('');
     setSearchResults([]);
+  };
+
+  const handleTouchStart = (room: any) => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    longPressTimer.current = setTimeout(() => {
+      setSelectedChatOptions(room);
+    }, 500);
+  };
+
+  const handleTouchEndOrMove = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
+
+  const handleContextMenu = (e: any, room: any) => {
+    e.preventDefault();
+    setSelectedChatOptions(room);
+  };
+
+  const togglePin = async (room: any) => {
+    const isPinned = pinnedChats.includes(room.id);
+    let newPins = [];
+    if (isPinned) {
+      newPins = pinnedChats.filter(id => id !== room.id);
+    } else {
+      newPins = [...pinnedChats, room.id];
+    }
+    setPinnedChats(newPins);
+    localStorage.setItem('pinned_chats', JSON.stringify(newPins));
+    
+    // Sort locally immediately
+    setRooms(prev => {
+      const updated = [...prev];
+      updated.sort((a, b) => {
+        const aTime = a.messages[0] ? new Date(a.messages[0].created_at).getTime() : new Date(a.created_at).getTime();
+        const bTime = b.messages[0] ? new Date(b.messages[0].created_at).getTime() : new Date(b.created_at).getTime();
+        const aPinned = newPins.includes(a.id) ? 1 : 0;
+        const bPinned = newPins.includes(b.id) ? 1 : 0;
+        if (aPinned !== bPinned) return bPinned - aPinned;
+        return bTime - aTime;
+      });
+      return updated;
+    });
+
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      await supabase.from('channel_members')
+        .update({ is_pinned: !isPinned })
+        .eq('channel_id', room.id)
+        .eq('user_id', currentUserId);
+    } catch(e) {} // Fallback to localStorage gracefully
+    setSelectedChatOptions(null);
+  };
+
+  const deleteChat = async (roomId: string) => {
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      await supabase.from('channel_members').delete().eq('channel_id', roomId).eq('user_id', currentUserId);
+      setRooms(prev => prev.filter(r => r.id !== roomId));
+    } catch(e) {
+      alert('خطأ في الحذف');
+    }
+    setSelectedChatOptions(null);
+    setShowDeleteConfirm(false);
   };
 
   return (
@@ -295,7 +378,11 @@ export default function MessagesPage() {
               <div 
                 key={room.id}
                 onClick={() => router.push(`/messages/${room.id}`)}
-                className="p-4 flex items-center gap-4 hover:bg-slate-900 cursor-pointer transition-colors"
+                onTouchStart={() => handleTouchStart(room)}
+                onTouchEnd={handleTouchEndOrMove}
+                onTouchMove={handleTouchEndOrMove}
+                onContextMenu={(e) => handleContextMenu(e, room)}
+                className="p-4 flex items-center gap-4 hover:bg-slate-900 cursor-pointer transition-colors select-none"
               >
                 <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {avatar ? (
@@ -309,11 +396,14 @@ export default function MessagesPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
                     <h3 className="font-bold text-white truncate" dir="ltr">{title}</h3>
-                    {lastMsg && (
-                      <span className="text-xs text-slate-500">
-                        {new Date(lastMsg.created_at).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {pinnedChats.includes(room.id) && <Pin size={12} className="text-slate-400 rotate-45" />}
+                      {lastMsg && (
+                        <span className="text-xs text-slate-500">
+                          {new Date(lastMsg.created_at).toLocaleDateString(undefined, {month: 'short', day: 'numeric'})}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {lastMsg ? (
                     <p className="text-slate-400 text-sm truncate">
@@ -342,6 +432,69 @@ export default function MessagesPage() {
           )}
         </div>
       </div>
+
+      {/* Action Sheet Modal */}
+      {selectedChatOptions && (
+        <div 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          onClick={() => { setSelectedChatOptions(null); setShowDeleteConfirm(false); }}
+        >
+          <div 
+            className="bg-[#181824] border border-white/10 rounded-2xl w-full max-w-sm p-3 flex flex-col gap-1 shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            {!showDeleteConfirm ? (
+              <>
+                <div className="flex justify-center mb-2 sm:hidden">
+                  <div className="w-12 h-1 bg-white/20 rounded-full"></div>
+                </div>
+                <button 
+                  onClick={() => togglePin(selectedChatOptions)}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-white hover:bg-white/5 rounded-xl transition-all"
+                >
+                  {pinnedChats.includes(selectedChatOptions.id) ? (
+                    <><PinOff size={20} className="text-slate-400" /> إلغاء التثبيت</>
+                  ) : (
+                    <><Pin size={20} className="text-slate-400" /> تثبيت في الأعلى</>
+                  )}
+                </button>
+                <button 
+                  className="flex items-center gap-3 w-full px-4 py-3 text-white hover:bg-white/5 rounded-xl transition-all"
+                  onClick={() => { alert('تم كتم الإشعارات لهذه المحادثة.'); setSelectedChatOptions(null); }}
+                >
+                  <BellOff size={20} className="text-slate-400" /> كتم الإشعارات
+                </button>
+                <button 
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all mt-1"
+                >
+                  <Trash2 size={20} /> حذف المحادثة
+                </button>
+              </>
+            ) : (
+              <div className="p-2 text-center">
+                <Trash2 size={40} className="text-red-500 mx-auto mb-3" />
+                <h3 className="text-white font-bold mb-2">هل أنت متأكد من حذف المحادثة؟</h3>
+                <p className="text-sm text-slate-400 mb-6">لا يمكن التراجع عن هذا الإجراء وسيتم مسح السجل من عندك.</p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => { setShowDeleteConfirm(false); setSelectedChatOptions(null); }}
+                    className="flex-1 py-2.5 rounded-xl text-white font-bold bg-white/10 hover:bg-white/20 transition-all"
+                  >
+                    إلغاء
+                  </button>
+                  <button 
+                    onClick={() => deleteChat(selectedChatOptions.id)}
+                    className="flex-1 py-2.5 rounded-xl text-white font-bold bg-red-600 hover:bg-red-700 transition-all shadow-lg shadow-red-500/20"
+                  >
+                    نعم، حذف
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* New Chat Modal */}
       {isNewChatOpen && (
