@@ -2,7 +2,7 @@
 
 
 // Imports updated
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Users, Plus, Search, Check, Pin, BellOff, Trash2, PinOff } from 'lucide-react';
 import BottomNav from '../../components/BottomNav';
