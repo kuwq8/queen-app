@@ -541,7 +541,6 @@ export default function ChatRoomPage() {
               onReact={handleReaction}
               onReply={(m) => setReplyingToMessage(m)}
             />
-            </div>
           );
         })}
         <div ref={messagesEndRef} />
