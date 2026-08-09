@@ -384,14 +384,14 @@ export default function ChatRoomPage() {
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-slate-800 p-3 sm:p-4 flex items-center justify-between">
+        <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-white/10 h-16 px-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors">
-              <ArrowRight size={20} />
+            <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center -mr-3 rounded-full hover:bg-white/5 transition-colors">
+              <ArrowRight size={20} className="text-white" />
             </button>
             <div 
               onClick={() => setIsInfoPaneOpen(true)}
-              className="flex items-center gap-3 cursor-pointer hover:bg-slate-800/50 p-1.5 -mr-1.5 rounded-xl transition-colors"
+              className="flex items-center gap-3 cursor-pointer hover:bg-white/5 p-1 -ml-1 rounded-xl transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {chatAvatar ? (
@@ -402,16 +402,16 @@ export default function ChatRoomPage() {
                   <span className="font-bold text-sm" dir="ltr">{chatTitle.charAt(0).toUpperCase()}</span>
                 )}
               </div>
-              <div>
-                <h2 className="text-sm font-semibold text-white leading-tight" dir="ltr">{chatTitle}</h2>
-                <p className={`text-[10px] ${typingUsers.length > 0 ? 'text-cyan-500 font-bold animate-pulse' : 'text-slate-500'}`}>{chatSubtext}</p>
+              <div className="flex flex-col justify-center">
+                <h2 className="text-[14px] font-semibold text-white leading-tight" dir="ltr">{chatTitle}</h2>
+                <p className={`text-[11px] ${typingUsers.length > 0 ? 'text-cyan-500 font-bold animate-pulse' : 'text-slate-500'}`}>{chatSubtext}</p>
               </div>
             </div>
           </div>
-        <div className="flex items-center gap-1 text-cyan-500 relative">
-          <button className="p-2 hover:bg-slate-800 rounded-full transition-colors"><Phone size={20} /></button>
-          <button className="p-2 hover:bg-slate-800 rounded-full transition-colors"><Video size={20} /></button>
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2 hover:bg-slate-800 rounded-full text-slate-400 transition-colors">
+        <div className="flex items-center text-cyan-500 relative">
+          <button className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full transition-colors"><Phone size={20} /></button>
+          <button className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full transition-colors"><Video size={20} /></button>
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="w-10 h-10 flex items-center justify-center hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors">
             <MoreVertical size={20} />
           </button>
           

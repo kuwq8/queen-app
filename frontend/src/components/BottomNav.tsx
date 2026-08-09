@@ -81,8 +81,8 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
   }, [activeTab]);
 
   return (
-    <nav className="fixed bottom-0 w-full max-w-[600px] h-14 bg-black/90 backdrop-blur-md border-t border-gray-800 flex items-center justify-around z-50">
-      <Link href="/home" className={`p-2 transition-colors flex items-center justify-center ${activeTab === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+    <nav className="fixed bottom-0 left-0 right-0 w-full h-16 bg-black/90 backdrop-blur-md border-t border-white/10 flex items-center justify-around px-2 z-50">
+      <Link href="/home" className={`w-14 h-14 flex items-center justify-center transition-colors ${activeTab === 'home' ? 'text-white' : 'text-gray-500'}`}>
         <svg viewBox="0 0 24 24" width="32" height="32" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke={activeTab === 'home' ? 'none' : 'currentColor'} strokeWidth={activeTab === 'home' ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
           <path d={activeTab === 'home' 
             ? "M12 1.696L.622 8.807l1.06 1.696L3 9.679V19.5C3 20.881 4.119 22 5.5 22h13c1.381 0 2.5-1.119 2.5-2.5V9.679l1.318.824 1.06-1.696L12 1.696z" 
@@ -91,25 +91,27 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         </svg>
       </Link>
       
-      <Link href="/explore" className={`p-2 rounded-full transition-colors ${activeTab === 'explore' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+      <Link href="/explore" className={`w-14 h-14 flex items-center justify-center transition-colors ${activeTab === 'explore' ? 'text-white' : 'text-gray-500'}`}>
         <Search size={32} strokeWidth={activeTab === 'explore' ? 2.5 : 2} />
       </Link>
       
-      <CoffeeButton />
+      <div className="w-14 h-14 flex items-center justify-center">
+        <CoffeeButton />
+      </div>
 
-      <Link href="/notifications" className={`relative p-2 rounded-full transition-colors ${activeTab === 'notifications' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+      <Link href="/notifications" className={`relative w-14 h-14 flex items-center justify-center transition-colors ${activeTab === 'notifications' ? 'text-white' : 'text-gray-500'}`}>
         <Bell size={32} strokeWidth={activeTab === 'notifications' ? 2.5 : 2} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+          <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </Link>
 
-      <Link href="/messages" className={`relative p-2 rounded-full transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+      <Link href="/messages" className={`relative w-14 h-14 flex items-center justify-center transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-gray-500'}`}>
         <MessageCircle size={32} strokeWidth={activeTab === 'messages' ? 2.5 : 1.5} />
         {unreadMessagesCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+          <span className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
             {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
           </span>
         )}
