@@ -197,9 +197,9 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
         </div>
 
         {/* Content */}
-        <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
           <div className="flex justify-between items-center w-full">
-            <span className="text-blue-700 font-bold text-[14px] truncate">
+            <span className="text-blue-700 font-bold text-[14px] truncate ml-1">
               {msg.sender?.full_name || msg.sender?.username || 'مستخدم'}
             </span>
             
@@ -224,7 +224,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
             </div>
           </div>
 
-          <div className="text-gray-900 text-[14px] mt-0.5 whitespace-pre-wrap break-words leading-relaxed font-medium">
+          <div className="text-gray-900 text-[14px] mt-0.5 whitespace-pre-wrap break-words [word-break:break-word] sm:break-words leading-relaxed font-medium">
             {msg.reply_to && (
               <div className="text-[11px] text-gray-600 bg-black/5 p-1 rounded border-r-2 border-blue-500 mb-1 truncate">
                 الرد على {msg.reply_to.sender?.username}: {msg.reply_to.content}

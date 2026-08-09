@@ -449,9 +449,9 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="fixed inset-0 w-full max-w-md mx-auto flex flex-col justify-between bg-[#f4f3f0] text-black overflow-hidden z-10 shadow-2xl">
+    <div className="fixed inset-0 sm:static sm:h-[100dvh] w-full max-w-md mx-auto flex flex-col justify-between bg-[#e8e6e3] text-black overflow-hidden z-10 shadow-2xl">
       {/* Main Chat Area */}
-      <div className={`flex flex-col h-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
+      <div className={`flex flex-col h-full w-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
         <div className="shrink-0 bg-[#4a423a] text-white p-2 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
@@ -501,8 +501,12 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-2 bg-[#f4f3f0] [&::-webkit-scrollbar]:hidden">
-        {messages.map((msg, idx) => {
+      <div className="flex-1 overflow-y-auto bg-[#e8e6e3] relative [&::-webkit-scrollbar]:hidden flex flex-col">
+        {messages.length === 0 ? (
+          <div className="m-auto text-gray-400 font-bold text-sm">لا توجد رسائل</div>
+        ) : (
+          <div className="flex flex-col w-full pb-2">
+            {messages.map((msg, idx) => {
           const isMe = msg.sender?.id === currentUserId;
           const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
           
@@ -537,9 +541,12 @@ export default function ChatRoomPage() {
               onReact={handleReaction}
               onReply={(m) => setReplyingToMessage(m)}
             />
+            </div>
           );
         })}
         <div ref={messagesEndRef} />
+      </div>
+        )}
       </div>
 
       {/* Floating Notification Bell Badge */}
@@ -551,7 +558,7 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 bg-[#3a3735] text-white p-1 pb-safe w-full flex flex-col z-50">
+      <div className="shrink-0 bg-[#3a3735] text-white w-full flex flex-col z-50">
         {(audioBlob || mediaPreview) && (
           <div className="mb-1 flex items-center gap-3 bg-white p-2 border border-gray-300 relative shadow-sm rounded">
             {audioBlob ? (
@@ -613,19 +620,19 @@ export default function ChatRoomPage() {
           )}
 
           {/* Top Row: Input field and actions */}
-          <div className="flex items-center gap-1 p-1 bg-[#eceae6] border-b border-gray-400 w-full rounded-t">
-            <button className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
+          <div className="flex items-center gap-1 p-1 bg-[#eceae6] border-b border-gray-400 w-full">
+            <button className="min-w-[36px] w-[36px] h-10 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
               <LogOut size={18} className="rotate-180" />
             </button>
             
-            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
+            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="min-w-[36px] w-[36px] h-10 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
               <Smile size={18} />
             </button>
 
-            <div className="flex-1 min-w-0 relative">
+            <div className="flex-1 min-w-[50px] relative">
               <input 
-                 className="flex-1 w-full bg-white text-black px-2 py-1.5 rounded border border-gray-300 text-sm focus:outline-none shadow-inner"
-                 placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب @ للإشارة إلى احد المستخدمين"}
+                 className="w-full h-10 bg-white text-black px-2 rounded border border-gray-300 text-[13px] focus:outline-none shadow-inner"
+                 placeholder={editingMessageId ? "تعديل..." : isRecording ? "تسجيل..." : "اكتب @ للإشارة..."}
                  value={newMessage}
                  onChange={handleInputChange}
                  onKeyDown={(e) => {
@@ -638,7 +645,7 @@ export default function ChatRoomPage() {
               />
             </div>
 
-            <button className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
+            <button className="min-w-[36px] w-[36px] h-10 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
               <List size={18} />
             </button>
 
@@ -647,37 +654,37 @@ export default function ChatRoomPage() {
                 <button 
                   type="button" 
                   onClick={stopRecording}
-                  className="px-3 h-8 bg-red-600 text-white rounded text-xs font-bold flex items-center justify-center shrink-0 shadow-md animate-pulse"
+                  className="min-w-[50px] px-1 h-10 bg-red-600 text-white rounded text-[11px] font-bold flex items-center justify-center shrink-0 shadow-md animate-pulse"
                 >
-                  <Square size={14} fill="currentColor" className="mr-1" /> إيقاف
+                  <Square size={14} fill="currentColor" className="mr-0.5" /> إيقاف
                 </button>
               ) : (
                 <button 
                   type="button" 
                   onClick={startRecording}
-                  className="px-3 h-8 bg-[#58514b] hover:bg-[#4a443e] text-white rounded text-xs font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors"
+                  className="min-w-[50px] px-1 h-10 bg-[#58514b] hover:bg-[#4a443e] text-white rounded text-[11px] font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors"
                 >
-                  <Mic size={16} className="mr-1" /> تسجيل
+                  <Mic size={16} className="mr-0.5" /> تسجيل
                 </button>
               )
             ) : (
               <button 
                 type="button" 
                 onClick={() => sendMessage()}
-                className={`px-3 h-8 text-white rounded text-xs font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors ${editingMessageId ? 'bg-green-600' : 'bg-[#58514b] hover:bg-[#4a443e]'}`}
+                className={`min-w-[50px] px-1 h-10 text-white rounded text-[11px] font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors ${editingMessageId ? 'bg-green-600' : 'bg-[#58514b] hover:bg-[#4a443e]'}`}
               >
-                {editingMessageId ? <Check size={16} /> : <><Send size={14} className="rotate-180 ml-1" /> إرسال</>}
+                {editingMessageId ? <Check size={16} /> : <><Send size={14} className="rotate-180 ml-0.5" /> إرسال</>}
               </button>
             )}
           </div>
 
           {/* Bottom Row: Grid Nav */}
-          <div className="grid grid-cols-5 gap-1 pt-1 text-white text-xs font-bold text-center w-full">
-            <button className="py-1.5 px-1 bg-[#4a443e] hover:bg-[#5a544e] rounded transition-colors flex items-center justify-center gap-1"><Users size={12}/> 173</button>
-            <button className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><MessageSquare size={12}/> خاص</button>
-            <button onClick={() => router.push('/messages')} className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><Hash size={12}/> الغرف</button>
-            <button onClick={() => router.push('/home')} className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><FileText size={12}/> الحائط</button>
-            <button className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><Settings size={12}/> الضبط</button>
+          <div className="grid grid-cols-5 gap-[2px] pt-[2px] text-white text-[10px] font-bold text-center w-full bg-[#3a3735]">
+            <button className="min-h-[44px] px-0.5 bg-[#4a443e] hover:bg-[#5a544e] rounded transition-colors flex flex-col items-center justify-center gap-1"><Users size={14}/> 173</button>
+            <button className="min-h-[44px] px-0.5 hover:bg-[#4a443e] rounded transition-colors flex flex-col items-center justify-center gap-1"><MessageSquare size={14}/> خاص</button>
+            <button onClick={() => router.push('/messages')} className="min-h-[44px] px-0.5 hover:bg-[#4a443e] rounded transition-colors flex flex-col items-center justify-center gap-1"><Hash size={14}/> الغرف</button>
+            <button onClick={() => router.push('/home')} className="min-h-[44px] px-0.5 hover:bg-[#4a443e] rounded transition-colors flex flex-col items-center justify-center gap-1"><FileText size={14}/> الحائط</button>
+            <button className="min-h-[44px] px-0.5 hover:bg-[#4a443e] rounded transition-colors flex flex-col items-center justify-center gap-1"><Settings size={14}/> الضبط</button>
           </div>
         </div>
       </div>
