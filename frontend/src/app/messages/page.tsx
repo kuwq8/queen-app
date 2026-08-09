@@ -248,6 +248,28 @@ export default function MessagesPage() {
 
         if (membersError) throw membersError;
         
+        // 3. System Message (Join Notification)
+        try {
+           const myProfile = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
+           const myUsername = myProfile.data?.username || 'المسؤول';
+           const sysMessages = users.map(u => ({
+              channel_id: channel.id,
+              sender_id: session.user.id,
+              content: `أضاف ${myUsername} المستخدم ${u.username} إلى الغرفة`,
+              media_type: 'system'
+           }));
+           // Also add a message for the creator
+           sysMessages.push({
+              channel_id: channel.id,
+              sender_id: session.user.id,
+              content: `أنشأ ${myUsername} هذه الغرفة: ${name}`,
+              media_type: 'system'
+           });
+           await supabase.from('messages').insert(sysMessages);
+        } catch (e) {
+           console.error("Failed to insert system messages", e);
+        }
+
         channelIdToNavigate = channel.id;
       }
 

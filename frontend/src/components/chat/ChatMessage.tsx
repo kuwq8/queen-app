@@ -129,6 +129,16 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     return null;
   }
 
+  if (msg.media_type === 'system') {
+    return (
+      <div className="flex justify-center mb-3 w-full my-4">
+        <div className="px-4 py-1.5 rounded-full bg-slate-800/60 text-slate-400 text-[12px] font-bold shadow-sm border border-slate-700/50">
+           {msg.content}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3 w-full`}>
