@@ -560,92 +560,58 @@ export default function ChatRoomPage() {
           </div>
         )}
 
-        <div className="flex items-end gap-2 w-full px-2 pb-2">
+        <div className="flex items-center gap-2 p-2 bg-[#0f0f17] border-t border-gray-800 w-full z-50">
           {/* 1. Attachment (+) */}
-          <input type="file" ref={mediaInputRef} accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
-          <button 
-            onClick={() => mediaInputRef.current?.click()}
-            type="button"
-            className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0"
-          >
+          <label className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-white/10 hover:bg-white/20 text-gray-300 flex items-center justify-center cursor-pointer shrink-0">
             <Plus size={20} />
+            <input type="file" accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
+          </label>
+
+          {/* 2. Text Input */}
+          <input 
+             className="flex-1 bg-[#1a1a26] text-white rounded-full px-4 py-2 text-sm focus:outline-none min-w-0" 
+             placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
+             value={newMessage}
+             onChange={handleInputChange}
+             onKeyDown={(e) => {
+               if (e.key === 'Enter') {
+                 e.preventDefault();
+                 sendMessage();
+               }
+             }}
+             disabled={isRecording}
+          />
+
+          {/* 3. Emoji and Mic/Send */}
+          <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="w-8 h-8 text-gray-400 hover:text-white flex items-center justify-center shrink-0">
+            <Smile size={22} />
           </button>
-
-          {/* 2. Text Input + Smile */}
-          <div className="flex-1 bg-[#1a1a26] text-white rounded-full px-4 py-1.5 focus-within:ring-1 focus-within:ring-cyan-500 transition-colors flex items-center min-h-[36px] relative min-w-0">
-            <textarea
-              placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
-              value={newMessage}
-              onChange={handleInputChange}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = `${Math.min(target.scrollHeight, 120)}px`;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                }
-              }}
-              disabled={isRecording}
-              className="flex-1 bg-transparent text-white focus:outline-none text-sm resize-none mx-2 py-[2px] min-h-[20px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden min-w-0"
-              rows={1}
-              style={{ overflowY: 'auto' }}
-            />
-
-            <div className="flex items-center gap-1 shrink-0">
-              {editingMessageId && (
-                <button 
-                  onClick={() => { setEditingMessageId(null); setNewMessage(''); }}
-                  className="text-slate-400 hover:text-white shrink-0"
-                  type="button"
-                >
-                  ✕
-                </button>
-              )}
-              <button 
-                 type="button"
-                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                 className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-cyan-500 transition-colors shrink-0"
-              >
-                 <Smile size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* 3. Mic / Send (Left side) */}
+         
           {!audioBlob && !mediaFile && !newMessage.trim() && !editingMessageId ? (
             isRecording ? (
               <button 
-                type="button"
+                type="button" 
                 onClick={stopRecording}
-                className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors animate-pulse shrink-0 shadow-lg shadow-red-500/20"
+                className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-red-500 text-white flex items-center justify-center shrink-0 shadow-md animate-pulse"
               >
                 <Square size={16} fill="currentColor" />
               </button>
             ) : (
               <button 
-                type="button"
+                type="button" 
                 onClick={startRecording}
-                className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-sky-500 text-white hover:bg-sky-600 rounded-full transition-colors shrink-0 shadow-lg shadow-sky-500/20"
+                className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-sky-500 text-white flex items-center justify-center shrink-0 shadow-md"
               >
-                <Mic size={18} />
+                <Mic size={20} />
               </button>
             )
           ) : (
             <button 
-              type="button"
-              onClick={(e) => {
-                sendMessage();
-                const textarea = document.querySelector('textarea');
-                if (textarea) textarea.style.height = 'auto';
-              }}
-              className={`w-9 h-9 min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center text-white shrink-0 transition-all shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-sky-500 hover:bg-sky-600'}`}
+              type="button" 
+              onClick={() => sendMessage()}
+              className={`w-9 h-9 min-w-[36px] min-h-[36px] rounded-full text-white flex items-center justify-center shrink-0 shadow-md ${editingMessageId ? 'bg-green-600' : 'bg-sky-500'}`}
             >
-              {editingMessageId ? <Check size={18} /> : <Send size={18} className="transform rotate-180 -ml-0.5" />}
+              {editingMessageId ? <Check size={18} /> : <Send size={18} className="rotate-180 -ml-0.5" />}
             </button>
           )}
         </div>
