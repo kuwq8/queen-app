@@ -565,13 +565,14 @@ export default function ChatRoomPage() {
           <input type="file" ref={mediaInputRef} accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
           <button 
             onClick={() => mediaInputRef.current?.click()}
-            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
+            type="button"
+            className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0"
           >
             <Plus size={20} />
           </button>
 
           {/* 2. Text Input + Smile */}
-          <div className="flex-1 bg-[#1a1a26] text-white rounded-full px-4 py-1.5 focus-within:ring-1 focus-within:ring-cyan-500 transition-colors flex items-center min-h-[36px] relative">
+          <div className="flex-1 bg-[#1a1a26] text-white rounded-full px-4 py-1.5 focus-within:ring-1 focus-within:ring-cyan-500 transition-colors flex items-center min-h-[36px] relative min-w-0">
             <textarea
               placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
               value={newMessage}
@@ -590,23 +591,25 @@ export default function ChatRoomPage() {
                 }
               }}
               disabled={isRecording}
-              className="flex-1 bg-transparent text-white focus:outline-none text-sm resize-none mx-2 py-[2px] min-h-[20px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden"
+              className="flex-1 bg-transparent text-white focus:outline-none text-sm resize-none mx-2 py-[2px] min-h-[20px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden min-w-0"
               rows={1}
               style={{ overflowY: 'auto' }}
             />
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 shrink-0">
               {editingMessageId && (
                 <button 
                   onClick={() => { setEditingMessageId(null); setNewMessage(''); }}
-                  className="text-slate-400 hover:text-white"
+                  className="text-slate-400 hover:text-white shrink-0"
+                  type="button"
                 >
                   ✕
                 </button>
               )}
               <button 
+                 type="button"
                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                 className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-cyan-500 transition-colors"
+                 className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-cyan-500 transition-colors shrink-0"
               >
                  <Smile size={20} />
               </button>
@@ -617,27 +620,30 @@ export default function ChatRoomPage() {
           {!audioBlob && !mediaFile && !newMessage.trim() && !editingMessageId ? (
             isRecording ? (
               <button 
+                type="button"
                 onClick={stopRecording}
-                className="w-9 h-9 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors animate-pulse flex-shrink-0 shadow-lg shadow-red-500/20"
+                className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors animate-pulse shrink-0 shadow-lg shadow-red-500/20"
               >
                 <Square size={16} fill="currentColor" />
               </button>
             ) : (
               <button 
+                type="button"
                 onClick={startRecording}
-                className="w-9 h-9 flex items-center justify-center bg-sky-500 text-white hover:bg-sky-600 rounded-full transition-colors flex-shrink-0 shadow-lg shadow-sky-500/20"
+                className="w-9 h-9 min-w-[36px] min-h-[36px] flex items-center justify-center bg-sky-500 text-white hover:bg-sky-600 rounded-full transition-colors shrink-0 shadow-lg shadow-sky-500/20"
               >
                 <Mic size={18} />
               </button>
             )
           ) : (
             <button 
+              type="button"
               onClick={(e) => {
                 sendMessage();
                 const textarea = document.querySelector('textarea');
                 if (textarea) textarea.style.height = 'auto';
               }}
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 transition-all shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-sky-500 hover:bg-sky-600'}`}
+              className={`w-9 h-9 min-w-[36px] min-h-[36px] rounded-full flex items-center justify-center text-white shrink-0 transition-all shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-sky-500 hover:bg-sky-600'}`}
             >
               {editingMessageId ? <Check size={18} /> : <Send size={18} className="transform rotate-180 -ml-0.5" />}
             </button>
