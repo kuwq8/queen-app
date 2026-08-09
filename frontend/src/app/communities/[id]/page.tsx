@@ -50,6 +50,29 @@ export default function CommunityPage() {
     setShowSearch(false);
   };
 
+  const handleInvite = () => {
+    setShowMoreMenu(false);
+    if (navigator.share) {
+      navigator.share({
+        title: `انضم إلى مجتمع ${community.name}`,
+        url: window.location.href,
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      alert('تم نسخ رابط المجتمع!');
+    }
+  };
+
+  const handleSettings = () => {
+    setShowMoreMenu(false);
+    alert('إعدادات المجتمع قيد التطوير');
+  };
+
+  const handleLeave = () => {
+    setShowMoreMenu(false);
+    setIsJoined(false);
+  };
+
   if (!community) return <div className="min-h-screen bg-black" />;
 
   return (
@@ -85,9 +108,11 @@ export default function CommunityPage() {
             {/* Dropdown Menu */}
             {showMoreMenu && (
               <div className="absolute top-10 left-0 bg-[#1a1a26] border border-slate-700 rounded-xl shadow-2xl overflow-hidden w-44 flex flex-col z-50 animate-fade-in-up text-right">
-                <button className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">دعوة أصدقاء</button>
-                <button className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">إعدادات المجتمع</button>
-                <button className="px-4 py-3 text-sm font-bold text-red-400 hover:bg-slate-800 text-right border-t border-slate-700 transition-colors">مغادرة المجتمع</button>
+                <button onClick={handleInvite} className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">دعوة أصدقاء</button>
+                <button onClick={handleSettings} className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">إعدادات المجتمع</button>
+                {isJoined && (
+                  <button onClick={handleLeave} className="px-4 py-3 text-sm font-bold text-red-400 hover:bg-slate-800 text-right border-t border-slate-700 transition-colors">مغادرة المجتمع</button>
+                )}
               </div>
             )}
           </div>
