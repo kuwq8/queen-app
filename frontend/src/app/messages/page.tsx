@@ -434,11 +434,11 @@ export default function MessagesPage() {
       {/* Action Sheet Modal */}
       {selectedChatOptions && (
         <div 
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in duration-200"
           onClick={() => { setSelectedChatOptions(null); setShowDeleteConfirm(false); }}
         >
           <div 
-            className="bg-[#181824] border border-white/10 rounded-2xl w-full max-w-sm p-3 flex flex-col gap-1 shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200"
+            className="pb-24 pt-4 px-4 bg-[#181824] rounded-t-3xl sm:rounded-2xl border-t sm:border border-white/10 w-full max-w-md mx-auto shadow-2xl flex flex-col gap-1 animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-200"
             onClick={e => e.stopPropagation()}
           >
             {!showDeleteConfirm ? (
@@ -464,7 +464,7 @@ export default function MessagesPage() {
                 </button>
                 <button 
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all mt-1"
+                  className="flex items-center gap-3 w-full p-3 text-red-500 hover:bg-red-500/10 rounded-xl transition-all cursor-pointer font-medium mt-1"
                 >
                   <Trash2 size={20} /> حذف المحادثة
                 </button>
