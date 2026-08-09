@@ -151,6 +151,21 @@ export default function CommunityPage() {
       <main className="flex-1 flex flex-col pb-16">
         {activeTab === 'posts' && (
           <div className="flex flex-col w-full">
+            
+            {/* Write Post Box */}
+            <div 
+              onClick={() => router.push(`/communities/${communityId}/post`)}
+              className="bg-[#111] p-4 border-b border-slate-800 flex items-center gap-3 cursor-pointer hover:bg-[#1a1a1a] transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
+                {/* Mock User Avatar */}
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User Avatar" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 bg-black border border-slate-700 rounded-full px-4 py-2.5 text-slate-400 text-sm font-medium">
+                شارك أفكارك مع أعضاء المجتمع...
+              </div>
+            </div>
+
             {posts.length > 0 ? (
               posts.map((post) => (
                 <PostItem 
