@@ -27,6 +27,8 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         
       if (count !== null) setUnreadCount(count);
 
+      if (count !== null) setUnreadCount(count);
+
       // Fetch unread messages
       const { data: myMemberships } = await supabase
         .from('channel_members')
@@ -62,12 +64,26 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
     };
     
     fetchUnread();
+
+    const supabase = createClient();
+    const subscription = supabase.channel('bottom_nav_changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+         fetchUnread();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_viewers' }, () => {
+         fetchUnread();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
   }, [activeTab]);
 
   return (
-    <nav className="fixed bottom-0 w-full max-w-[600px] bg-black/90 backdrop-blur-md border-t border-slate-800 flex justify-around items-center h-[60px] z-50">
-      <Link href="/home" className={`p-2 transition-colors flex items-center justify-center ${activeTab === 'home' ? 'text-white' : 'text-slate-500 hover:text-white'}`}>
-        <svg viewBox="0 0 24 24" width="26" height="26" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke={activeTab === 'home' ? 'none' : 'currentColor'} strokeWidth={activeTab === 'home' ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
+    <nav className="fixed bottom-0 w-full max-w-[600px] h-14 bg-black/90 backdrop-blur-md border-t border-gray-800 flex items-center justify-around z-50">
+      <Link href="/home" className={`p-2 transition-colors flex items-center justify-center ${activeTab === 'home' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+        <svg viewBox="0 0 24 24" width="32" height="32" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke={activeTab === 'home' ? 'none' : 'currentColor'} strokeWidth={activeTab === 'home' ? 0 : 2} strokeLinecap="round" strokeLinejoin="round">
           <path d={activeTab === 'home' 
             ? "M12 1.696L.622 8.807l1.06 1.696L3 9.679V19.5C3 20.881 4.119 22 5.5 22h13c1.381 0 2.5-1.119 2.5-2.5V9.679l1.318.824 1.06-1.696L12 1.696z" 
             : "M12 1.696L.622 8.807l1.06 1.696L3 9.679V19.5C3 20.881 4.119 22 5.5 22h13c1.381 0 2.5-1.119 2.5-2.5V9.679l1.318.824 1.06-1.696L12 1.696zM19 19.5c0 .276-.224.5-.5.5h-13c-.276 0-.5-.224-.5-.5V8.429l7-4.375 7 4.375V19.5z"} 
@@ -75,25 +91,25 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
         </svg>
       </Link>
       
-      <Link href="/explore" className={`p-2 rounded-full transition-colors ${activeTab === 'explore' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
-        <Search size={26} strokeWidth={activeTab === 'explore' ? 2.5 : 2} />
+      <Link href="/explore" className={`p-2 rounded-full transition-colors ${activeTab === 'explore' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+        <Search size={32} strokeWidth={activeTab === 'explore' ? 2.5 : 2} />
       </Link>
       
       <CoffeeButton />
 
-      <Link href="/notifications" className={`relative p-2 rounded-full transition-colors ${activeTab === 'notifications' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
-        <Bell size={26} strokeWidth={activeTab === 'notifications' ? 2.5 : 2} />
+      <Link href="/notifications" className={`relative p-2 rounded-full transition-colors ${activeTab === 'notifications' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+        <Bell size={32} strokeWidth={activeTab === 'notifications' ? 2.5 : 2} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 left-1 w-4 h-4 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-[9px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </Link>
 
-      <Link href="/messages" className={`relative p-2 rounded-full transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>
-        <MessageCircle size={26} strokeWidth={activeTab === 'messages' ? 2.5 : 1.5} />
+      <Link href="/messages" className={`relative p-2 rounded-full transition-colors ${activeTab === 'messages' ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
+        <MessageCircle size={32} strokeWidth={activeTab === 'messages' ? 2.5 : 1.5} />
         {unreadMessagesCount > 0 && (
-          <span className="absolute top-1 left-1 w-4 h-4 bg-red-500 rounded-full border-2 border-black flex items-center justify-center text-[9px] font-bold text-white">
+          <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
             {unreadMessagesCount > 9 ? '9+' : unreadMessagesCount}
           </span>
         )}

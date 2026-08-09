@@ -89,6 +89,13 @@ export default function ChatRoomPage() {
       if (msgsData) {
          setMessages(msgsData);
          scrollToBottom();
+         
+         // Mark unread messages as read
+         const unreadMsgs = msgsData.filter((m: any) => m.sender_id !== myId && !m.message_viewers?.some((v: any) => v.user_id === myId));
+         if (unreadMsgs.length > 0) {
+            const viewRecords = unreadMsgs.map((m: any) => ({ message_id: m.id, user_id: myId }));
+            supabase.from('message_viewers').insert(viewRecords).then();
+         }
       }
 
       // Supabase Realtime
@@ -386,18 +393,18 @@ export default function ChatRoomPage() {
               onClick={() => setIsInfoPaneOpen(true)}
               className="flex items-center gap-3 cursor-pointer hover:bg-slate-800/50 p-1.5 -mr-1.5 rounded-xl transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {chatAvatar ? (
                   <img src={chatAvatar} className="w-full h-full object-cover" />
                 ) : roomInfo?.is_group ? (
-                  <Users size={20} className="text-slate-400" />
+                  <Users size={16} className="text-slate-400" />
                 ) : (
-                  <span className="font-bold text-lg" dir="ltr">{chatTitle.charAt(0).toUpperCase()}</span>
+                  <span className="font-bold text-sm" dir="ltr">{chatTitle.charAt(0).toUpperCase()}</span>
                 )}
               </div>
               <div>
-                <h2 className="font-bold text-lg leading-tight" dir="ltr">{chatTitle}</h2>
-                <p className={`text-xs ${typingUsers.length > 0 ? 'text-cyan-500 font-bold animate-pulse' : 'text-slate-500'}`}>{chatSubtext}</p>
+                <h2 className="text-sm font-semibold text-white leading-tight" dir="ltr">{chatTitle}</h2>
+                <p className={`text-[10px] ${typingUsers.length > 0 ? 'text-cyan-500 font-bold animate-pulse' : 'text-slate-500'}`}>{chatSubtext}</p>
               </div>
             </div>
           </div>

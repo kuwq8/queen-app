@@ -36,13 +36,18 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !viewLogged.current) {
         viewLogged.current = true;
+        
         // Optimistically increment locally
         setPost((prev: any) => ({ ...prev, views_count: (prev.views_count || 0) + 1 }));
         
         // Log to database
         import('@/utils/supabase/client').then(({ createClient }) => {
           const supabase = createClient();
-          supabase.rpc('increment_post_view', { post_id: post.id }).catch(console.error);
+          supabase.auth.getSession().then(({ data: { session } }) => {
+             if (session && session.user.id !== post.user_id) {
+               supabase.rpc('increment_post_view', { post_id: post.id }).catch(console.error);
+             }
+          });
         });
       }
     }, { threshold: 0.1 });
@@ -372,7 +377,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
               </div>
             </button>
 
-            <div className="relative">
+            <div>
               <button 
                 onClick={toggleShareDropdown}
                 className="flex items-center gap-1.5 hover:text-cyan-500 transition-colors group"
@@ -381,19 +386,27 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
               </button>
               
               {showShareDropdown && (
-                <div className="absolute right-0 top-10 w-48 bg-black border border-slate-800 rounded-xl shadow-2xl py-1 z-50 text-right">
-                  <button 
-                    onClick={copyLink}
-                    className="w-full text-right px-4 py-3 text-white hover:bg-slate-800 flex items-center gap-3"
+                <div 
+                  className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                  onClick={(e) => { e.stopPropagation(); setShowShareDropdown(false); }}
+                >
+                  <div 
+                    className="bg-[#181824] rounded-2xl p-4 w-72 border border-white/10 shadow-2xl flex flex-col gap-3"
+                    onClick={e => e.stopPropagation()}
                   >
-                    <Link2 size={18} className="text-slate-400" /> نسخ الرابط
-                  </button>
-                  <button 
-                    onClick={nativeShare}
-                    className="w-full text-right px-4 py-3 text-white hover:bg-slate-800 flex items-center gap-3"
-                  >
-                    <Share size={18} className="text-slate-400" /> مشاركة عبر...
-                  </button>
+                    <button 
+                      onClick={copyLink}
+                      className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-200 hover:bg-white/5 rounded-xl transition-all cursor-pointer"
+                    >
+                      <Link2 size={20} className="text-gray-400" /> نسخ الرابط
+                    </button>
+                    <button 
+                      onClick={nativeShare}
+                      className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-200 hover:bg-white/5 rounded-xl transition-all cursor-pointer"
+                    >
+                      <Share size={20} className="text-gray-400" /> مشاركة عبر...
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
