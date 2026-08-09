@@ -265,8 +265,6 @@ export default function MessagesPage() {
     }
   };
 
-  };
-
   const closeNewChat = () => {
     setIsNewChatOpen(false);
     setSelectedUsers([]);
