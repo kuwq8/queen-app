@@ -54,9 +54,9 @@ export default function CoffeeButton() {
   }, []);
 
   return (
-    <Link href="/community" className="p-2 text-slate-500 hover:text-white transition-colors relative flex items-center justify-center group">
-      <canvas ref={canvasRef} width={26} height={18} className="absolute -top-[6px] pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity" />
-      <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-1">
+    <Link href="/community" className="p-2 text-slate-500 hover:bg-white/5 rounded-full hover:text-white transition-all relative flex items-center justify-center group">
+      <canvas ref={canvasRef} width={25} height={18} className="absolute -top-[2px] pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity" />
+      <svg width="25" height="25" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M 28 16 C 36 16 36 26 28 26" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" />
         <path d="M 8 12 L 32 12 L 28 32 C 28 34 25 36 20 36 C 15 36 12 34 12 32 Z" fill="currentColor" />
         <ellipse cx="20" cy="12" rx="12" ry="4" fill="#3E2723" />
