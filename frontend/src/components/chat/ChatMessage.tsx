@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, Copy, Forward, Eye, Check, CheckCheck, Reply, Clock, Pin, CheckCircle, ChevronDown, Search, Plus } from 'lucide-react';
+import { Trash2, Copy, Forward, Eye, Check, CheckCheck, Reply, Clock, Pin, CheckCircle, ChevronDown, Search, Plus, X } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 import { createClient } from '@/utils/supabase/client';
 
@@ -217,27 +217,45 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
           
           <div className="flex flex-col w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-50" onClick={e => e.stopPropagation()}>
             
-            {/* 1. Quick Emoji Reaction Bar */}
-            <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
-              <button 
-                onClick={() => {
-                  const emoji = prompt("أدخل الإيموجي (استخدم لوحة المفاتيح):");
-                  if (emoji) addReaction(emoji);
-                }}
-                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0"
-              >
-                <ChevronDown size={18} />
-              </button>
-              <div className="w-px h-6 bg-white/10 mx-0.5"></div>
-              {['🙏', '😢', '😮', '😂', '❤️', '👍'].map(emoji => (
+            {/* 1. Quick Emoji Reaction Bar & WhatsApp Grid */}
+            <div className="flex flex-col items-center z-50 self-center mb-2 animate-in fade-in zoom-in-95">
+              <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl w-fit">
                 <button 
-                  key={emoji} 
-                  onClick={() => addReaction(emoji)} 
-                  className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
+                  onClick={() => setShowFullPicker(!showFullPicker)}
+                  className={`w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white rounded-full transition-colors shrink-0 ${showFullPicker ? 'bg-cyan-500/20 text-cyan-400' : 'bg-white/5 hover:bg-white/10'}`}
                 >
-                  {emoji}
+                  <ChevronDown size={18} className={`transition-transform ${showFullPicker ? 'rotate-180' : ''}`} />
                 </button>
-              ))}
+                <div className="w-px h-6 bg-white/10 mx-0.5"></div>
+                {['🙏', '😢', '😮', '😂', '❤️', '👍'].map(emoji => (
+                  <button 
+                    key={emoji} 
+                    onClick={() => addReaction(emoji)} 
+                    className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+                <div className="w-px h-6 bg-white/10 mx-0.5"></div>
+                <button onClick={closeMenu} className="w-7 h-7 rounded-lg bg-white/10 hover:bg-red-500/20 text-gray-300 hover:text-red-400 flex items-center justify-center transition-all cursor-pointer shrink-0">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* WhatsApp Grid Dropdown */}
+              {showFullPicker && (
+                <div className="grid grid-cols-6 gap-2 p-3 bg-[#181824] border border-white/10 rounded-2xl shadow-2xl z-50 mt-2 animate-in slide-in-from-top-2">
+                  {['😂', '😮', '😢', '🙏', '❤️', '👍', '🔥', '👏', '🎉', '💯', '🥳', '🤩', '😡', '🤔', '💩', '🤝', '✨', '⚡'].map(emoji => (
+                    <button 
+                      key={emoji} 
+                      onClick={() => addReaction(emoji)} 
+                      className="text-2xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-9 h-9"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* 2. Message Preview */}
