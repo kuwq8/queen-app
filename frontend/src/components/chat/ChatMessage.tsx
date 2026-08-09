@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Trash2, Copy, Forward, Eye, Check, CheckCheck, Reply, Clock, Pin, CheckCircle, ChevronDown, Search } from 'lucide-react';
+import { Trash2, Copy, Forward, Eye, Check, CheckCheck, Reply, Clock, Pin, CheckCircle, ChevronDown, Search, Plus } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 import { createClient } from '@/utils/supabase/client';
 
@@ -207,46 +207,48 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
       {/* Centered Context Menu Modal */}
       {showMenu && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4" onClick={() => setShowMenu(false)}>
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-0" />
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md transition-opacity" />
           
-          <div className="flex flex-col items-center gap-4 w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-10" onClick={e => e.stopPropagation()}>
+          <div className="flex flex-col w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-50" onClick={e => e.stopPropagation()}>
             
-            {/* 1. Emoji Bar or Full Picker */}
-            {showFullPicker ? (
-              <div className="bg-[#181824] rounded-2xl p-1 border border-white/10 shadow-2xl w-full flex flex-col items-center">
-                <EmojiPicker 
-                  theme={Theme.DARK} 
-                  onEmojiClick={(emojiData: EmojiClickData) => { addReaction(emojiData.emoji); setShowFullPicker(false); }}
-                  width="100%"
-                  height={350}
-                  searchPlaceHolder="بحث..."
-                />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-2 bg-[#1e1e2e] p-2.5 rounded-full border border-white/10 shadow-xl w-full">
-                {['❤️', '👍', '👎', '🔥', '🥰', '👏', '😄'].map(emoji => (
-                  <button 
-                    key={emoji} 
-                    onClick={() => addReaction(emoji)} 
-                    className="text-[22px] hover:scale-125 transition-transform active:scale-95 w-9 h-9 flex items-center justify-center"
-                  >
-                    {emoji}
-                  </button>
-                ))}
+            {/* 1. Quick Emoji Reaction Bar */}
+            <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
+              {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
                 <button 
-                  onClick={() => setShowFullPicker(true)} 
-                  className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-full transition-colors ml-1 text-slate-400"
+                  key={emoji} 
+                  onClick={() => addReaction(emoji)} 
+                  className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
                 >
-                  <ChevronDown size={20} />
+                  {emoji}
                 </button>
-              </div>
-            )}
+              ))}
+              <div className="w-px h-6 bg-white/10 mx-1"></div>
+              <button 
+                onClick={() => {
+                  const emoji = prompt("أدخل إيموجي:");
+                  if (emoji) addReaction(emoji);
+                }}
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <Plus size={18} />
+              </button>
+            </div>
 
             {/* 2. Message Preview */}
-            <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-              <div className="max-w-[85%] bg-[#2a2a3c] p-3 rounded-2xl text-white shadow-lg relative break-words text-right">
-                {msg.media_url ? (
-                  <div className="mb-2">
+            <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'} z-50 relative scale-[1.02] transition-transform mb-2`}>
+              <div className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-sm' : 'bg-[#13121c] text-white rounded-bl-sm'} shadow-2xl relative break-words text-right max-w-[85%]`}>
+                {msg.reply_to && (
+                  <div className="bg-white/5 border-r-2 border-pink-500 rounded-lg p-2 mb-1.5 text-xs flex flex-col gap-0.5 text-right">
+                    <span className="font-bold text-pink-400 text-[11px]">{msg.reply_to.sender?.username || msg.reply_to.sender?.full_name || 'مستخدم'}</span>
+                    <span className="text-gray-300 line-clamp-1 text-[11px]">{msg.reply_to.content || 'رسالة...'}</span>
+                  </div>
+                )}
+                {msg.is_view_once ? (
+                  <div className="flex items-center gap-2 bg-black/20 px-3 py-2 rounded-xl">
+                    <Eye size={16} className="text-white"/><span className="text-white text-[13px] font-bold">مشاهدة مرة واحدة</span>
+                  </div>
+                ) : msg.media_url ? (
+                  <div className="mb-1">
                     {msg.media_url.endsWith('.webm') ? (
                       <audio src={msg.media_url} controls className="h-10 w-[200px]" />
                     ) : msg.media_url.match(/\.(mp4|mov|webm)$/i) ? (
@@ -256,42 +258,46 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
                     )}
                   </div>
                 ) : null}
-                <p className="text-[14.5px] leading-relaxed break-words">{msg.content || 'رسالة...'}</p>
+                {msg.content && (
+                  <p className={`text-[14px] leading-snug font-normal break-words text-white`}>
+                    {msg.content}
+                  </p>
+                )}
+                <div className="flex items-center justify-end gap-1 text-[10px] opacity-60 mt-0.5 select-none text-white">
+                  <span dir="ltr">
+                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  {isMe && <CheckCheck size={12} className="text-white" />}
+                </div>
               </div>
             </div>
 
             {/* 3. Action List */}
-            <div className="w-56 bg-[#181824] p-2 rounded-2xl border border-white/10 shadow-2xl flex flex-col text-right pb-8">
-              <button onClick={() => { if(onReply) onReply(msg); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-                <Reply size={18} className="text-slate-400" /> رد
+            <div className={`bg-[#181824] border border-white/10 rounded-2xl p-2 w-60 shadow-2xl z-50 flex flex-col gap-1 text-right ${isMe ? 'self-end' : 'self-start'}`}>
+              <button onClick={() => { if(onReply) onReply(msg); setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
+                <span>رد</span> <Reply size={16} className="text-slate-400" />
               </button>
-              <button onClick={() => { navigator.clipboard.writeText(msg.content || ''); alert('تم النسخ!'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-                <Copy size={18} className="text-slate-400" /> نسخ
+              <button onClick={() => { navigator.clipboard.writeText(msg.content || ''); setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
+                <span>نسخ</span> <Copy size={16} className="text-slate-400" />
               </button>
-              <button onClick={() => { alert('ميزة التثبيت قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-                <Pin size={18} className="text-slate-400" /> تثبيت
+              <button onClick={() => { setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
+                <span>تثبيت</span> <Pin size={16} className="text-slate-400" />
               </button>
-              <button onClick={() => { alert('ميزة التحويل قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-                <Forward size={18} className="text-slate-400" /> تحويل
+              <button onClick={() => { setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
+                <span>تحويل</span> <Forward size={16} className="text-slate-400" />
               </button>
               
-              <div className="h-px bg-white/5 my-1 mx-2"></div>
+              <div className="h-px bg-white/5 my-0.5 mx-2"></div>
               
-              <button onClick={deleteForMe} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-red-400/90 text-[14px] font-medium">
-                <Trash2 size={18} /> حذف لدي فقط
+              <button onClick={deleteForMe} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-red-400 font-medium">
+                <span>حذف لدي فقط</span> <Trash2 size={16} />
               </button>
               
               {isMe && (
-                <button onClick={deleteForEveryone} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-red-500/10 rounded-xl transition-colors text-red-500 text-[14px] font-bold">
-                  <Trash2 size={18} /> حذف لدى الجميع
+                <button onClick={deleteForEveryone} className="px-3 py-2 text-sm rounded-xl hover:bg-red-500/10 flex items-center justify-between text-red-500 font-bold">
+                  <span>حذف لدى الجميع</span> <Trash2 size={16} />
                 </button>
               )}
-              
-              <div className="h-px bg-white/5 my-1 mx-2"></div>
-              
-              <button onClick={() => { alert('ميزة التحديد قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
-                <CheckCircle size={18} className="text-slate-400" /> تحديد
-              </button>
             </div>
             
           </div>
