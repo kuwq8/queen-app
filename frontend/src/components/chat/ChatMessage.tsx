@@ -143,7 +143,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               onTouchEnd={handleEnd}
               onTouchMove={handleMove}
               onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
-              className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-sm' : 'bg-[#13121c] text-white rounded-bl-sm'} shadow-sm relative cursor-pointer w-fit active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-white/10' : ''}`}
+              className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-sm' : 'bg-[#13121c] text-white rounded-bl-sm'} shadow-sm relative cursor-pointer w-fit active:scale-[0.98] transition-all duration-200`}
             >
               
               {/* Reply Preview inside Bubble */}
@@ -206,33 +206,42 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
       {/* Centered Context Menu Modal */}
       {showMenu && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4" onClick={() => setShowMenu(false)}>
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4" onClick={() => { setShowMenu(false); setShowFullPicker(false); }}>
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md transition-opacity" />
           
           <div className="flex flex-col w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-50" onClick={e => e.stopPropagation()}>
             
             {/* 1. Quick Emoji Reaction Bar */}
-            <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
-              {['👍', '❤️', '😂', '😮', '😢', '🙏'].map(emoji => (
+            {showFullPicker ? (
+              <div className="bg-[#181824] rounded-2xl p-1 border border-white/10 shadow-2xl w-full flex flex-col items-center mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
+                <EmojiPicker 
+                  theme={Theme.DARK} 
+                  onEmojiClick={(emojiData: EmojiClickData) => { addReaction(emojiData.emoji); setShowFullPicker(false); }}
+                  width="100%"
+                  height={350}
+                  searchPlaceHolder="بحث..."
+                />
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
                 <button 
-                  key={emoji} 
-                  onClick={() => addReaction(emoji)} 
-                  className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
+                  onClick={() => setShowFullPicker(true)}
+                  className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0"
                 >
-                  {emoji}
+                  <ChevronDown size={18} />
                 </button>
-              ))}
-              <div className="w-px h-6 bg-white/10 mx-1"></div>
-              <button 
-                onClick={() => {
-                  const emoji = prompt("أدخل إيموجي:");
-                  if (emoji) addReaction(emoji);
-                }}
-                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <Plus size={18} />
-              </button>
-            </div>
+                <div className="w-px h-6 bg-white/10 mx-0.5"></div>
+                {['🙏', '😢', '😮', '😂', '❤️', '👍'].map(emoji => (
+                  <button 
+                    key={emoji} 
+                    onClick={() => addReaction(emoji)} 
+                    className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* 2. Message Preview */}
             <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'} z-50 relative scale-[1.02] transition-transform mb-2`}>
