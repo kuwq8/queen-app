@@ -38,6 +38,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     
     timerRef.current = setTimeout(() => {
       if (messageRef.current) {
+         setShowFullPicker(false);
          setShowMenu(true);
       }
     }, 500);
