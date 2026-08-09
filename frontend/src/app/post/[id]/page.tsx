@@ -4,7 +4,7 @@
 import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, MessageSquareOff, ImageIcon, Sparkles } from 'lucide-react';
 import PostItem from '../../../components/PostItem';
 import BottomNav from '../../../components/BottomNav';
 
@@ -17,6 +17,7 @@ export default function PostDetailPage() {
   const [comments, setComments] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUsername, setCurrentUsername] = useState('');
+  const [currentUserAvatar, setCurrentUserAvatar] = useState('');
   const [commentContent, setCommentContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -39,12 +40,13 @@ export default function PostDetailPage() {
       // Get current user profile
       const { data: profile } = await supabase
         .from('profiles')
-        .select('username')
+        .select('username, avatar_url')
         .eq('id', session.user.id)
         .single();
         
       if (profile) {
         setCurrentUsername(profile.username || session.user.user_metadata?.full_name || 'مستخدم');
+        setCurrentUserAvatar(profile.avatar_url || '');
       }
 
       // Fetch the post
@@ -157,28 +159,45 @@ export default function PostDetailPage() {
         </div>
 
         {/* Comment Input */}
-        <div className="p-4 flex space-x-3 space-x-reverse border-b border-slate-800/50">
-          <div className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-slate-300">
-            {currentUsername?.charAt(0).toUpperCase()}
+        {post.is_comments_disabled ? (
+          <div className="p-4 border-b border-slate-800 bg-[#111] flex items-center justify-center gap-2">
+            <MessageSquareOff size={18} className="text-slate-500" />
+            <span className="text-slate-500 text-sm font-bold">قام الكاتب بإيقاف التعليقات على هذه التغريدة</span>
           </div>
-          <div className="flex-1 flex items-center bg-slate-900 rounded-full px-4 py-1 border border-slate-800 focus-within:border-cyan-500 transition-colors">
-            <input 
-              type="text" 
-              placeholder="اكتب ردك هنا..." 
-              value={commentContent}
-              onChange={(e) => setCommentContent(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-              className="flex-1 bg-transparent text-white focus:outline-none text-[15px]"
-            />
-            <button 
-              onClick={handleAddComment}
-              disabled={!commentContent.trim() || isSubmitting}
-              className="text-cyan-500 p-2 disabled:text-slate-600 hover:bg-slate-800 rounded-full transition-colors transform rotate-180"
-            >
-              <Send size={18} />
-            </button>
+        ) : (
+          <div className="p-4 border-b border-slate-800 flex items-start gap-3 bg-[#111]">
+            <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
+              {currentUserAvatar ? (
+                <img src={currentUserAvatar} alt="You" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center font-bold text-slate-300">
+                  {currentUsername?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 flex flex-col gap-2">
+              <textarea 
+                value={commentContent}
+                onChange={(e) => setCommentContent(e.target.value)}
+                placeholder="أضف ردك الخاص..."
+                className="w-full bg-transparent text-white text-[15px] resize-none focus:outline-none min-h-[40px] pt-2"
+                rows={1}
+              />
+              <div className="flex justify-between items-center border-t border-slate-800/50 pt-2 mt-1">
+                <button className="text-cyan-500 p-1.5 rounded-full hover:bg-cyan-500/10 transition-colors">
+                  <ImageIcon size={18} />
+                </button>
+                <button 
+                  onClick={handleAddComment}
+                  disabled={!commentContent.trim() || isSubmitting}
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-1.5 px-4 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                >
+                  <Sparkles size={14} /> رد
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Comments List */}
         <div className="flex-1">

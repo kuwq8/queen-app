@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2 } from 'lucide-react';
+import { MessageCircle, MessageSquareOff, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2 } from 'lucide-react';
 
 interface PostItemProps {
   post: any;
@@ -93,6 +93,32 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleToggleComments = async () => {
+    try {
+      const newStatus = !post.is_comments_disabled;
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('posts')
+        .update({ is_comments_disabled: newStatus })
+        .eq('id', post.id);
+
+      if (!error) {
+        setPost((prev: any) => ({ ...prev, is_comments_disabled: newStatus }));
+        setShowDropdown(false);
+      } else {
+        // Fallback for local storage (if running locally without backend)
+        setPost((prev: any) => ({ ...prev, is_comments_disabled: newStatus }));
+        setShowDropdown(false);
+      }
+    } catch (e) {
+      console.error(e);
+      // Fallback for local storage
+      setPost((prev: any) => ({ ...prev, is_comments_disabled: !post.is_comments_disabled }));
+      setShowDropdown(false);
     }
   };
 
@@ -259,6 +285,12 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
                     <Edit size={16} className="text-slate-400" /> تعديل
                   </button>
                   <button 
+                    onClick={(e) => { e.stopPropagation(); handleToggleComments(); }}
+                    className="w-full text-right px-4 py-2 text-white hover:bg-slate-800 flex items-center gap-2 border-b border-slate-800 pb-2 mb-1"
+                  >
+                    <MessageSquareOff size={16} className="text-slate-400" /> {post.is_comments_disabled ? 'تفعيل التعليقات' : 'إيقاف التعليقات'}
+                  </button>
+                  <button 
                     onClick={(e) => { e.stopPropagation(); handleDelete(); setShowDropdown(false); }}
                     disabled={isDeleting}
                     className="w-full text-right px-4 py-2 text-red-500 hover:bg-slate-800 flex items-center gap-2 disabled:opacity-50"
@@ -330,10 +362,16 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         
         <div className="flex justify-between items-center text-slate-500 mt-2 max-w-full relative z-10 pr-2">
           <button 
-            onClick={(e) => { e.stopPropagation(); router.push(`/post/${post.id}`); }}
-            className="flex items-center gap-1.5 hover:text-cyan-500 transition-colors group"
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              if (!post.is_comments_disabled) router.push(`/post/${post.id}`); 
+            }}
+            className={`flex items-center gap-1.5 transition-colors group ${post.is_comments_disabled ? 'text-slate-600 cursor-not-allowed' : 'hover:text-cyan-500'}`}
+            title={post.is_comments_disabled ? 'التعليقات معطلة' : 'التعليقات'}
           >
-            <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors"><MessageCircle size={18} /></div>
+            <div className={`p-2 rounded-full transition-colors ${post.is_comments_disabled ? '' : 'group-hover:bg-cyan-500/10'}`}>
+              {post.is_comments_disabled ? <MessageSquareOff size={18} /> : <MessageCircle size={18} />}
+            </div>
             <span className="text-sm">{post.comments_count || 0}</span>
           </button>
           

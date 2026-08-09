@@ -5,7 +5,7 @@ import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Search, Bell, Mail, User, Send, Heart, MessageCircle, Repeat, Share, Feather, Users, Quote, Plus } from 'lucide-react';
+import { Bookmark, Compass, Bell, Mail, Home, Search, Feather, MoreHorizontal, MessageCircle, Repeat, Heart, Share, Play, Eye, X, Image as ImageIcon, Sparkles, LogOut, Coffee, Hash, ImagePlus, UserPlus, Users, MessageSquareOff, User, Quote, Plus } from 'lucide-react';
 import CoffeeButton from '../../components/CoffeeButton';
 import PostItem from '../../components/PostItem';
 import BottomNav from '../../components/BottomNav';
@@ -24,6 +24,7 @@ export default function HomePage() {
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [localCommunities, setLocalCommunities] = useState<any[]>([]);
+  const [disableComments, setDisableComments] = useState(false);
 
   const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState(false);
   const [bookmarksList, setBookmarksList] = useState<any[]>([]);
@@ -144,7 +145,8 @@ export default function HomePage() {
         .insert({
           content: newPost,
           media_url: mediaUrl,
-          user_id: session.user.id
+          user_id: session.user.id,
+          is_comments_disabled: disableComments
         });
 
       if (!error) {
@@ -152,6 +154,7 @@ export default function HomePage() {
         setMediaFile(null);
         setMediaPreview(null);
         setSelectedQuotePost(null);
+        setDisableComments(false);
         setIsComposeOpen(false);
         fetchPosts();
       }
@@ -354,13 +357,24 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 border-t border-slate-800 pt-3 mt-2">
-                    <input type="file" ref={mediaInputRef} accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
-                    <button onClick={() => mediaInputRef.current?.click()} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="إرفاق صورة أو فيديو">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                    </button>
-                    <button onClick={fetchBookmarksAndOpenModal} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="اقتباس من المحفوظات">
-                      <Quote size={20} />
+                  <div className="flex justify-between items-center border-t border-slate-800 pt-3 mt-2">
+                    <div className="flex items-center gap-4">
+                      <input type="file" ref={mediaInputRef} accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
+                      <button onClick={() => mediaInputRef.current?.click()} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="إرفاق صورة أو فيديو">
+                        <ImageIcon size={20} />
+                      </button>
+                      <button onClick={fetchBookmarksAndOpenModal} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="اقتباس من المحفوظات">
+                        <Quote size={20} />
+                      </button>
+                    </div>
+                    
+                    <button 
+                      type="button" 
+                      onClick={() => setDisableComments(!disableComments)} 
+                      className={`flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${disableComments ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'border-white/10 text-gray-400 hover:text-white'}`}
+                    >
+                      <MessageSquareOff size={14} />
+                      <span>{disableComments ? 'التعليقات معطلة' : 'السماح بالتعليقات'}</span>
                     </button>
                   </div>
                 </div>
