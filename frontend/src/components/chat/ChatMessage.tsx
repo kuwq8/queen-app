@@ -11,9 +11,10 @@ interface ChatMessageProps {
   roomInfo: any;
   onEdit: () => void;
   onReact?: (msgId: string, reaction: string) => void;
+  onReply?: (msg: any) => void;
 }
 
-export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, roomInfo, onEdit, onReact }: ChatMessageProps) {
+export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, roomInfo, onEdit, onReact, onReply }: ChatMessageProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showFullPicker, setShowFullPicker] = useState(false);
   const [menuPos, setMenuPos] = useState<any>(null);
@@ -142,8 +143,17 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
               onTouchEnd={handleEnd}
               onTouchMove={handleMove}
               onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
-              className={`px-4 py-1.5 rounded-[20px] ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-[4px]' : 'bg-[#13121c] text-white rounded-bl-[4px]'} shadow-sm relative cursor-pointer w-fit active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-white/10' : ''}`}
+              className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-sm' : 'bg-[#13121c] text-white rounded-bl-sm'} shadow-sm relative cursor-pointer w-fit active:scale-[0.98] transition-all duration-200 ${showMenu ? 'z-[105] scale-[1.02] shadow-2xl ring-2 ring-white/10' : ''}`}
             >
+              
+              {/* Reply Preview inside Bubble */}
+              {msg.reply_to && (
+                <div className="bg-white/5 border-r-2 border-pink-500 rounded-lg p-2 mb-1.5 text-xs flex flex-col gap-0.5 cursor-pointer hover:bg-white/10 transition-all text-right">
+                  <span className="font-bold text-pink-400 text-[11px]">{msg.reply_to.sender?.username || msg.reply_to.sender?.full_name || 'مستخدم'}</span>
+                  <span className="text-gray-300 line-clamp-1 text-[11px]">{msg.reply_to.content || 'رسالة...'}</span>
+                </div>
+              )}
+
               {msg.is_view_once ? (
                 <div 
                   onClick={openViewOnce}
@@ -182,11 +192,11 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
               {/* Reactions display */}
               {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-3 ${isMe ? 'right-2' : 'left-2'} z-10 flex items-center justify-center gap-1 bg-[#15202b] border border-gray-700/60 rounded-full px-1.5 py-0.5 shadow-lg`}>
+                <div className={`absolute -bottom-2.5 ${isMe ? 'right-2' : 'left-2'} z-10 flex items-center justify-center gap-1 bg-[#182229] border border-white/10 rounded-full px-2 py-0.5 shadow-lg`}>
                   {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i} className="text-[11px] leading-none">{reaction}</span>
+                    <span key={i} className="text-[12px] leading-none">{reaction}</span>
                   ))}
-                  {msg.message_reactions.length > 1 && <span className="text-gray-300 font-bold ml-0.5 text-[10px] leading-none">{msg.message_reactions.length}</span>}
+                  {msg.message_reactions.length > 1 && <span className="text-gray-300 font-bold ml-0.5 text-[11px] leading-none">{msg.message_reactions.length}</span>}
                 </div>
               )}
             </div>
@@ -197,7 +207,7 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
       {/* Centered Context Menu Modal */}
       {showMenu && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4" onClick={() => setShowMenu(false)}>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-0" />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-0" />
           
           <div className="flex flex-col items-center gap-4 w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-10" onClick={e => e.stopPropagation()}>
             
@@ -251,8 +261,8 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
             </div>
 
             {/* 3. Action List */}
-            <div className="w-56 bg-[#181824] p-2 rounded-2xl border border-white/10 shadow-2xl flex flex-col text-right">
-              <button onClick={() => { alert('ميزة الرد قيد التطوير'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
+            <div className="w-56 bg-[#181824] p-2 rounded-2xl border border-white/10 shadow-2xl flex flex-col text-right pb-8">
+              <button onClick={() => { if(onReply) onReply(msg); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">
                 <Reply size={18} className="text-slate-400" /> رد
               </button>
               <button onClick={() => { navigator.clipboard.writeText(msg.content || ''); alert('تم النسخ!'); setShowMenu(false); }} className="w-full text-right px-3 py-2.5 flex items-center gap-3 hover:bg-white/5 rounded-xl transition-colors text-slate-200 text-[14px] font-medium">

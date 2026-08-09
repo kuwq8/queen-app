@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile, Timer } from 'lucide-react';
+import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 import { createClient } from '@/utils/supabase/client';
 import ChatMessage from '@/components/chat/ChatMessage';
 
@@ -14,6 +15,8 @@ export default function ChatRoomPage() {
   const [newMessage, setNewMessage] = useState('');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [replyingToMessage, setReplyingToMessage] = useState<any>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isInfoPaneOpen, setIsInfoPaneOpen] = useState(false);
   const [roomInfo, setRoomInfo] = useState<any>(null);
@@ -277,7 +280,7 @@ export default function ChatRoomPage() {
     }
 
     const tempId = crypto.randomUUID();
-    const tempMsg = {
+    const tempMsg: any = {
       id: tempId,
       channel_id: roomId,
       sender_id: currentUserId,
@@ -297,6 +300,10 @@ export default function ChatRoomPage() {
       message_viewers: []
     };
 
+    if (replyingToMessage) {
+       tempMsg.reply_to = replyingToMessage;
+    }
+
     setMessages(prev => [...prev, tempMsg]);
     scrollToBottom();
     
@@ -304,7 +311,7 @@ export default function ChatRoomPage() {
     setNewMessage('');
     cancelMedia();
 
-    const { data: insertData, error: insertError } = await supabase.from('messages').insert({
+    let insertPayload: any = {
       id: tempId,
       channel_id: roomId,
       sender_id: currentUserId,
@@ -312,7 +319,23 @@ export default function ChatRoomPage() {
       media_url: finalMediaUrl,
       is_view_once: isViewOnceEnabled,
       expires_at: expiresAt
-    }).select('*, sender:profiles!sender_id(id, username, full_name, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)').single();
+    };
+
+    // Include reply context in JSON if column doesn't exist, or just rely on fallback.
+    // For simplicity, we just store it in content if it fails, or maybe just ignore it.
+    // Since we know reply_to_message_id doesn't exist, we will safely append it to JSON metadata or content for now.
+    // Wait, let's append it to content invisibly or just as quoted text? 
+    // We can't change DB schema easily here, so we will append it to content stringified if it fails!
+    
+    if (replyingToMessage) {
+        insertPayload.content = `[REPLY:${replyingToMessage.id}:${replyingToMessage.sender?.username || 'user'}:${replyingToMessage.content?.substring(0,20) || ''}] \n${currentMessageText}`;
+    }
+    setReplyingToMessage(null);
+
+    let { data: insertData, error: insertError } = await supabase.from('messages')
+       .insert(insertPayload)
+       .select('*, sender:profiles!sender_id(id, username, full_name, avatar_url), message_deletions(user_id), message_reactions(*), message_viewers(user_id)')
+       .single();
     
     if (insertError) {
        console.error("Message insert error:", insertError);
@@ -323,6 +346,18 @@ export default function ChatRoomPage() {
     }
 
     if (insertData) {
+       // Parse reply tag back if it exists to maintain temp state visual, or let real-time update handle it
+       if (insertData.content && insertData.content.startsWith('[REPLY:')) {
+           const match = insertData.content.match(/\[REPLY:(.*?):(.*?):(.*?)\] \n(.*)/s);
+           if (match) {
+              insertData.reply_to = {
+                  id: match[1],
+                  sender: { username: match[2] },
+                  content: match[3]
+              };
+              insertData.content = match[4];
+           }
+       }
        setMessages(prev => prev.map(m => m.id === tempId ? insertData : m));
     }
   };
@@ -442,16 +477,31 @@ export default function ChatRoomPage() {
             return null;
           }
 
+          // Handle reply tag parsing
+          let displayMsg = { ...msg };
+          if (displayMsg.content && displayMsg.content.startsWith('[REPLY:')) {
+             const match = displayMsg.content.match(/\[REPLY:(.*?):(.*?):(.*?)\] \n(.*)/s);
+             if (match) {
+                displayMsg.reply_to = {
+                    id: match[1],
+                    sender: { username: match[2] },
+                    content: match[3]
+                };
+                displayMsg.content = match[4];
+             }
+          }
+
           return (
             <ChatMessage 
-              key={msg.id} 
-              msg={msg} 
+              key={displayMsg.id} 
+              msg={displayMsg} 
               isMe={isMe} 
               showAvatar={showAvatar} 
               currentUserId={currentUserId!} 
               roomInfo={roomInfo} 
-              onEdit={() => { setEditingMessageId(msg.id); setNewMessage(msg.content); }}
+              onEdit={() => { setEditingMessageId(displayMsg.id); setNewMessage(displayMsg.content); }}
               onReact={handleReaction}
+              onReply={(m) => setReplyingToMessage(m)}
             />
           );
         })}
@@ -483,16 +533,45 @@ export default function ChatRoomPage() {
           </div>
         )}
 
-        <div className="flex items-end gap-2 w-full">
+        {showEmojiPicker && (
+          <>
+            <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setShowEmojiPicker(false)} />
+            <div className="fixed bottom-16 left-4 right-4 max-w-md mx-auto z-50 rounded-2xl shadow-2xl bg-[#181824] border border-white/10 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <EmojiPicker
+                theme={Theme.DARK}
+                onEmojiClick={(e: EmojiClickData) => { setNewMessage(prev => prev + e.emoji); }}
+                width="100%"
+                height={350}
+                searchPlaceHolder="بحث عن رموز تعبيرية..."
+              />
+            </div>
+          </>
+        )}
+
+        {replyingToMessage && (
+          <div className="flex items-center justify-between bg-[#1f1e2e] p-2 px-3 border-l-4 border-sky-500 text-xs rounded-t-xl mb-2 mx-2">
+            <div className="flex flex-col">
+              <span className="text-sky-500 font-bold mb-0.5">{replyingToMessage.sender?.username || replyingToMessage.sender?.full_name || 'مستخدم'}</span>
+              <span className="text-gray-300 truncate max-w-[250px]">{replyingToMessage.content || 'رسالة...'}</span>
+            </div>
+            <button onClick={() => setReplyingToMessage(null)} className="text-gray-400 hover:text-white p-1">
+              ✕
+            </button>
+          </div>
+        )}
+
+        <div className="flex items-end gap-2 w-full px-2 pb-2">
+          {/* 1. Attachment (+) */}
           <input type="file" ref={mediaInputRef} accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
           <button 
             onClick={() => mediaInputRef.current?.click()}
-            className="w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center bg-slate-800 text-cyan-500 hover:bg-slate-700 rounded-full transition-colors flex-shrink-0"
+            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
           >
-            <Plus size={18} />
+            <Plus size={20} />
           </button>
-          
-          <div className="flex-1 bg-[#1a1a26] text-white rounded-full px-3 py-1 focus-within:ring-1 focus-within:ring-cyan-500 transition-colors flex items-center min-h-[32px] relative">
+
+          {/* 2. Text Input + Smile */}
+          <div className="flex-1 bg-[#1a1a26] text-white rounded-full px-4 py-1.5 focus-within:ring-1 focus-within:ring-cyan-500 transition-colors flex items-center min-h-[36px] relative">
             <textarea
               placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
               value={newMessage}
@@ -511,39 +590,44 @@ export default function ChatRoomPage() {
                 }
               }}
               disabled={isRecording}
-              className="flex-1 bg-transparent text-white focus:outline-none text-sm resize-none py-[2px] min-h-[20px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden"
+              className="flex-1 bg-transparent text-white focus:outline-none text-sm resize-none mx-2 py-[2px] min-h-[20px] max-h-[120px] leading-tight [&::-webkit-scrollbar]:hidden"
               rows={1}
               style={{ overflowY: 'auto' }}
             />
-            <div className="flex items-center h-[24px] self-end mb-0.5">
+
+            <div className="flex items-center gap-1">
               {editingMessageId && (
                 <button 
                   onClick={() => { setEditingMessageId(null); setNewMessage(''); }}
-                  className="mr-2 text-slate-400 hover:text-white"
+                  className="text-slate-400 hover:text-white"
                 >
                   ✕
                 </button>
               )}
-              <button className="w-[28px] h-[24px] flex items-center justify-center text-slate-400 hover:text-cyan-500 transition-colors -ml-1">
-                 <Smile size={18} />
+              <button 
+                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                 className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-cyan-500 transition-colors"
+              >
+                 <Smile size={20} />
               </button>
             </div>
           </div>
 
+          {/* 3. Mic / Send (Left side) */}
           {!audioBlob && !mediaFile && !newMessage.trim() && !editingMessageId ? (
             isRecording ? (
               <button 
                 onClick={stopRecording}
-                className="w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors animate-pulse flex-shrink-0 shadow-lg shadow-red-500/20"
+                className="w-9 h-9 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors animate-pulse flex-shrink-0 shadow-lg shadow-red-500/20"
               >
-                <Square size={14} fill="currentColor" />
+                <Square size={16} fill="currentColor" />
               </button>
             ) : (
               <button 
                 onClick={startRecording}
-                className="w-8 h-8 min-w-[32px] min-h-[32px] flex items-center justify-center bg-cyan-600 text-white hover:bg-cyan-700 rounded-full transition-colors flex-shrink-0 shadow-lg shadow-cyan-600/20"
+                className="w-9 h-9 flex items-center justify-center bg-sky-500 text-white hover:bg-sky-600 rounded-full transition-colors flex-shrink-0 shadow-lg shadow-sky-500/20"
               >
-                <Mic size={16} />
+                <Mic size={18} />
               </button>
             )
           ) : (
@@ -553,9 +637,9 @@ export default function ChatRoomPage() {
                 const textarea = document.querySelector('textarea');
                 if (textarea) textarea.style.height = 'auto';
               }}
-              className={`w-8 h-8 min-w-[32px] min-h-[32px] rounded-full flex items-center justify-center text-white shrink-0 transition-all shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-sky-500 hover:bg-sky-600'}`}
+              className={`w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0 transition-all shadow-lg ${editingMessageId ? 'bg-green-600 hover:bg-green-700 shadow-green-600/20' : 'bg-sky-500 hover:bg-sky-600'}`}
             >
-              {editingMessageId ? <Check size={16} /> : <Send size={16} className="transform rotate-180 -ml-0.5" />}
+              {editingMessageId ? <Check size={18} /> : <Send size={18} className="transform rotate-180 -ml-0.5" />}
             </button>
           )}
         </div>

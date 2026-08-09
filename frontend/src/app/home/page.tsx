@@ -178,7 +178,7 @@ export default function HomePage() {
           <h2 className="text-lg font-bold text-cyan-500">Gemini Social</h2>
           <div className="flex items-center gap-4">
             <button onClick={handleLogout} className="text-red-400 text-xs font-bold hover:underline">تسجيل الخروج</button>
-            <Link href={`/${currentUsername}`} className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 cursor-pointer hover:bg-slate-700 transition-colors border border-slate-700 overflow-hidden">
+            <Link href={`/${currentUsername}`} className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 cursor-pointer hover:bg-slate-700 transition-colors border border-slate-700 overflow-hidden">
               {currentUserAvatar ? (
                 <img src={currentUserAvatar} alt="Profile" className="w-full h-full object-cover" />
               ) : (
@@ -188,21 +188,19 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* Tabs */}
-        <div className="flex border-b border-slate-800 bg-black/80 backdrop-blur-md sticky top-[60px] z-40">
+        {/* Tabs - Pill Style */}
+        <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-800 bg-black/80 backdrop-blur-md sticky top-[60px] z-40 px-4 py-3 [&::-webkit-scrollbar]:hidden">
           <button 
             onClick={() => setFeedType('all')}
-            className={`flex-1 py-4 text-sm font-bold text-center transition-colors relative ${feedType === 'all' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            className={`whitespace-nowrap px-4 py-1.5 text-sm font-bold rounded-full transition-all ${feedType === 'all' ? 'bg-white text-black' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
           >
             لك
-            {feedType === 'all' && <div className="absolute bottom-0 left-1/4 right-1/4 h-1 bg-cyan-500 rounded-t-full"></div>}
           </button>
           <button 
             onClick={() => setFeedType('following')}
-            className={`flex-1 py-4 text-sm font-bold text-center transition-colors relative ${feedType === 'following' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
+            className={`whitespace-nowrap px-4 py-1.5 text-sm font-bold rounded-full transition-all ${feedType === 'following' ? 'bg-white text-black' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
           >
             متابَعون
-            {feedType === 'following' && <div className="absolute bottom-0 left-1/4 right-1/4 h-1 bg-cyan-500 rounded-t-full"></div>}
           </button>
         </div>
 
