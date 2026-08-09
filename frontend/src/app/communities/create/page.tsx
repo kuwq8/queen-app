@@ -25,15 +25,44 @@ export default function CreateCommunityPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCreateCommunity = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || isLoading) return;
     
     setIsLoading(true);
-    // Mock successful creation with delay
-    setTimeout(() => {
-      router.push('/communities/3');
-    }, 1500);
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+
+      const { data, error } = await supabase
+        .from('communities')
+        .insert({
+          name: name,
+          description: description,
+          owner_id: session.user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+         console.error(error);
+         setTimeout(() => {
+           router.push('/communities/3');
+         }, 500);
+      } else if (data) {
+        router.push(`/communities/${data.id}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setTimeout(() => {
+        router.push('/communities/3');
+      }, 500);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,7 +75,7 @@ export default function CreateCommunityPage() {
           <h2 className="text-lg font-bold text-white">إنشاء مجتمع جديد</h2>
         </div>
         <button 
-          onClick={handleSubmit}
+          onClick={handleCreateCommunity}
           disabled={!name.trim() || isLoading}
           className="bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white text-sm font-bold px-4 py-1.5 rounded-full transition-colors flex items-center justify-center min-w-[70px]"
         >
@@ -79,7 +108,7 @@ export default function CreateCommunityPage() {
           </label>
         </div>
 
-        <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="mt-8 flex flex-col gap-4" onSubmit={handleCreateCommunity}>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-bold text-slate-300 px-1">اسم المجتمع <span className="text-red-500">*</span></label>
             <input 

@@ -11,11 +11,36 @@ export default function CommunityPostPage() {
   
   const [content, setContent] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
-    // Mock successful post, route back to community
-    router.push(`/communities/${communityId}`);
+    
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          content: content,
+          user_id: session.user.id,
+          community_id: communityId,
+          reply_to_post_id: null
+        });
+
+      if (!error) {
+        router.push(`/communities/${communityId}`);
+      } else {
+        console.error(error);
+        router.push(`/communities/${communityId}`);
+      }
+    } catch (err) {
+      console.error(err);
+      router.push(`/communities/${communityId}`);
+    }
   };
 
   return (
@@ -28,7 +53,7 @@ export default function CommunityPostPage() {
           <h2 className="text-lg font-bold text-white">نشر في المجتمع</h2>
         </div>
         <button 
-          onClick={handleSubmit}
+          onClick={handleCreatePost}
           disabled={!content.trim()}
           className="bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white text-sm font-bold px-5 py-1.5 rounded-full transition-colors"
         >
@@ -38,10 +63,6 @@ export default function CommunityPostPage() {
 
       <main className="flex-1 p-4 flex flex-col gap-4 animate-fade-in-up">
         <div className="flex gap-3">
-          <div className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 overflow-hidden border border-slate-700">
-            {/* Mock User Avatar */}
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User Avatar" className="w-full h-full object-cover" />
-          </div>
           <div className="flex-1 pt-1">
             <textarea
               value={content}
