@@ -173,205 +173,79 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     );
   }
 
+  const formattedTime = new Date(msg.created_at).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+
+  const handleDelete = async () => {
+    if (confirm('هل تريد بالتأكيد حذف هذه الرسالة؟')) {
+      const supabase = createClient();
+      await supabase.from('messages').update({ is_deleted: true, deleted_by: currentUserId, deleted_at: new Date().toISOString() }).eq('id', msg.id);
+    }
+  };
+
   return (
-    <>
-      <div className={`flex ${isMe ? 'justify-end' : 'justify-start'} group relative mb-3 w-full`}>
-        <div className="flex w-full max-w-[75%] sm:max-w-[280px] items-end gap-2">
-          <div className={`flex flex-col relative group/bubble ${isMe ? 'items-end' : 'items-start'} w-full`}>
-            {!isMe && roomInfo?.is_group && showAvatar && (
-              <span className="text-[13px] text-cyan-500 mr-1 mb-1 font-bold" dir="ltr">
-                {msg.sender?.full_name || msg.sender?.username}
-              </span>
-            )}
+    <div className={`flex w-full group py-2 px-3 border-b border-gray-300/60 bg-[#fcfcfc] hover:bg-black/5 transition-colors ${msg.is_view_once ? 'opacity-80' : ''}`}>
+      <div className="flex w-full gap-2 items-start relative">
+        {/* Avatar */}
+        <div className="w-10 h-10 shrink-0 overflow-hidden rounded shadow-sm border border-gray-300 bg-white flex justify-center items-center">
+          {msg.sender?.avatar_url ? (
+            <img src={msg.sender.avatar_url} className="w-full h-full object-cover" alt="avatar" />
+          ) : (
+            <span className="font-bold text-gray-500 text-lg">
+               {msg.sender?.username?.charAt(0).toUpperCase() || '?'}
+            </span>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex flex-col flex-1 min-w-0">
+          <div className="flex justify-between items-center w-full">
+            <span className="text-blue-700 font-bold text-[14px] truncate">
+              {msg.sender?.full_name || msg.sender?.username || 'مستخدم'}
+            </span>
             
-            <div 
-              ref={messageRef}
-              onMouseDown={handleStart}
-              onMouseUp={handleEnd}
-              onMouseLeave={handleEnd}
-              onTouchStart={handleStart}
-              onTouchEnd={handleEnd}
-              onTouchMove={handleMove}
-              onContextMenu={(e) => { e.preventDefault(); handleStart(e as any); }}
-              className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-sm' : 'bg-[#13121c] text-white rounded-bl-sm'} shadow-sm relative cursor-pointer w-fit active:scale-[0.98] transition-all duration-200`}
-            >
-              
-              {/* Reply Preview inside Bubble */}
-              {msg.reply_to && (
-                <div className="bg-white/5 border-r-2 border-pink-500 rounded-lg p-2 mb-1.5 text-xs flex flex-col gap-0.5 cursor-pointer hover:bg-white/10 transition-all text-right">
-                  <span className="font-bold text-pink-400 text-[11px]">{msg.reply_to.sender?.username || msg.reply_to.sender?.full_name || 'مستخدم'}</span>
-                  <span className="text-gray-300 line-clamp-1 text-[11px]">{msg.reply_to.content || 'رسالة...'}</span>
-                </div>
-              )}
-
-              {msg.is_view_once ? (
-                <div 
-                  onClick={openViewOnce}
-                  className="flex items-center gap-2 bg-black/20 px-3 py-2 rounded-xl cursor-pointer hover:bg-black/30 transition-colors"
+            {/* Action Buttons on Left */}
+            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <button 
+                onClick={() => onReply && onReply(msg)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 p-1 rounded text-[10px] font-bold h-6 w-6 flex items-center justify-center transition-colors shadow-sm"
+                title="رد"
+              >
+                ↩
+              </button>
+              {isMe && (
+                <button 
+                  onClick={handleDelete}
+                  className="bg-gray-200 hover:bg-red-200 text-gray-700 hover:text-red-600 p-1 rounded text-[10px] font-bold h-6 w-6 flex items-center justify-center transition-colors shadow-sm"
+                  title="حذف"
                 >
-                   {isViewed ? (
-                     <><Check size={16} className="text-slate-400"/><span className="text-slate-400 text-[13px]">تمت المشاهدة</span></>
-                   ) : (
-                     <><Eye size={16} className="text-white animate-pulse"/><span className="text-white text-[13px] font-bold">مشاهدة مرة واحدة</span></>
-                   )}
-                </div>
-              ) : msg.media_url ? (
-                <div className="mb-1">
-                  {msg.media_url.endsWith('.webm') ? (
-                    <audio src={msg.media_url} controls className="h-10 w-[200px]" />
-                  ) : msg.media_url.match(/\.(mp4|mov|webm)$/i) ? (
-                    <video src={msg.media_url} controls className="max-w-full rounded-xl max-h-[250px]" />
-                  ) : (
-                    <img src={msg.media_url} className="max-w-full rounded-xl max-h-[250px] object-cover" />
-                  )}
-                </div>
-              ) : null}
-
-              {msg.content && (
-                <p className={`text-[14px] leading-snug font-normal break-words text-white`}>
-                  {msg.content}
-                </p>
-              )}
-              
-              <div className="flex items-center justify-end gap-1 text-[10px] opacity-60 mt-0.5 select-none text-white">
-                <span dir="ltr">
-                  {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-                {isMe && <CheckCheck size={12} className="text-white" />}
-              </div>
-
-              {/* Reactions display */}
-              {msg.message_reactions && msg.message_reactions.length > 0 && (
-                <div className={`absolute -bottom-2.5 ${isMe ? 'right-2' : 'left-2'} z-10 flex items-center justify-center gap-1 bg-[#182229] border border-white/10 rounded-full px-2 py-0.5 shadow-lg`}>
-                  {Array.from(new Set(msg.message_reactions.map((r: any) => r.reaction))).map((reaction: any, i) => (
-                    <span key={i} className="text-[12px] leading-none">{reaction}</span>
-                  ))}
-                  {msg.message_reactions.length > 1 && <span className="text-gray-300 font-bold ml-0.5 text-[11px] leading-none">{msg.message_reactions.length}</span>}
-                </div>
+                  X
+                </button>
               )}
             </div>
+          </div>
+
+          <div className="text-gray-900 text-[14px] mt-0.5 whitespace-pre-wrap break-words leading-relaxed font-medium">
+            {msg.reply_to && (
+              <div className="text-[11px] text-gray-600 bg-black/5 p-1 rounded border-r-2 border-blue-500 mb-1 truncate">
+                الرد على {msg.reply_to.sender?.username}: {msg.reply_to.content}
+              </div>
+            )}
+            
+            {msg.media_url ? (
+               msg.is_view_once ? (
+                 <button onClick={openViewOnce} className="flex items-center gap-2 bg-blue-500/10 text-blue-600 px-3 py-2 rounded-lg text-xs font-bold border border-blue-500/20 w-fit">
+                    <Eye size={14} /> شاهد المرفق
+                 </button>
+               ) : (
+                 <img src={msg.media_url} className="rounded-lg mt-1 max-w-[200px] h-auto border border-gray-300 shadow-sm" alt="media" />
+               )
+            ) : (
+              msg.content
+            )}
           </div>
         </div>
       </div>
-
-      {/* Centered Context Menu Modal */}
-      {showMenu && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4">
-          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity" onClick={closeMenu} />
-          
-          <div className="flex flex-col w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-50" onClick={e => e.stopPropagation()}>
-            
-            {/* 1. Quick Emoji Reaction Bar & WhatsApp Grid */}
-            <div className="flex flex-col items-center z-50 self-center mb-2 animate-in fade-in zoom-in-95">
-              <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl w-fit">
-                <button 
-                  onClick={() => setShowFullPicker(!showFullPicker)}
-                  className={`w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white rounded-full transition-colors shrink-0 ${showFullPicker ? 'bg-cyan-500/20 text-cyan-400' : 'bg-white/5 hover:bg-white/10'}`}
-                >
-                  <ChevronDown size={18} className={`transition-transform ${showFullPicker ? 'rotate-180' : ''}`} />
-                </button>
-                <div className="w-px h-6 bg-white/10 mx-0.5"></div>
-                {['🙏', '😢', '😮', '😂', '❤️', '👍'].map(emoji => (
-                  <button 
-                    key={emoji} 
-                    onClick={() => addReaction(emoji)} 
-                    className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-                <div className="w-px h-6 bg-white/10 mx-0.5"></div>
-                <button onClick={closeMenu} className="w-7 h-7 rounded-lg bg-white/10 hover:bg-red-500/20 text-gray-300 hover:text-red-400 flex items-center justify-center transition-all cursor-pointer shrink-0">
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* WhatsApp Grid Dropdown */}
-              {showFullPicker && (
-                <div className="grid grid-cols-6 gap-2 p-3 bg-[#181824] border border-white/10 rounded-2xl shadow-2xl z-50 mt-2 animate-in slide-in-from-top-2">
-                  {['😂', '😮', '😢', '🙏', '❤️', '👍', '🔥', '👏', '🎉', '💯', '🥳', '🤩', '😡', '🤔', '💩', '🤝', '✨', '⚡'].map(emoji => (
-                    <button 
-                      key={emoji} 
-                      onClick={() => addReaction(emoji)} 
-                      className="text-2xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-9 h-9"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* 2. Message Preview */}
-            <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'} z-50 relative scale-[1.02] transition-transform mb-2`}>
-              <div className={`px-3.5 py-2 rounded-2xl ${isMe ? 'bg-[#1e1d2b] text-white rounded-br-sm' : 'bg-[#13121c] text-white rounded-bl-sm'} shadow-2xl relative break-words text-right max-w-[85%]`}>
-                {msg.reply_to && (
-                  <div className="bg-white/5 border-r-2 border-pink-500 rounded-lg p-2 mb-1.5 text-xs flex flex-col gap-0.5 text-right">
-                    <span className="font-bold text-pink-400 text-[11px]">{msg.reply_to.sender?.username || msg.reply_to.sender?.full_name || 'مستخدم'}</span>
-                    <span className="text-gray-300 line-clamp-1 text-[11px]">{msg.reply_to.content || 'رسالة...'}</span>
-                  </div>
-                )}
-                {msg.is_view_once ? (
-                  <div className="flex items-center gap-2 bg-black/20 px-3 py-2 rounded-xl">
-                    <Eye size={16} className="text-white"/><span className="text-white text-[13px] font-bold">مشاهدة مرة واحدة</span>
-                  </div>
-                ) : msg.media_url ? (
-                  <div className="mb-1">
-                    {msg.media_url.endsWith('.webm') ? (
-                      <audio src={msg.media_url} controls className="h-10 w-[200px]" />
-                    ) : msg.media_url.match(/\.(mp4|mov|webm)$/i) ? (
-                      <video src={msg.media_url} controls className="max-w-full rounded-xl max-h-[150px]" />
-                    ) : (
-                      <img src={msg.media_url} className="max-w-full rounded-xl max-h-[150px] object-cover" />
-                    )}
-                  </div>
-                ) : null}
-                {msg.content && (
-                  <p className={`text-[14px] leading-snug font-normal break-words text-white`}>
-                    {msg.content}
-                  </p>
-                )}
-                <div className="flex items-center justify-end gap-1 text-[10px] opacity-60 mt-0.5 select-none text-white">
-                  <span dir="ltr">
-                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  {isMe && <CheckCheck size={12} className="text-white" />}
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Action List */}
-            <div className={`bg-[#181824] border border-white/10 rounded-2xl p-2 w-60 shadow-2xl z-50 flex flex-col gap-1 text-right ${isMe ? 'self-end' : 'self-start'}`}>
-              <button onClick={() => { if(onReply) onReply(msg); setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
-                <span>رد</span> <Reply size={16} className="text-slate-400" />
-              </button>
-              <button onClick={() => { navigator.clipboard.writeText(msg.content || ''); setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
-                <span>نسخ</span> <Copy size={16} className="text-slate-400" />
-              </button>
-              <button onClick={() => { setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
-                <span>تثبيت</span> <Pin size={16} className="text-slate-400" />
-              </button>
-              <button onClick={() => { setShowMenu(false); }} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-slate-200 font-medium">
-                <span>تحويل</span> <Forward size={16} className="text-slate-400" />
-              </button>
-              
-              <div className="h-px bg-white/5 my-0.5 mx-2"></div>
-              
-              <button onClick={deleteForMe} className="px-3 py-2 text-sm rounded-xl hover:bg-white/5 flex items-center justify-between text-red-400 font-medium">
-                <span>حذف لدي فقط</span> <Trash2 size={16} />
-              </button>
-              
-              {isMe && (
-                <button onClick={deleteForEveryone} className="px-3 py-2 text-sm rounded-xl hover:bg-red-500/10 flex items-center justify-between text-red-500 font-bold">
-                  <span>حذف لدى الجميع</span> <Trash2 size={16} />
-                </button>
-              )}
-            </div>
-            
-          </div>
-        </div>
-      )}
-
+      
       {/* View Once Fullscreen Viewer */}
       {isViewingMedia && viewOnceUrl && (
         <div className="fixed inset-0 bg-black z-[200] flex flex-col">
@@ -390,6 +264,6 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile, Timer, X, Bell, List, LogOut } from 'lucide-react';
+import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile, Timer, X, Bell, List, LogOut, MessageSquare, Hash, FileText, Settings } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 import { createClient } from '@/utils/supabase/client';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -449,7 +449,7 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full max-w-md mx-auto bg-white text-black overflow-hidden relative shadow-2xl">
+    <div className="h-[100dvh] flex flex-col justify-between overflow-hidden bg-[#e8e6e3] w-full max-w-md mx-auto text-black relative shadow-2xl">
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
@@ -501,7 +501,7 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-[#fcfcfc] [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 overflow-y-auto bg-[#fcfcfc] [&::-webkit-scrollbar]:hidden">
         {messages.map((msg, idx) => {
           const isMe = msg.sender?.id === currentUserId;
           const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
@@ -543,15 +543,15 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Floating Notification Bell Badge */}
-      <div className="absolute right-4 bottom-28 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-[#f45b69] text-white shadow-md cursor-pointer hover:bg-rose-600 transition-colors">
+      <div className="fixed right-3 top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-10 h-10 rounded-full bg-[#f45b69] text-white shadow-md cursor-pointer hover:bg-rose-600 transition-colors">
         <Bell size={20} />
-        <span className="absolute -top-1 -left-1 bg-white text-[#f45b69] text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border border-[#f45b69]">
+        <span className="absolute -bottom-1 -left-1 bg-white text-[#f45b69] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#f45b69]">
           0
         </span>
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 bg-[#eceae6] border-t border-gray-300 p-1 z-20 pb-safe w-full">
+      <div className="shrink-0 bg-[#3a3735] text-white p-1 z-20 pb-safe w-full flex flex-col">
         {(audioBlob || mediaPreview) && (
           <div className="mb-1 flex items-center gap-3 bg-white p-2 border border-gray-300 relative shadow-sm rounded">
             {audioBlob ? (
@@ -613,7 +613,7 @@ export default function ChatRoomPage() {
           )}
 
           {/* Top Row: Input field and actions */}
-          <div className="flex items-center gap-1 p-1 w-full">
+          <div className="flex items-center gap-1 p-1 bg-[#eceae6] border-b border-gray-400 w-full rounded-t">
             <button className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
               <LogOut size={18} className="rotate-180" />
             </button>
@@ -672,12 +672,12 @@ export default function ChatRoomPage() {
           </div>
 
           {/* Bottom Row: Grid Nav */}
-          <div className="grid grid-cols-5 gap-0.5 p-0.5 bg-[#3a3735] text-white text-xs font-bold text-center w-full">
-            <button className="py-1.5 px-1 bg-[#4a443e] hover:bg-[#5a544e] transition-colors flex items-center justify-center gap-1"><Users size={12}/> 173</button>
-            <button className="py-1.5 px-1 hover:bg-[#4a443e] transition-colors">خاص</button>
-            <button onClick={() => router.push('/messages')} className="py-1.5 px-1 hover:bg-[#4a443e] transition-colors">الغرف</button>
-            <button onClick={() => router.push('/home')} className="py-1.5 px-1 hover:bg-[#4a443e] transition-colors">الحائط</button>
-            <button className="py-1.5 px-1 hover:bg-[#4a443e] transition-colors">الضبط</button>
+          <div className="grid grid-cols-5 gap-0.5 mt-1 text-white text-xs font-bold text-center w-full">
+            <button className="py-1.5 px-1 bg-[#4a443e] hover:bg-[#5a544e] rounded transition-colors flex items-center justify-center gap-1"><Users size={12}/> 1</button>
+            <button className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><MessageSquare size={12}/> خاص</button>
+            <button onClick={() => router.push('/messages')} className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><Hash size={12}/> الغرف</button>
+            <button onClick={() => router.push('/home')} className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><FileText size={12}/> الحائط</button>
+            <button className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><Settings size={12}/> الضبط</button>
           </div>
         </div>
       </div>
