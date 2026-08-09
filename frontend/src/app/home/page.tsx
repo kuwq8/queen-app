@@ -5,7 +5,7 @@ import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Search, Bell, Mail, User, Send, Heart, MessageCircle, Repeat, Share, Feather, Users, Quote } from 'lucide-react';
+import { Home, Search, Bell, Mail, User, Send, Heart, MessageCircle, Repeat, Share, Feather, Users, Quote, Plus } from 'lucide-react';
 import CoffeeButton from '../../components/CoffeeButton';
 import PostItem from '../../components/PostItem';
 import BottomNav from '../../components/BottomNav';
@@ -213,25 +213,36 @@ export default function HomePage() {
         <main className="flex-1">
           {feedType === 'communities' ? (
              <div className="flex flex-col gap-3 p-4 animate-fade-in-up">
-                {[
-                  { name: 'عشاق القهوة', desc: 'مجتمع يجمع محبي القهوة لتبادل الوصفات والتجارب اليومية.', members: '12K', img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80' },
-                  { name: 'مبرمجي كويت', desc: 'نادي المطورين والمبرمجين في الكويت لتبادل الخبرات والبرمجيات.', members: '3.4K', img: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=100&q=80' },
-                  { name: 'تصوير فوتوغرافي', desc: 'شارك أفضل لقطاتك، وتعلم أساسيات التصوير وتعديل الصور.', members: '8.1K', img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=100&q=80' },
-                  { name: 'جيمرز العرب', desc: 'أخبار الألعاب، تقييمات، وبطولات إلكترونية.', members: '25K', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=100&q=80' },
-                ].map((community, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 bg-[#111] border border-slate-800 rounded-2xl hover:bg-slate-900/50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <img src={community.img} className="w-[56px] h-[56px] rounded-full object-cover border border-slate-700 shrink-0" />
-                      <div className="flex flex-col min-w-0 text-right">
-                        <h4 className="font-bold text-white text-[15px] truncate">{community.name}</h4>
-                        <p className="text-slate-400 text-[13px] truncate">{community.desc}</p>
-                        <span className="text-cyan-500 text-[11px] font-bold mt-0.5">{community.members} عضو</span>
-                      </div>
-                    </div>
-                    <button className="ml-2 shrink-0 bg-white/5 hover:bg-white/10 text-white font-bold text-xs px-4 py-2 rounded-full transition-colors border border-white/10">
-                      انضمام
-                    </button>
+                <div className="flex items-center justify-between gap-2 px-1 pb-2 w-full mx-auto border-b border-white/5 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Users className="text-white/70" size={20} />
+                    <h1 className="text-xl font-bold text-white">المجتمعات</h1>
                   </div>
+                  <Link href="/communities/create" className="text-sky-500 hover:text-sky-400 text-sm font-medium flex items-center gap-1">
+                    <Plus size={16} />أنشئ مجتمعاً
+                  </Link>
+                </div>
+                {[
+                  { id: '1', name: 'عشاق القهوة', desc: 'مجتمع يجمع محبي القهوة لتبادل الوصفات والتجارب اليومية.', members: '12K', img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80' },
+                  { id: '2', name: 'مبرمجي كويت', desc: 'نادي المطورين والمبرمجين في الكويت لتبادل الخبرات والبرمجيات.', members: '3.4K', img: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=100&q=80' },
+                  { id: '3', name: 'تصوير فوتوغرافي', desc: 'شارك أفضل لقطاتك، وتعلم أساسيات التصوير وتعديل الصور.', members: '8.1K', img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=100&q=80' },
+                  { id: '4', name: 'جيمرز العرب', desc: 'أخبار الألعاب، تقييمات، وبطولات إلكترونية.', members: '25K', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=100&q=80' },
+                ].map((community) => (
+                  <Link href={`/communities/${community.id}`} key={community.id} className="block group">
+                    <div className="flex items-center justify-between p-4 bg-[#111] border border-slate-800 rounded-2xl hover:border-sky-500/20 hover:bg-slate-900/50 transition-all cursor-pointer">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <img src={community.img} className="w-[56px] h-[56px] rounded-full object-cover border border-slate-700 shrink-0" />
+                        <div className="flex flex-col min-w-0 text-right">
+                          <h4 className="font-bold text-white text-[15px] truncate">{community.name}</h4>
+                          <p className="text-slate-400 text-[13px] truncate">{community.desc}</p>
+                          <span className="text-cyan-500 text-[11px] font-bold mt-0.5">{community.members} عضو</span>
+                        </div>
+                      </div>
+                      <button className="ml-2 shrink-0 bg-white/5 hover:bg-white/10 text-white font-bold text-xs px-4 py-2 rounded-full transition-colors border border-white/10 group-hover:border-sky-500/30 group-hover:text-sky-400">
+                        انضمام
+                      </button>
+                    </div>
+                  </Link>
                 ))}
              </div>
           ) : isLoading ? (
@@ -265,7 +276,13 @@ export default function HomePage() {
 
         {/* Floating Action Button (FAB) */}
         <button 
-          onClick={() => setIsComposeOpen(true)}
+          onClick={() => {
+            if (feedType === 'communities') {
+              router.push('/communities/post');
+            } else {
+              setIsComposeOpen(true);
+            }
+          }}
           className="absolute bottom-20 left-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-cyan-500/30 z-40 transition-colors"
         >
           <Feather size={20} />
