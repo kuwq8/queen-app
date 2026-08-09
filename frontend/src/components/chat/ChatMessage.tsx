@@ -44,6 +44,11 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     }, 500);
   };
 
+  const closeMenu = () => {
+    setShowMenu(false);
+    setShowFullPicker(false);
+  };
+
   const handleEnd = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   };
@@ -207,42 +212,33 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
 
       {/* Centered Context Menu Modal */}
       {showMenu && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4" onClick={() => { setShowMenu(false); setShowFullPicker(false); }}>
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md transition-opacity" />
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-4">
+          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity" onClick={closeMenu} />
           
           <div className="flex flex-col w-full max-w-sm animate-in fade-in zoom-in-95 duration-150 z-50" onClick={e => e.stopPropagation()}>
             
             {/* 1. Quick Emoji Reaction Bar */}
-            {showFullPicker ? (
-              <div className="bg-[#181824] rounded-2xl p-1 border border-white/10 shadow-2xl w-full flex flex-col items-center mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
-                <EmojiPicker 
-                  theme={Theme.DARK} 
-                  onEmojiClick={(emojiData: EmojiClickData) => { addReaction(emojiData.emoji); setShowFullPicker(false); }}
-                  width="100%"
-                  height={350}
-                  searchPlaceHolder="بحث..."
-                />
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
+            <div className="flex items-center gap-2 bg-[#1f1d2b] border border-white/10 rounded-full px-3 py-1.5 shadow-xl mb-2 z-50 animate-in fade-in zoom-in-95 self-center">
+              <button 
+                onClick={() => {
+                  const emoji = prompt("أدخل الإيموجي (استخدم لوحة المفاتيح):");
+                  if (emoji) addReaction(emoji);
+                }}
+                className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0"
+              >
+                <ChevronDown size={18} />
+              </button>
+              <div className="w-px h-6 bg-white/10 mx-0.5"></div>
+              {['🙏', '😢', '😮', '😂', '❤️', '👍'].map(emoji => (
                 <button 
-                  onClick={() => setShowFullPicker(true)}
-                  className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors shrink-0"
+                  key={emoji} 
+                  onClick={() => addReaction(emoji)} 
+                  className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
                 >
-                  <ChevronDown size={18} />
+                  {emoji}
                 </button>
-                <div className="w-px h-6 bg-white/10 mx-0.5"></div>
-                {['🙏', '😢', '😮', '😂', '❤️', '👍'].map(emoji => (
-                  <button 
-                    key={emoji} 
-                    onClick={() => addReaction(emoji)} 
-                    className="text-xl cursor-pointer hover:scale-125 transition-transform active:scale-95 flex items-center justify-center w-8 h-8"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            )}
+              ))}
+            </div>
 
             {/* 2. Message Preview */}
             <div className={`w-full flex ${isMe ? 'justify-end' : 'justify-start'} z-50 relative scale-[1.02] transition-transform mb-2`}>
