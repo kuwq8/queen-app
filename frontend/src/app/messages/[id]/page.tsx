@@ -449,7 +449,7 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col justify-between overflow-hidden bg-[#e8e6e3] w-full max-w-md mx-auto text-black relative shadow-2xl">
+    <div className="fixed inset-0 w-full max-w-md mx-auto flex flex-col justify-between bg-[#f4f3f0] text-black overflow-hidden z-10 shadow-2xl">
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
@@ -501,7 +501,7 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto bg-[#fcfcfc] [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 overflow-y-auto p-2 space-y-2 bg-[#f4f3f0] [&::-webkit-scrollbar]:hidden">
         {messages.map((msg, idx) => {
           const isMe = msg.sender?.id === currentUserId;
           const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
@@ -543,15 +543,15 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Floating Notification Bell Badge */}
-      <div className="fixed right-3 top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-10 h-10 rounded-full bg-[#f45b69] text-white shadow-md cursor-pointer hover:bg-rose-600 transition-colors">
-        <Bell size={20} />
-        <span className="absolute -bottom-1 -left-1 bg-white text-[#f45b69] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#f45b69]">
+      <div className="fixed right-3 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-11 h-11 rounded-full bg-[#f45b69] text-white shadow-xl cursor-pointer">
+        <Bell size={22} />
+        <span className="absolute -bottom-1 -left-1 bg-white text-[#f45b69] text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#f45b69] shadow-sm">
           0
         </span>
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 bg-[#3a3735] text-white p-1 z-20 pb-safe w-full flex flex-col">
+      <div className="shrink-0 bg-[#3a3735] text-white p-1 pb-safe w-full flex flex-col z-50">
         {(audioBlob || mediaPreview) && (
           <div className="mb-1 flex items-center gap-3 bg-white p-2 border border-gray-300 relative shadow-sm rounded">
             {audioBlob ? (
@@ -624,7 +624,7 @@ export default function ChatRoomPage() {
 
             <div className="flex-1 min-w-0 relative">
               <input 
-                 className="w-full bg-white text-black px-3 py-1.5 rounded border border-gray-300 text-sm focus:outline-none focus:border-gray-400 shadow-inner"
+                 className="flex-1 w-full bg-white text-black px-2 py-1.5 rounded border border-gray-300 text-sm focus:outline-none shadow-inner"
                  placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب @ للإشارة إلى احد المستخدمين"}
                  value={newMessage}
                  onChange={handleInputChange}
@@ -672,8 +672,8 @@ export default function ChatRoomPage() {
           </div>
 
           {/* Bottom Row: Grid Nav */}
-          <div className="grid grid-cols-5 gap-0.5 mt-1 text-white text-xs font-bold text-center w-full">
-            <button className="py-1.5 px-1 bg-[#4a443e] hover:bg-[#5a544e] rounded transition-colors flex items-center justify-center gap-1"><Users size={12}/> 1</button>
+          <div className="grid grid-cols-5 gap-1 pt-1 text-white text-xs font-bold text-center w-full">
+            <button className="py-1.5 px-1 bg-[#4a443e] hover:bg-[#5a544e] rounded transition-colors flex items-center justify-center gap-1"><Users size={12}/> 173</button>
             <button className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><MessageSquare size={12}/> خاص</button>
             <button onClick={() => router.push('/messages')} className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><Hash size={12}/> الغرف</button>
             <button onClick={() => router.push('/home')} className="py-1.5 px-1 hover:bg-[#4a443e] rounded transition-colors flex items-center justify-center gap-1"><FileText size={12}/> الحائط</button>
