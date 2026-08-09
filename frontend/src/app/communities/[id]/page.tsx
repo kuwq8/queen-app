@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ChevronRight, Users, Feather, Search, Share, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
@@ -7,6 +8,8 @@ import Link from 'next/link';
 export default function CommunityPage() {
   const params = useParams();
   const router = useRouter();
+  const [isJoined, setIsJoined] = useState(false);
+  const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'rules'>('posts');
   
   // Mock data for the requested community
   const communityId = params.id;
@@ -50,8 +53,11 @@ export default function CommunityPage() {
           <div className="w-20 h-20 rounded-full border-4 border-black bg-slate-900 overflow-hidden relative -mt-10 shadow-lg">
             <img src={mockCommunity.img} className="w-full h-full object-cover" />
           </div>
-          <button className="bg-white text-black font-bold px-6 py-2 rounded-full hover:bg-slate-200 transition-colors shadow-lg">
-            انضمام
+          <button 
+            onClick={() => setIsJoined(!isJoined)}
+            className={`font-bold px-6 py-2 rounded-full transition-colors shadow-lg ${isJoined ? 'bg-slate-800 text-white border border-slate-700' : 'bg-white text-black hover:bg-slate-200'}`}
+          >
+            {isJoined ? 'تم الانضمام' : 'انضمام'}
           </button>
         </div>
         
@@ -74,27 +80,64 @@ export default function CommunityPage() {
 
       {/* Tabs */}
       <div className="flex items-center overflow-x-auto border-b border-slate-800 bg-black sticky top-0 z-40 [&::-webkit-scrollbar]:hidden">
-        <button className="px-6 py-3 text-sm font-bold text-white border-b-2 border-cyan-500 whitespace-nowrap">المنشورات</button>
-        <button className="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">الأعضاء</button>
-        <button className="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-300 whitespace-nowrap transition-colors">القواعد</button>
+        <button 
+          onClick={() => setActiveTab('posts')} 
+          className={`px-6 py-3 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${activeTab === 'posts' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+        >
+          المنشورات
+        </button>
+        <button 
+          onClick={() => setActiveTab('members')} 
+          className={`px-6 py-3 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${activeTab === 'members' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+        >
+          الأعضاء
+        </button>
+        <button 
+          onClick={() => setActiveTab('rules')} 
+          className={`px-6 py-3 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${activeTab === 'rules' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+        >
+          القواعد
+        </button>
       </div>
 
-      {/* Main Feed Content (Mock) */}
-      <main className="flex-1 flex flex-col items-center justify-center py-16 px-4 text-center">
-        <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
-          <Feather className="text-slate-500" size={24} />
-        </div>
-        <h3 className="text-lg font-bold text-white mb-2">لا توجد منشورات بعد</h3>
-        <p className="text-slate-400 text-sm max-w-[250px]">كن أول من يشارك فكرة أو ينشر صورة في هذا المجتمع!</p>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col px-4 py-6">
+        {activeTab === 'posts' && (
+          <div className="flex flex-col items-center justify-center py-10 text-center animate-fade-in-up">
+            <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
+              <Feather className="text-slate-500" size={24} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">لا توجد منشورات بعد</h3>
+            <p className="text-slate-400 text-sm max-w-[250px]">كن أول من يشارك فكرة أو ينشر صورة في هذا المجتمع!</p>
+          </div>
+        )}
+        {activeTab === 'members' && (
+          <div className="flex flex-col gap-4 animate-fade-in-up">
+            <h3 className="text-white font-bold mb-2">الأعضاء ({mockCommunity.members})</h3>
+            <div className="text-slate-500 text-sm text-center py-10">قائمة الأعضاء ستظهر هنا</div>
+          </div>
+        )}
+        {activeTab === 'rules' && (
+          <div className="flex flex-col gap-4 animate-fade-in-up">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <h4 className="text-white font-bold mb-2">1. الاحترام المتبادل</h4>
+              <p className="text-slate-400 text-sm">يرجى احترام جميع الأعضاء وعدم استخدام لغة مسيئة.</p>
+            </div>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <h4 className="text-white font-bold mb-2">2. لا للإعلانات المزعجة</h4>
+              <p className="text-slate-400 text-sm">يمنع نشر الإعلانات التجارية بدون إذن مسبق.</p>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Floating Action Button (FAB) for posting in this community */}
-      <button 
-        onClick={() => router.push(`/communities/${communityId}/post`)}
+      <Link 
+        href={`/communities/${communityId}/post`}
         className="fixed bottom-6 left-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-cyan-500/30 z-40 transition-transform hover:scale-105"
       >
         <Feather size={24} />
-      </button>
+      </Link>
 
     </div>
   );
