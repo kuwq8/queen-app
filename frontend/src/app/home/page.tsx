@@ -23,6 +23,7 @@ export default function HomePage() {
   const mediaInputRef = useRef<HTMLInputElement>(null);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [localCommunities, setLocalCommunities] = useState<any[]>([]);
 
   const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState(false);
   const [bookmarksList, setBookmarksList] = useState<any[]>([]);
@@ -52,6 +53,11 @@ export default function HomePage() {
       fetchPosts();
     };
     checkAuth();
+    
+    if (typeof window !== 'undefined') {
+      const stored = JSON.parse(localStorage.getItem('local_communities') || '[]');
+      setLocalCommunities(stored);
+    }
   }, [router, feedType]);
 
   const fetchPosts = async () => {
@@ -223,6 +229,7 @@ export default function HomePage() {
                   </Link>
                 </div>
                 {[
+                  ...localCommunities,
                   { id: '1', name: 'عشاق القهوة', desc: 'مجتمع يجمع محبي القهوة لتبادل الوصفات والتجارب اليومية.', members: '12K', img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80' },
                   { id: '2', name: 'مبرمجي كويت', desc: 'نادي المطورين والمبرمجين في الكويت لتبادل الخبرات والبرمجيات.', members: '3.4K', img: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=100&q=80' },
                   { id: '3', name: 'تصوير فوتوغرافي', desc: 'شارك أفضل لقطاتك، وتعلم أساسيات التصوير وتعديل الصور.', members: '8.1K', img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=100&q=80' },

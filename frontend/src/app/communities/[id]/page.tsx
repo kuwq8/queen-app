@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ChevronRight, Users, Feather, Search, Share, MoreHorizontal } from 'lucide-react';
-import Link from 'next/link';
+import { ChevronRight, Users, Feather, Search, MoreHorizontal } from 'lucide-react';
+import PostItem from '../../../components/PostItem';
 
 export default function CommunityPage() {
   const params = useParams();
@@ -12,6 +12,33 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'rules'>('posts');
   const [showSearch, setShowSearch] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  
+  const communityId = params.id as string;
+  const [community, setCommunity] = useState<any>(null);
+  const [posts, setPosts] = useState<any[]>([]);
+
+  useEffect(() => {
+    // Load community
+    const local = JSON.parse(localStorage.getItem('local_communities') || '[]');
+    const found = local.find((c: any) => c.id === communityId);
+    if (found) {
+      setCommunity(found);
+    } else {
+      // fallback to mock
+      setCommunity({
+        id: communityId,
+        name: communityId === '1' ? 'عشاق القهوة' : communityId === '2' ? 'مبرمجي كويت' : 'مجتمع مخصص',
+        desc: 'مجتمع يجمع المحبين لتبادل الخبرات والنقاشات الهادفة يومياً.',
+        members: '12K',
+        cover: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1000&q=80',
+        img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80'
+      });
+    }
+
+    // Load posts
+    const storedPosts = JSON.parse(localStorage.getItem(`community_posts_${communityId}`) || '[]');
+    setPosts(storedPosts);
+  }, [communityId]);
 
   const handleSearchClick = () => {
     setShowSearch(!showSearch);
@@ -22,24 +49,15 @@ export default function CommunityPage() {
     setShowMoreMenu(!showMoreMenu);
     setShowSearch(false);
   };
-  
-  // Mock data for the requested community
-  const communityId = params.id;
-  const mockCommunity = {
-    id: communityId,
-    name: communityId === '1' ? 'عشاق القهوة' : communityId === '2' ? 'مبرمجي كويت' : 'مجتمع مخصص',
-    desc: 'مجتمع يجمع المحبين لتبادل الخبرات والنقاشات الهادفة يومياً.',
-    members: '12K',
-    cover: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1000&q=80',
-    img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80'
-  };
+
+  if (!community) return <div className="min-h-screen bg-black" />;
 
   return (
     <div className="w-full flex flex-col relative pb-[60px] min-h-screen bg-black font-sans text-right">
       
       {/* Cover Image and Header */}
       <div className="relative w-full h-48 bg-slate-900 border-b border-slate-800">
-        <img src={mockCommunity.cover} className="w-full h-full object-cover opacity-60" />
+        <img src={community.cover} className="w-full h-full object-cover opacity-60" />
         
         {/* Top Navbar overlapping cover */}
         <header className="absolute top-0 left-0 right-0 p-3 px-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
@@ -80,7 +98,7 @@ export default function CommunityPage() {
       <div className="px-4 relative pb-4 border-b border-slate-800">
         <div className="flex justify-between items-end">
           <div className="w-20 h-20 rounded-full border-4 border-black bg-slate-900 overflow-hidden relative -mt-10 shadow-lg">
-            <img src={mockCommunity.img} className="w-full h-full object-cover" />
+            <img src={community.img} className="w-full h-full object-cover" />
           </div>
           <button 
             onClick={() => setIsJoined(!isJoined)}
@@ -91,13 +109,13 @@ export default function CommunityPage() {
         </div>
         
         <div className="mt-3">
-          <h1 className="text-2xl font-bold text-white leading-tight">{mockCommunity.name}</h1>
-          <p className="text-slate-400 text-[14px] mt-1.5 leading-snug">{mockCommunity.desc}</p>
+          <h1 className="text-2xl font-bold text-white leading-tight">{community.name}</h1>
+          <p className="text-slate-400 text-[14px] mt-1.5 leading-snug">{community.desc}</p>
           
           <div className="flex items-center gap-4 mt-3 text-[14px]">
             <div className="flex items-center gap-1.5 text-slate-400">
               <Users size={16} />
-              <span className="font-bold text-white">{mockCommunity.members}</span> <span>عضو</span>
+              <span className="font-bold text-white">{community.members}</span> <span>عضو</span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-400">
               <span className="w-2 h-2 rounded-full bg-green-500"></span>
@@ -130,24 +148,38 @@ export default function CommunityPage() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col px-4 py-6">
+      <main className="flex-1 flex flex-col pb-16">
         {activeTab === 'posts' && (
-          <div className="flex flex-col items-center justify-center py-10 text-center animate-fade-in-up">
-            <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
-              <Feather className="text-slate-500" size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">لا توجد منشورات بعد</h3>
-            <p className="text-slate-400 text-sm max-w-[250px]">كن أول من يشارك فكرة أو ينشر صورة في هذا المجتمع!</p>
+          <div className="flex flex-col w-full">
+            {posts.length > 0 ? (
+              posts.map((post) => (
+                <PostItem 
+                  key={post.id} 
+                  post={post} 
+                  currentUsername="أنت" 
+                  onPostDeleted={() => {}} 
+                  onPostEdited={() => {}} 
+                />
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in-up">
+                <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
+                  <Feather className="text-slate-500" size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">لا توجد منشورات بعد</h3>
+                <p className="text-slate-400 text-sm max-w-[250px]">كن أول من يشارك فكرة أو ينشر صورة في هذا المجتمع!</p>
+              </div>
+            )}
           </div>
         )}
         {activeTab === 'members' && (
-          <div className="flex flex-col gap-4 animate-fade-in-up">
-            <h3 className="text-white font-bold mb-2">الأعضاء ({mockCommunity.members})</h3>
+          <div className="flex flex-col gap-4 px-4 py-6 animate-fade-in-up">
+            <h3 className="text-white font-bold mb-2">الأعضاء ({community.members})</h3>
             <div className="text-slate-500 text-sm text-center py-10">قائمة الأعضاء ستظهر هنا</div>
           </div>
         )}
         {activeTab === 'rules' && (
-          <div className="flex flex-col gap-4 animate-fade-in-up">
+          <div className="flex flex-col gap-4 px-4 py-6 animate-fade-in-up">
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
               <h4 className="text-white font-bold mb-2">1. الاحترام المتبادل</h4>
               <p className="text-slate-400 text-sm">يرجى احترام جميع الأعضاء وعدم استخدام لغة مسيئة.</p>
@@ -159,14 +191,6 @@ export default function CommunityPage() {
           </div>
         )}
       </main>
-
-      {/* Floating Action Button (FAB) for posting in this community */}
-      <Link 
-        href={`/communities/${communityId}/post`}
-        className="fixed bottom-6 left-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-cyan-500/30 z-40 transition-transform hover:scale-105"
-      >
-        <Feather size={24} />
-      </Link>
 
     </div>
   );

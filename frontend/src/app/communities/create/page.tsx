@@ -31,35 +31,22 @@ export default function CreateCommunityPage() {
     
     setIsLoading(true);
     try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const newCommunity = {
+        id: Date.now().toString(),
+        name: name,
+        desc: description,
+        members: '1',
+        img: avatarPreview || 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=100&q=80',
+        cover: coverPreview || 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1000&q=80'
+      };
       
-      if (!session) return;
-
-      const { data, error } = await supabase
-        .from('communities')
-        .insert({
-          name: name,
-          description: description,
-          owner_id: session.user.id
-        })
-        .select()
-        .single();
-
-      if (error) {
-         console.error(error);
-         setTimeout(() => {
-           router.push('/communities/3');
-         }, 500);
-      } else if (data) {
-        router.push(`/communities/${data.id}`);
-      }
+      const existing = JSON.parse(localStorage.getItem('local_communities') || '[]');
+      localStorage.setItem('local_communities', JSON.stringify([newCommunity, ...existing]));
+      
+      router.push(`/communities/${newCommunity.id}`);
     } catch (err) {
       console.error(err);
-      setTimeout(() => {
-        router.push('/communities/3');
-      }, 500);
+      router.push('/communities/3');
     } finally {
       setIsLoading(false);
     }

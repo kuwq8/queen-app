@@ -16,27 +16,16 @@ export default function CommunityPostPage() {
     if (!content.trim()) return;
     
     try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
+      const newPost = {
+        id: Date.now().toString(),
+        content: content,
+        created_at: new Date().toISOString(),
+        author: { username: 'أنت', avatar_url: null }
+      };
+      const existing = JSON.parse(localStorage.getItem(`community_posts_${communityId}`) || '[]');
+      localStorage.setItem(`community_posts_${communityId}`, JSON.stringify([newPost, ...existing]));
       
-      if (!session) return;
-
-      const { error } = await supabase
-        .from('posts')
-        .insert({
-          content: content,
-          user_id: session.user.id,
-          community_id: communityId,
-          reply_to_post_id: null
-        });
-
-      if (!error) {
-        router.push(`/communities/${communityId}`);
-      } else {
-        console.error(error);
-        router.push(`/communities/${communityId}`);
-      }
+      router.push(`/communities/${communityId}`);
     } catch (err) {
       console.error(err);
       router.push(`/communities/${communityId}`);
