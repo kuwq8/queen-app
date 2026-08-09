@@ -170,8 +170,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-black font-sans text-right">
-      <div className="w-full max-w-[600px] flex flex-col relative pb-[60px] border-x border-slate-800 min-h-screen bg-black">
+    <div className="w-full flex flex-col relative pb-[60px] min-h-screen bg-black font-sans text-right">
         
         {/* Top Header */}
         <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800 p-3 px-4 flex items-center justify-between">
@@ -351,6 +350,5 @@ export default function HomePage() {
         <BottomNav activeTab="home" />
 
       </div>
-    </div>
   );
 }
