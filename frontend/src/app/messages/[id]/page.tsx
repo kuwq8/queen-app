@@ -449,7 +449,7 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full max-w-md mx-auto bg-[#f8f7f5] text-black overflow-hidden relative shadow-2xl">
+    <div className="fixed inset-0 flex flex-col justify-between bg-[#f8f7f5] text-black overflow-hidden select-none z-10 w-full max-w-md mx-auto shadow-2xl">
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full w-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
@@ -550,13 +550,13 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Floating Notification Bell Badge */}
-      <div className="fixed right-3 top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-[#f45b69] text-white shadow-xl cursor-pointer">
-        <Bell size={20} />
-        <span className="absolute -bottom-1 -left-1 bg-white text-[#f45b69] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#f45b69]">0</span>
+      <div className="fixed right-3 top-[45%] -translate-y-1/2 z-50 flex items-center justify-center w-11 h-11 rounded-full bg-[#f45b69] text-white shadow-2xl cursor-pointer">
+        <Bell size={22} />
+        <span className="absolute -bottom-1 -left-1 bg-white text-[#f45b69] text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#f45b69]">0</span>
       </div>
 
       {/* Input Area */}
-      <div className="shrink-0 bg-[#3a3735] text-white p-1 z-20 pb-[env(safe-area-inset-bottom)] w-full flex flex-col">
+      <div className="shrink-0 bg-[#3a3735] text-white p-1 pb-4 z-20 w-full flex flex-col">
         {(audioBlob || mediaPreview) && (
           <div className="mb-1 flex items-center gap-3 bg-white p-2 border border-gray-300 relative shadow-sm rounded">
             {audioBlob ? (
