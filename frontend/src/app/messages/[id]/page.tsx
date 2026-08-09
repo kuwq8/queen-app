@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile, Timer } from 'lucide-react';
+import { ArrowRight, Send, Mic, Square, Trash2, Image as ImageIcon, Phone, Video, MoreVertical, Edit2, Star, Check, Users, Plus, Smile, Timer, X } from 'lucide-react';
 import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react';
 import { createClient } from '@/utils/supabase/client';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -548,17 +548,7 @@ export default function ChatRoomPage() {
           </>
         )}
 
-        {replyingToMessage && (
-          <div className="flex items-center justify-between bg-[#1f1e2e] p-2 px-3 border-l-4 border-sky-500 text-xs rounded-t-xl mb-2 mx-2">
-            <div className="flex flex-col">
-              <span className="text-sky-500 font-bold mb-0.5">{replyingToMessage.sender?.username || replyingToMessage.sender?.full_name || 'مستخدم'}</span>
-              <span className="text-gray-300 truncate max-w-[250px]">{replyingToMessage.content || 'رسالة...'}</span>
-            </div>
-            <button onClick={() => setReplyingToMessage(null)} className="text-gray-400 hover:text-white p-1">
-              ✕
-            </button>
-          </div>
-        )}
+        {/* Reply preview removed from here to be embedded in input bar */}
 
         <div className="flex items-center gap-2 p-2 bg-[#0f0f17] border-t border-gray-800 w-full z-50">
           {/* 1. Attachment (+) */}
@@ -567,20 +557,41 @@ export default function ChatRoomPage() {
             <input type="file" accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
           </label>
 
-          {/* 2. Text Input */}
-          <input 
-             className="flex-1 bg-[#1a1a26] text-white rounded-full px-4 py-2 text-sm focus:outline-none min-w-0" 
-             placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
-             value={newMessage}
-             onChange={handleInputChange}
-             onKeyDown={(e) => {
-               if (e.key === 'Enter') {
-                 e.preventDefault();
-                 sendMessage();
-               }
-             }}
-             disabled={isRecording}
-          />
+          {/* 2. Text Input Area */}
+          <div className="flex flex-col flex-1 min-w-0">
+            {replyingToMessage && (
+              <div className="flex items-center justify-between bg-[#1f1d2b] border-l-2 border-sky-400 p-2 px-3 rounded-t-2xl text-xs w-full mb-0.5">
+                <div className="flex flex-col gap-0.5 overflow-hidden">
+                  <span className="font-bold text-sky-400 text-[11px] truncate">
+                    الرد على {replyingToMessage.sender?.username || replyingToMessage.sender?.full_name || 'الرسالة'}
+                  </span>
+                  <span className="text-gray-300 truncate text-[11px]">
+                    {replyingToMessage.content}
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setReplyingToMessage(null)}
+                  className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0 mr-2"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+            <input 
+               className={`w-full bg-[#1a1a26] text-white px-4 py-2 text-sm focus:outline-none ${replyingToMessage ? 'rounded-b-2xl' : 'rounded-full'}`}
+               placeholder={editingMessageId ? "تعديل الرسالة..." : isRecording ? "جاري تسجيل رسالة صوتية..." : "اكتب رسالة..."}
+               value={newMessage}
+               onChange={handleInputChange}
+               onKeyDown={(e) => {
+                 if (e.key === 'Enter') {
+                   e.preventDefault();
+                   sendMessage();
+                 }
+               }}
+               disabled={isRecording}
+            />
+          </div>
 
           {/* 3. Emoji and Mic/Send */}
           <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="w-8 h-8 text-gray-400 hover:text-white flex items-center justify-center shrink-0">
