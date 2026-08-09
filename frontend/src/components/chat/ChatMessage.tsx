@@ -129,6 +129,40 @@ export default function ChatMessage({ msg, isMe, showAvatar, currentUserId, room
     return null;
   }
 
+  if (msg.media_type === 'system_join' || msg.media_type === 'system_leave' || (msg.media_type === 'system' && msg.content.includes('أضاف'))) {
+    const isJoin = msg.media_type === 'system_join' || msg.content.includes('أضاف') || msg.content.includes('أنشأ');
+    const parts = msg.content.split('|');
+    const textPart = parts[0];
+    const roomName = parts[1] || roomInfo?.name || 'الغرفة';
+    return (
+      <div className="flex justify-start mb-3 w-full my-2 px-2">
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[13px] font-bold shadow-sm ${isJoin ? 'bg-amber-500/10 text-amber-200 border-amber-500/20' : 'bg-slate-800/60 text-slate-400 border-slate-700/50'}`}>
+           <span>{isJoin ? 'هذا المستخدم دخل الى' : 'هذا المستخدم قد غادر'}</span>
+           <span className="bg-black/20 px-2 py-0.5 rounded text-xs font-bold text-amber-100">{roomName}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (msg.media_type === 'bot_announcement') {
+    const parts = msg.content.split('|');
+    const title = parts.length > 1 ? parts[0] : 'إعلان';
+    const body = parts.length > 1 ? parts[1] : parts[0];
+    return (
+      <div className="flex justify-start mb-3 w-full my-2">
+        <div className="flex items-start gap-2 w-full max-w-[85%] sm:max-w-[320px]">
+          <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+             <span className="font-bold text-black text-xs">BOT</span>
+          </div>
+          <div className="bg-sky-500/10 border border-sky-500/20 rounded-2xl rounded-tr-sm p-3 shadow-sm w-full">
+            <h4 className="text-red-500 font-bold text-[14px] mb-1">{title}</h4>
+            <p className="text-sky-100 text-[14px] leading-snug">{body}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (msg.media_type === 'system') {
     return (
       <div className="flex justify-center mb-3 w-full my-4">

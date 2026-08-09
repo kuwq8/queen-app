@@ -41,6 +41,40 @@ export default function ChatRoomPage() {
   const channelRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Bot Announcements Timer (Runs every 10 minutes)
+  useEffect(() => {
+    const botMessages = [
+       { title: 'فعاليه', body: 'يسرنا دعوتكم للمشاركة في فعالية زاجل كل يوم احد الساعه التاسعه مساء تحت شعار: "ارسل رسالة لمن تحب" مع كوين' },
+       { title: 'توجيه إداري مُهِمّ', body: 'نرجو من جميع السوابر والاداريين دون إستثناء, عدم إساءة إستخدام الصلاحيات(الحظر أو الطرد) لغير أحد الاسباب التاليه [فلوده,عزايم,قذف] وسيتم سحب الصلاحيه لو أستخدم لغير ماذكر.. الإداره' },
+       { title: 'مبدع الحائط', body: 'c7sas ontha مبدع الحائط لهذا الأسبوع' }
+    ];
+    let msgIndex = 0;
+
+    const interval = setInterval(() => {
+       const botMsg = botMessages[msgIndex % botMessages.length];
+       msgIndex++;
+       const newMsg = {
+          id: `bot-${Date.now()}`,
+          channel_id: roomId,
+          sender_id: null,
+          content: `${botMsg.title}|${botMsg.body}`,
+          media_type: 'bot_announcement',
+          created_at: new Date().toISOString(),
+          sender: null,
+          message_reactions: [],
+          message_deletions: [],
+          message_viewers: []
+       };
+       setMessages(prev => {
+          const updated = [...prev, newMsg];
+          setTimeout(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, 100);
+          return updated;
+       });
+    }, 10 * 60 * 1000); // 10 minutes
+
+    return () => clearInterval(interval);
+  }, [roomId]);
+
   useEffect(() => {
     const init = async () => {
       const supabase = createClient();
