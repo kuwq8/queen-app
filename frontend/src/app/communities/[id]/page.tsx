@@ -151,21 +151,6 @@ export default function CommunityPage() {
       <main className="flex-1 flex flex-col pb-16">
         {activeTab === 'posts' && (
           <div className="flex flex-col w-full">
-            
-            {/* Write Post Box */}
-            <div 
-              onClick={() => router.push(`/communities/${communityId}/post`)}
-              className="bg-[#111] p-4 border-b border-slate-800 flex items-center gap-3 cursor-pointer hover:bg-[#1a1a1a] transition-colors"
-            >
-              <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden border border-slate-700">
-                {/* Mock User Avatar */}
-                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="User Avatar" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1 bg-black border border-slate-700 rounded-full px-4 py-2.5 text-slate-400 text-sm font-medium">
-                شارك أفكارك مع أعضاء المجتمع...
-              </div>
-            </div>
-
             {posts.length > 0 ? (
               posts.map((post) => (
                 <PostItem 
@@ -206,6 +191,16 @@ export default function CommunityPage() {
           </div>
         )}
       </main>
+
+      {/* Floating Action Button (FAB) for posting in this community - Only for members */}
+      {isJoined && activeTab === 'posts' && (
+        <button 
+          onClick={() => router.push(`/communities/${communityId}/post`)}
+          className="fixed bottom-6 left-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-cyan-500/30 z-40 transition-transform hover:scale-105 animate-fade-in-up"
+        >
+          <Feather size={24} />
+        </button>
+      )}
 
     </div>
   );
