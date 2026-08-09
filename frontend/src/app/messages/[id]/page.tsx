@@ -449,11 +449,11 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="w-full h-dvh max-w-md mx-auto flex flex-col bg-black overflow-hidden text-white relative font-sans text-right shadow-2xl">
+    <div className="flex flex-col h-[100dvh] w-full max-w-md mx-auto bg-white text-black overflow-hidden relative shadow-2xl">
       {/* Main Chat Area */}
       <div className={`flex flex-col h-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
-        <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-white/10 h-16 pt-2 px-4 flex items-center justify-between">
+        <div className="shrink-0 bg-[#4a423a] text-white p-2 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
             <button onClick={() => router.back()} className="w-10 h-10 flex items-center justify-center -mr-3 rounded-full hover:bg-white/5 transition-colors">
               <ArrowRight size={20} className="text-white" />
@@ -501,7 +501,7 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-[#fcfcfc] [&::-webkit-scrollbar]:hidden">
         {messages.map((msg, idx) => {
           const isMe = msg.sender?.id === currentUserId;
           const showAvatar = !isMe && (idx === 0 || messages[idx - 1].sender?.id !== msg.sender?.id);
@@ -543,17 +543,17 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Floating Notification Bell Badge */}
-      <div className="fixed right-4 bottom-32 sm:bottom-24 sm:right-[calc(50%-200px+1rem)] z-30 flex items-center justify-center w-10 h-10 rounded-full bg-rose-500 text-white shadow-lg cursor-pointer hover:bg-rose-600 transition-colors">
+      <div className="absolute right-4 bottom-28 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-[#f45b69] text-white shadow-md cursor-pointer hover:bg-rose-600 transition-colors">
         <Bell size={20} />
-        <span className="absolute -top-1 -left-1 bg-white text-rose-600 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border border-rose-500 shadow-sm">
-          {0}
+        <span className="absolute -top-1 -left-1 bg-white text-[#f45b69] text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border border-[#f45b69]">
+          0
         </span>
       </div>
 
       {/* Input Area */}
-      <div className="bg-[#b4ad9b] flex flex-col w-full sticky bottom-0 z-40 pb-safe">
+      <div className="shrink-0 bg-[#eceae6] border-t border-gray-300 p-1 z-20 pb-safe w-full">
         {(audioBlob || mediaPreview) && (
-          <div className="mb-1 flex items-center gap-3 bg-slate-900/90 p-2 border-t border-slate-800 relative shadow-md">
+          <div className="mb-1 flex items-center gap-3 bg-white p-2 border border-gray-300 relative shadow-sm rounded">
             {audioBlob ? (
               <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
             ) : (
@@ -613,12 +613,12 @@ export default function ChatRoomPage() {
           )}
 
           {/* Top Row: Input field and actions */}
-          <div className="flex items-center gap-1 p-1 bg-[#b4ad9b] w-full">
-            <button className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-black/5 rounded">
+          <div className="flex items-center gap-1 p-1 w-full">
+            <button className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
               <LogOut size={18} className="rotate-180" />
             </button>
             
-            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white rounded shadow-sm">
+            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
               <Smile size={18} />
             </button>
 
@@ -638,7 +638,7 @@ export default function ChatRoomPage() {
               />
             </div>
 
-            <button className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white rounded shadow-sm">
+            <button className="w-8 h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
               <List size={18} />
             </button>
 
