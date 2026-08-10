@@ -425,19 +425,8 @@ export default function ClassicChatPage() {
     <div className="fixed top-0 left-0 right-0 bottom-0 inset-0 h-[100dvh] w-full flex flex-col bg-white font-sans text-sm m-0 p-0 overflow-hidden select-none" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
       
       {/* Top Header */}
-      <div className="shrink-0 w-full text-white px-3 pt-[2px] pb-2 flex items-center justify-between z-[60] shadow-md border-b border-[#3e2b22] relative" style={{ backgroundColor: settings.primaryColor }}>
-        <div className="flex items-center gap-3">
-          <span className="font-bold text-[14px] leading-none m-0 p-0">شات {server?.name || 'العرب'}</span>
-        </div>
-        {activePane !== 'members' && (
-          <button 
-            onClick={() => router.push(`/c/${slug}/entry`)} 
-            className="bg-red-600 hover:bg-red-700 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors m-0"
-            title="خروج من الشات"
-          >
-            <X size={14} strokeWidth={2} />
-          </button>
-        )}
+      <div className="shrink-0 w-full text-white px-3 py-1 m-0 top-0 flex items-center justify-center z-[60] shadow-md border-b border-[#3e2b22] relative" style={{ backgroundColor: settings.primaryColor }}>
+        <span className="font-bold text-[14px] leading-none m-0 p-0 text-center">شات {server?.name || 'العرب'}</span>
       </div>
 
       {/* Top Marquee */}
