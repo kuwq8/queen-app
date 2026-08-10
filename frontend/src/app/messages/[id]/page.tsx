@@ -449,9 +449,9 @@ export default function ChatRoomPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col justify-between bg-[#f8f7f5] text-black overflow-hidden select-none z-10 w-full max-w-md mx-auto shadow-2xl">
+    <div className="fixed inset-0 h-[100dvh] flex flex-col bg-[#f8f7f5] text-black overflow-hidden select-none z-10 w-full max-w-md mx-auto shadow-2xl">
       {/* Main Chat Area */}
-      <div className={`flex flex-col h-full w-full flex-1 transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
+      <div className={`flex flex-col h-full w-full flex-1 overflow-hidden transition-all duration-300 ${isInfoPaneOpen ? 'sm:ml-[300px]' : ''}`}>
         {/* Header */}
         <div className="shrink-0 h-12 bg-[#4a433d] text-white px-3 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
@@ -557,137 +557,143 @@ export default function ChatRoomPage() {
         <span className="text-[10px] leading-none font-bold">0</span>
       </div>
 
-      {/* Input Area */}
-      <div className="shrink-0 bg-[#3a3735] text-white p-1 z-20 pb-[max(0.5rem,env(safe-area-inset-bottom))] w-full flex flex-col">
-        {(audioBlob || mediaPreview) && (
-          <div className="mb-1 flex items-center gap-3 bg-white p-2 border border-gray-300 relative shadow-sm rounded">
-            {audioBlob ? (
-              <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
-            ) : (
-              <img src={mediaPreview!} className="h-16 w-auto rounded-lg object-cover" />
-            )}
-            
-            {!audioBlob && (
-              <button 
-                onClick={() => setIsViewOnceEnabled(!isViewOnceEnabled)} 
-                className={`ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors ${isViewOnceEnabled ? 'bg-cyan-900/40 border-cyan-500 text-cyan-400' : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-white'}`}
-              >
-                <Timer size={14}/> {isViewOnceEnabled ? 'تعرض مرة واحدة' : 'عادية'}
-              </button>
-            )}
+      {/* Input Area and Footer Container */}
+      <div className="shrink-0 w-full flex flex-col z-20">
+        
+        {/* Composer (Input Area) */}
+        <div className="bg-[#dcdbd7] p-1.5 w-full flex flex-col">
+          {(audioBlob || mediaPreview) && (
+            <div className="mb-1 flex items-center gap-3 bg-white p-2 border border-gray-300 relative shadow-sm rounded">
+              {audioBlob ? (
+                <audio src={URL.createObjectURL(audioBlob)} controls className="h-8 flex-1" />
+              ) : (
+                <img src={mediaPreview!} className="h-16 w-auto rounded-lg object-cover" />
+              )}
+              
+              {!audioBlob && (
+                <button 
+                  onClick={() => setIsViewOnceEnabled(!isViewOnceEnabled)} 
+                  className={`ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full border text-xs font-bold transition-colors ${isViewOnceEnabled ? 'bg-cyan-900/40 border-cyan-500 text-cyan-400' : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:text-white'}`}
+                >
+                  <Timer size={14}/> {isViewOnceEnabled ? 'تعرض مرة واحدة' : 'عادية'}
+                </button>
+              )}
 
-            <button onClick={cancelMedia} className="p-2 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-full transition-colors">
-              <Trash2 size={18} />
-            </button>
-          </div>
-        )}
-
-        {showEmojiPicker && (
-          <>
-            <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setShowEmojiPicker(false)} />
-            <div className="fixed bottom-24 left-0 w-full z-50 bg-[#181824] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-              <EmojiPicker
-                theme={Theme.DARK}
-                onEmojiClick={(e: EmojiClickData) => { setNewMessage(prev => prev + e.emoji); }}
-                width="100%"
-                height={300}
-                searchPlaceHolder="بحث عن رموز تعبيرية..."
-              />
-            </div>
-          </>
-        )}
-
-        <div className="flex flex-col w-full z-50">
-          
-          {replyingToMessage && (
-            <div className="flex items-center justify-between bg-[#1f1d2b] border-l-2 border-sky-400 p-2 px-3 text-xs w-full shadow-md z-10">
-              <div className="flex flex-col gap-0.5 overflow-hidden">
-                <span className="font-bold text-sky-400 text-[11px] truncate">
-                  الرد على {replyingToMessage.sender?.username || replyingToMessage.sender?.full_name || 'الرسالة'}
-                </span>
-                <span className="text-gray-300 truncate text-[11px]">
-                  {replyingToMessage.content}
-                </span>
-              </div>
-              <button 
-                type="button" 
-                onClick={() => setReplyingToMessage(null)}
-                className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0 mr-2 transition-colors"
-              >
-                <X size={16} />
+              <button onClick={cancelMedia} className="p-2 text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-full transition-colors">
+                <Trash2 size={18} />
               </button>
             </div>
           )}
 
-          {/* Top Row: Input field and actions */}
-          <div className="flex items-center gap-1 bg-[#eceae6] p-1 rounded mb-1 w-full">
-            <button className="min-w-[32px] w-[32px] h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
-              <LogOut size={16} className="rotate-180" />
-            </button>
+          {showEmojiPicker && (
+            <>
+              <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setShowEmojiPicker(false)} />
+              <div className="fixed bottom-24 left-0 w-full z-50 bg-[#181824] shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <EmojiPicker
+                  theme={Theme.DARK}
+                  onEmojiClick={(e: EmojiClickData) => { setNewMessage(prev => prev + e.emoji); }}
+                  width="100%"
+                  height={300}
+                  searchPlaceHolder="بحث عن رموز تعبيرية..."
+                />
+              </div>
+            </>
+          )}
+
+          <div className="flex flex-col w-full z-50">
             
-            <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="min-w-[32px] w-[32px] h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
-              <Smile size={16} />
-            </button>
-
-            <div className="flex-1 min-w-[50px] relative flex items-center bg-white rounded border border-gray-300 shadow-inner h-8 px-2">
-              <input 
-                 className="flex-1 w-full text-black text-xs outline-none bg-transparent"
-                 placeholder={editingMessageId ? "تعديل..." : isRecording ? "تسجيل..." : "اكتب @ للإشارة إلى أحد المستخدمين"}
-                 value={newMessage}
-                 onChange={handleInputChange}
-                 onKeyDown={(e) => {
-                   if (e.key === 'Enter') {
-                     e.preventDefault();
-                     sendMessage();
-                   }
-                 }}
-                 disabled={isRecording}
-              />
-            </div>
-
-            <button className="min-w-[32px] w-[32px] h-8 flex items-center justify-center shrink-0 text-gray-700 bg-white border border-gray-300 rounded shadow-sm">
-              <List size={16} />
-            </button>
-
-            {!audioBlob && !mediaFile && !newMessage.trim() && !editingMessageId ? (
-              isRecording ? (
+            {replyingToMessage && (
+              <div className="flex items-center justify-between bg-[#1f1d2b] border-l-2 border-sky-400 p-2 px-3 text-xs w-full shadow-md z-10 mb-1">
+                <div className="flex flex-col gap-0.5 overflow-hidden">
+                  <span className="font-bold text-sky-400 text-[11px] truncate">
+                    الرد على {replyingToMessage.sender?.username || replyingToMessage.sender?.full_name || 'الرسالة'}
+                  </span>
+                  <span className="text-gray-300 truncate text-[11px]">
+                    {replyingToMessage.content}
+                  </span>
+                </div>
                 <button 
                   type="button" 
-                  onClick={stopRecording}
-                  className="bg-red-600 text-white text-xs px-3 py-1 rounded h-8 font-bold flex items-center justify-center shrink-0 shadow-sm animate-pulse gap-1"
+                  onClick={() => setReplyingToMessage(null)}
+                  className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 shrink-0 mr-2 transition-colors"
                 >
-                  <span>إيقاف</span>
-                  <Square size={12} fill="currentColor" />
+                  <X size={16} />
                 </button>
+              </div>
+            )}
+
+            {/* Top Row: Input field and actions */}
+            <div className="flex items-center gap-1.5 w-full">
+              <button className="min-w-[32px] w-[32px] h-8 flex items-center justify-center shrink-0 text-gray-700 bg-[#f4f3f0] border border-gray-400 rounded shadow-sm">
+                <LogOut size={16} className="rotate-180" />
+              </button>
+              
+              <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="min-w-[32px] w-[32px] h-8 flex items-center justify-center shrink-0 text-gray-700 bg-[#f4f3f0] border border-gray-400 rounded shadow-sm">
+                <Smile size={16} />
+              </button>
+
+              <div className="flex-1 min-w-[50px] relative flex items-center bg-white rounded border border-gray-400 shadow-inner h-8 px-2">
+                <input 
+                   className="flex-1 w-full text-black text-xs outline-none bg-transparent"
+                   placeholder={editingMessageId ? "تعديل..." : isRecording ? "تسجيل..." : "اكتب @ للإشارة إلى أحد المستخدمين"}
+                   value={newMessage}
+                   onChange={handleInputChange}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter') {
+                       e.preventDefault();
+                       sendMessage();
+                     }
+                   }}
+                   disabled={isRecording}
+                />
+              </div>
+
+              <button className="min-w-[32px] w-[32px] h-8 flex items-center justify-center shrink-0 text-gray-700 bg-[#f4f3f0] border border-gray-400 rounded shadow-sm">
+                <List size={16} />
+              </button>
+
+              {!audioBlob && !mediaFile && !newMessage.trim() && !editingMessageId ? (
+                isRecording ? (
+                  <button 
+                    type="button" 
+                    onClick={stopRecording}
+                    className="bg-red-600 text-white text-xs px-2 py-1 rounded h-8 font-bold flex items-center justify-center shrink-0 shadow-sm animate-pulse gap-1"
+                  >
+                    <span>إيقاف</span>
+                    <Square size={12} fill="currentColor" />
+                  </button>
+                ) : (
+                  <button 
+                    type="button" 
+                    onClick={startRecording}
+                    className="bg-[#6b5e52] text-white text-xs px-2 py-1 rounded h-8 font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors gap-1"
+                  >
+                    <span>تسجيل</span>
+                    <Mic size={12} />
+                  </button>
+                )
               ) : (
                 <button 
                   type="button" 
-                  onClick={startRecording}
-                  className="bg-[#6b5e52] text-white text-xs px-3 py-1 rounded h-8 font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors gap-1"
+                  onClick={() => sendMessage()}
+                  className={`text-white text-xs px-2.5 py-1 rounded h-8 font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors gap-1 ${editingMessageId ? 'bg-green-600' : 'bg-[#6b5e52]'}`}
                 >
-                  <span>تسجيل</span>
-                  <Mic size={12} />
+                  <span>{editingMessageId ? 'تعديل' : 'إرسال'}</span>
+                  {editingMessageId ? <Check size={12} /> : <Send size={12} className="rotate-180" />}
                 </button>
-              )
-            ) : (
-              <button 
-                type="button" 
-                onClick={() => sendMessage()}
-                className={`text-white text-xs px-2.5 py-1 rounded h-8 font-bold flex items-center justify-center shrink-0 shadow-sm transition-colors gap-1 ${editingMessageId ? 'bg-green-600' : 'bg-[#6b5e52]'}`}
-              >
-                <span>{editingMessageId ? 'تعديل' : 'إرسال'}</span>
-                {editingMessageId ? <Check size={12} /> : <Send size={12} className="rotate-180" />}
-              </button>
-            )}
+              )}
+            </div>
           </div>
+        </div>
 
-          {/* Bottom Row: Grid Nav */}
+        {/* Bottom Row: Grid Nav */}
+        <div className="bg-[#4a4642] text-white p-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] w-full">
           <div className="grid grid-cols-5 gap-1 text-[11px] font-bold text-center w-full">
-            <button className="bg-white/10 py-1.5 rounded hover:bg-white/20 transition-colors flex items-center justify-center gap-1"><Settings size={12}/> الضبط</button>
-            <button onClick={() => router.push('/home')} className="bg-[#b38235] text-white py-1.5 rounded font-bold hover:bg-amber-600 transition-colors flex items-center justify-center gap-1"><FileText size={12}/> الحائط 2</button>
-            <button onClick={() => router.push('/messages')} className="bg-white/10 py-1.5 rounded hover:bg-white/20 transition-colors flex items-center justify-center gap-1"><Hash size={12}/> الغرف</button>
-            <button className="bg-white/10 py-1.5 rounded hover:bg-white/20 transition-colors flex items-center justify-center gap-1"><MessageSquare size={12}/> خاص</button>
-            <button className="bg-white/10 py-1.5 rounded hover:bg-white/20 transition-colors flex items-center justify-center gap-1"><Users size={12}/> 175</button>
+            <button className="bg-[#5f5954] py-1.5 rounded hover:bg-gray-500 transition-colors flex items-center justify-center gap-1"><Settings size={12}/> الضبط</button>
+            <button onClick={() => router.push('/home')} className="bg-[#a67c33] text-white py-1.5 rounded font-bold hover:bg-amber-600 transition-colors flex items-center justify-center gap-1"><FileText size={12}/> الحائط 2</button>
+            <button onClick={() => router.push('/messages')} className="bg-[#5f5954] py-1.5 rounded hover:bg-gray-500 transition-colors flex items-center justify-center gap-1"><Hash size={12}/> الغرف</button>
+            <button className="bg-[#5f5954] py-1.5 rounded hover:bg-gray-500 transition-colors flex items-center justify-center gap-1"><MessageSquare size={12}/> خاص</button>
+            <button className="bg-[#5f5954] py-1.5 rounded hover:bg-gray-500 transition-colors flex items-center justify-center gap-1"><Users size={12}/> 175</button>
           </div>
         </div>
       </div>
