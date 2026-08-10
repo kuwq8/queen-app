@@ -425,8 +425,8 @@ export default function ClassicChatPage() {
     <div className="fixed top-0 left-0 right-0 bottom-0 inset-0 h-[100dvh] w-full flex flex-col bg-white font-sans text-sm m-0 p-0 overflow-hidden select-none" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
       
       {/* Top Header */}
-      <div className="shrink-0 w-full text-white px-3 py-0.5 mt-0 border-t-0 flex items-center justify-between z-[60] shadow-md border-b border-[#3e2b22] relative" style={{ backgroundColor: settings.primaryColor }}>
-        <div className="flex items-center gap-3 h-full">
+      <div className="shrink-0 w-full text-white px-3 pt-[2px] pb-2 flex items-center justify-between z-[60] shadow-md border-b border-[#3e2b22] relative" style={{ backgroundColor: settings.primaryColor }}>
+        <div className="flex items-center gap-3">
           <span className="font-bold text-[14px] leading-none m-0 p-0">شات {server?.name || 'العرب'}</span>
         </div>
         <button 
