@@ -2194,14 +2194,14 @@ export default function ClassicChatPage() {
       {/* Members Drawer Backdrop Overlay */}
       {activePane === 'members' && (
         <div 
-          className="fixed inset-0 bg-black/60 z-[99998]" 
+          className="fixed inset-0 bg-transparent z-[99998]" 
           onClick={() => setActivePane(null)}
         />
       )}
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl m-0 p-0" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0" dir="rtl">
           
           {/* Header */}
           <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0">
