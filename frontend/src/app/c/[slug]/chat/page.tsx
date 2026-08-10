@@ -514,8 +514,8 @@ export default function ClassicChatPage() {
         {/* Middle Area (Right Sidebar + Chat) */}
         <div className="flex-1 flex overflow-hidden bg-[#FDFDFD]">
           
-          {/* 1. Right Sidebar (Members, Settings, or Wall) */}
-          <div className={`${activePane ? 'flex' : 'hidden'} absolute sm:relative right-0 inset-y-0 w-[360px] max-w-full bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-20`}>
+          {/* 1. Right Sidebar (Settings, or Wall) */}
+          <div className={`${activePane && activePane !== 'members' ? 'flex' : 'hidden'} absolute sm:relative right-0 inset-y-0 w-[360px] max-w-full bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-20`}>
             
             {/* Settings Pane */}
             {activePane === 'settings' && (
@@ -2201,10 +2201,10 @@ export default function ClassicChatPage() {
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
           
           {/* Header */}
-          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0">
+          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0 w-full">
             <button 
               onClick={() => setActivePane(null)} 
               className="h-full w-12 bg-[#e74c3c] hover:bg-[#c0392b] flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
@@ -2215,7 +2215,7 @@ export default function ClassicChatPage() {
           </div>
 
           {/* Search Bar */}
-          <div className="shrink-0 bg-[#5c5751] p-1.5 z-10">
+          <div className="shrink-0 bg-[#5c5751] p-1.5 z-10 w-full">
             <input 
               type="text" 
               placeholder="البحث .." 
@@ -2226,7 +2226,7 @@ export default function ClassicChatPage() {
           </div>
 
           {/* Sub-header */}
-          <div className="shrink-0 bg-[#7a6a58] text-white text-center text-[12px] font-bold py-1.5 shadow-sm z-10">
+          <div className="shrink-0 bg-[#7a6a58] text-white text-center text-[12px] font-bold py-1.5 shadow-sm z-10 w-full m-0">
             المتواجدين في الدردشه
           </div>
 
