@@ -2202,13 +2202,13 @@ export default function ClassicChatPage() {
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl border-l border-gray-400" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl border-l border-gray-400 m-0 p-0" dir="rtl">
           
           {/* Header */}
-          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-10 shadow-sm z-10">
+          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0">
             <button 
               onClick={() => setActivePane(null)} 
-              className="w-10 h-10 bg-[#e74c3c] hover:bg-[#c0392b] flex items-center justify-center text-white shrink-0"
+              className="h-full w-12 bg-[#e74c3c] hover:bg-[#c0392b] flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
             >
               <X size={20} strokeWidth={2} />
             </button>
@@ -2222,7 +2222,7 @@ export default function ClassicChatPage() {
               placeholder="البحث .." 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)} 
-              className="w-full bg-[#fdfdfd] text-black border-none rounded-sm text-[12px] p-1.5 font-bold focus:outline-none text-right placeholder-gray-500" 
+              className="w-full bg-gray-600 text-white placeholder-gray-300 border-none rounded-sm text-[12px] p-2 font-bold outline-none focus:outline-none focus:ring-0 text-right" 
             />
           </div>
 
