@@ -429,13 +429,15 @@ export default function ClassicChatPage() {
         <div className="flex items-center gap-3">
           <span className="font-bold text-[14px] leading-none m-0 p-0">شات {server?.name || 'العرب'}</span>
         </div>
-        <button 
-          onClick={() => router.push(`/c/${slug}/entry`)} 
-          className="bg-red-600 hover:bg-red-700 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors m-0"
-          title="خروج من الشات"
-        >
-          <X size={14} strokeWidth={2} />
-        </button>
+        {activePane !== 'members' && (
+          <button 
+            onClick={() => router.push(`/c/${slug}/entry`)} 
+            className="bg-red-600 hover:bg-red-700 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors m-0"
+            title="خروج من الشات"
+          >
+            <X size={14} strokeWidth={2} />
+          </button>
+        )}
       </div>
 
       {/* Top Marquee */}
@@ -2200,9 +2202,17 @@ export default function ClassicChatPage() {
         </div>
       )}
 
+      {/* Members Drawer Backdrop Overlay */}
+      {activePane === 'members' && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-[99998]" 
+          onClick={() => setActivePane(null)}
+        />
+      )}
+
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl border-l border-gray-400 m-0 p-0" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl m-0 p-0" dir="rtl">
           
           {/* Header */}
           <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0">
