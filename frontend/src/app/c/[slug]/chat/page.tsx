@@ -422,30 +422,32 @@ export default function ClassicChatPage() {
   };
 
   return (
-    <div className="h-screen w-full bg-[#FDF5E6] font-sans text-sm p-0" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
+    <div className="fixed inset-0 h-[100dvh] w-full flex flex-col bg-white font-sans text-sm p-0 overflow-hidden select-none" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
       
-      {/* Main Container */}
-      <div className="w-full h-full flex flex-col bg-white overflow-hidden relative">
-        
-        {/* Close Button */}
+      {/* Top Header */}
+      <div className="shrink-0 h-12 text-white px-3 flex items-center justify-between z-[60] shadow-md border-b border-[#3e2b22]" style={{ backgroundColor: settings.primaryColor }}>
+        <div className="flex items-center gap-3">
+          <span className="font-bold text-[14px]">شات {server?.name || 'العرب'}</span>
+        </div>
         <button 
           onClick={() => router.push(`/c/${slug}/entry`)} 
-          className="absolute top-2 left-2 z-[60] bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-colors border-2 border-white"
+          className="bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-colors"
           title="خروج من الشات"
         >
-          <X size={16} strokeWidth={3} />
+          <X size={16} strokeWidth={2} />
         </button>
-        
-        {/* Top Marquee */}
-        {settings.isMarqueeEnabled && (
-          <div className="h-7 text-white flex items-center px-2 flex-shrink-0 text-xs font-bold shadow-md relative z-10 border-b border-[#3e2b22]" style={{ backgroundColor: settings.primaryColor }}>
-            <div dangerouslySetInnerHTML={{ __html: `<marquee scrollamount="4">${settings.marqueeText}</marquee>` }} className="w-full" />
-          </div>
-        )}
+      </div>
 
-        {/* Mic Bar */}
-        {!isMicsLocked && (
-          <div className="h-14 bg-[#7a6a58] border-b border-primary flex items-center px-2 gap-2 flex-shrink-0 relative z-20 shadow-sm" dir="rtl">
+      {/* Top Marquee */}
+      {settings.isMarqueeEnabled && (
+        <div className="h-7 text-white flex items-center px-2 shrink-0 text-xs font-bold shadow-md relative z-10 border-b border-[#3e2b22]" style={{ backgroundColor: settings.primaryColor }}>
+          <div dangerouslySetInnerHTML={{ __html: `<marquee scrollamount="4">${settings.marqueeText}</marquee>` }} className="w-full" />
+        </div>
+      )}
+
+      {/* Mic Bar */}
+      {!isMicsLocked && (
+        <div className="h-14 bg-[#7a6a58] border-b border-primary flex items-center px-2 gap-2 shrink-0 relative z-20 shadow-sm" dir="rtl">
             {/* Sound Toggle */}
             <button 
               onClick={() => setIsSoundMuted(!isSoundMuted)}
@@ -1738,8 +1740,6 @@ export default function ClassicChatPage() {
           {/* Spacer for right side */}
           <div className="hidden sm:block w-4"></div>
         </div>
-
-      </div>
 
       {/* User Profile Modal */}
       {selectedUser && (
