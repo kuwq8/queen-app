@@ -526,68 +526,6 @@ export default function ClassicChatPage() {
           {/* 1. Right Sidebar (Members, Settings, or Wall) */}
           <div className={`${activePane ? 'flex' : 'hidden'} absolute sm:relative right-0 inset-y-0 w-[360px] max-w-full bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-20`}>
             
-            {/* Members Pane */}
-            {activePane === 'members' && (
-              <>
-                <div className="h-8 bg-primary text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#3e2b22] flex-shrink-0 shadow-md">
-                  <span>المتواجدين</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] text-white rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a] shadow-sm"><X size={14} /></button>
-                </div>
-                
-                <div className="bg-secondary px-1.5 py-1.5 flex-shrink-0 shadow-inner border-b border-primary">
-                  <input type="text" placeholder="البحث .." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-chatbg border border-primary rounded-sm text-[11px] p-1.5 font-bold focus:outline-none text-right" />
-                </div>
-                
-                <div className="bg-secondary/80 text-white text-center text-[11px] font-bold py-1 border-b border-primary">المتواجدين في الدردشه</div>
-
-                <div className="flex-1 overflow-y-auto bg-[#F5DEB3]">
-                  {filteredMembers.map((member: any) => {
-                    const status = getStatusDetails(member.user.username);
-                    return (
-                      <div key={member.id} onClick={() => setSelectedUser(member.user)} className="flex items-center justify-between p-1.5 border-b border-[#D2B48C] hover:bg-[#EED5A9] cursor-pointer transition-colors group">
-                        
-                        {/* Far Right: Flag or YouTube Icon */}
-                        <div className="flex flex-col items-center justify-center w-10 flex-shrink-0 border-l border-gray-300">
-                          {(userLink && member.user.username === currentUser?.username) || (member.user.username.charCodeAt(0) % 5 === 0) ? (
-                            <div className="w-6 h-4 bg-red-600 rounded flex items-center justify-center text-white text-[8px]">▶</div>
-                          ) : (
-                            <>
-                              <img src="https://flagcdn.com/w20/sa.png" alt="KSA" className="w-5 h-auto rounded-sm mb-0.5 shadow-sm" />
-                              <div className="text-[9px] text-gray-500 font-bold mt-0.5">#{((member.user.username.charCodeAt(0) + member.user.username.length) % 99) + 1}</div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Middle: Text Info */}
-                        <div className="flex-1 min-w-0 flex flex-col justify-center px-2 text-left">
-                          <div className="flex items-center gap-1 justify-end">
-                            <span className="font-extrabold text-[13px] text-primary truncate group-hover:text-black">{member.user.username}</span>
-                          </div>
-                          <div className="text-[10px] text-gray-600 truncate mt-0.5 font-bold">
-                            {status.text}
-                          </div>
-                        </div>
-
-                        {/* Far Left: Avatar */}
-                        <div className="flex items-center gap-1.5 pl-1">
-                          <div className="w-10 h-10 flex-shrink-0 border border-secondary rounded-sm p-[1px] bg-white shadow-sm overflow-hidden relative">
-                            {member.user.profile?.avatarUrl ? (
-                              <img src={member.user.profile.avatarUrl} className="w-full h-full object-cover rounded-sm" />
-                            ) : (
-                              <div className="w-full h-full bg-chatbg flex items-center justify-center font-bold text-secondary rounded-sm text-sm">{member.user.username.charAt(0).toUpperCase()}</div>
-                            )}
-                          </div>
-                          <div className={`w-[3px] h-10 ${status.color} border-l-[3px]`}></div>
-                        </div>
-
-                      </div>
-                    );
-                  })}
-                  {filteredMembers.length === 0 && <div className="text-center p-4 text-[11px] font-bold text-secondary">لا يوجد أعضاء</div>}
-                </div>
-              </>
-            )}
-
             {/* Settings Pane */}
             {activePane === 'settings' && (
               <>
@@ -2258,6 +2196,86 @@ export default function ClassicChatPage() {
                  <Reply size={10} className="transform scale-x-[-1] text-gray-600" /> رد
                </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Members Drawer (Refactored) */}
+      {activePane === 'members' && (
+        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl border-l border-gray-400" dir="rtl">
+          
+          {/* Header */}
+          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-10 shadow-sm z-10">
+            <button 
+              onClick={() => setActivePane(null)} 
+              className="w-10 h-10 bg-[#e74c3c] hover:bg-[#c0392b] flex items-center justify-center text-white shrink-0"
+            >
+              <X size={20} strokeWidth={2} />
+            </button>
+            <span className="text-white font-bold text-[14px] px-3">المتواجدين</span>
+          </div>
+
+          {/* Search Bar */}
+          <div className="shrink-0 bg-[#5c5751] p-1.5 z-10">
+            <input 
+              type="text" 
+              placeholder="البحث .." 
+              value={searchQuery} 
+              onChange={(e) => setSearchQuery(e.target.value)} 
+              className="w-full bg-[#fdfdfd] text-black border-none rounded-sm text-[12px] p-1.5 font-bold focus:outline-none text-right placeholder-gray-500" 
+            />
+          </div>
+
+          {/* Sub-header */}
+          <div className="shrink-0 bg-[#7a6a58] text-white text-center text-[12px] font-bold py-1.5 shadow-sm z-10">
+            المتواجدين في الدردشه
+          </div>
+
+          {/* List Area */}
+          <div className="flex-1 overflow-y-auto">
+            {filteredMembers.map((member: any) => {
+              const status = getStatusDetails(member.user.username);
+              return (
+                <div key={member.id} onClick={() => setSelectedUser(member.user)} className="flex items-center justify-between p-1.5 border-b border-[#D2B48C] hover:bg-[#EED5A9] cursor-pointer transition-colors group">
+                  
+                  {/* Far Right: Flag or YouTube Icon */}
+                  <div className="flex flex-col items-center justify-center w-10 flex-shrink-0 border-l border-gray-300">
+                    {(userLink && member.user.username === currentUser?.username) || (member.user.username.charCodeAt(0) % 5 === 0) ? (
+                      <div className="w-6 h-4 bg-red-600 rounded flex items-center justify-center text-white text-[8px]">▶</div>
+                    ) : (
+                      <>
+                        <img src="https://flagcdn.com/w20/sa.png" alt="KSA" className="w-5 h-auto rounded-sm mb-0.5 shadow-sm" />
+                        <div className="text-[9px] text-gray-500 font-bold mt-0.5">#{((member.user.username.charCodeAt(0) + member.user.username.length) % 99) + 1}</div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Middle: Text Info */}
+                  <div className="flex-1 min-w-0 flex flex-col justify-center px-2 text-left">
+                    <div className="flex items-center gap-1 justify-end">
+                      <span className="font-extrabold text-[13px] text-primary truncate group-hover:text-black">{member.user.username}</span>
+                    </div>
+                    <div className="text-[10px] text-gray-600 truncate mt-0.5 font-bold">
+                      {status.text}
+                    </div>
+                  </div>
+
+                  {/* Far Left: Avatar */}
+                  <div className="flex items-center gap-1.5 pl-1">
+                    <div className="w-10 h-10 flex-shrink-0 border border-secondary rounded-sm p-[1px] bg-white shadow-sm overflow-hidden relative">
+                      {member.user.profile?.avatarUrl ? (
+                        <img src={member.user.profile.avatarUrl} className="w-full h-full object-cover rounded-sm" />
+                      ) : (
+                        <div className="w-full h-full bg-chatbg flex items-center justify-center font-bold text-secondary rounded-sm text-sm">{member.user.username.charAt(0).toUpperCase()}</div>
+                      )}
+                    </div>
+                    <div className={`w-[3px] h-10 ${status.color} border-l-[3px]`}></div>
+                  </div>
+
+                </div>
+              );
+            })}
+            {filteredMembers.length === 0 && <div className="text-center p-4 text-[12px] font-bold text-[#7a6a58]">لا يوجد أعضاء</div>}
           </div>
         </div>
       )}
