@@ -1679,48 +1679,54 @@ export default function ClassicChatPage() {
           </div>
           
         </div>
+        {/* Floating Notification Bell */}
+        <button 
+          onClick={() => togglePane('notifications')}
+          className="fixed z-[9999] w-[45px] h-[45px] rounded-full bg-[#ff5252] text-white flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.2)] hover:bg-[#ff3333] transition-colors"
+          style={{ bottom: '90px', right: '20px' }}
+        >
+          <Bell size={20} fill="currentColor" />
+          {unreadNotifs > 0 && (
+            <span className="absolute -top-1 -right-1 bg-white text-[#ff5252] text-[10px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm border border-[#ff5252]">
+              {unreadNotifs}
+            </span>
+          )}
+        </button>
 
         {/* Bottom Toolbar */}
         <div className="h-10 flex items-center justify-between px-2 text-white flex-shrink-0 border-t border-[#3e2b22] shadow-[0_-2px_10px_rgba(0,0,0,0.2)] text-[11px] font-bold z-20 relative overflow-hidden" style={{ backgroundColor: settings.primaryColor }} dir="ltr">
           
           {/* Buttons on the Left */}
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar relative z-10 w-full sm:w-auto h-full px-1">
+          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar relative z-10 w-full sm:w-auto h-full px-1 justify-between flex-1">
             <button 
               onClick={() => togglePane('members')}
-              className={`h-7 px-3 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'members' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'members' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
               <Users size={14} /> <span>{server.members?.length || 0}</span>
             </button>
             <button 
               onClick={() => togglePane('private')}
-              className={`h-7 px-3 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'private' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'private' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                خاص <MessageCircle size={14} />
             </button>
             <button 
               onClick={() => togglePane('rooms')}
-              className={`h-7 px-3 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'rooms' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'rooms' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                الغرف <Grid size={14} />
             </button>
             <button 
               onClick={() => togglePane('wall')}
-              className={`h-7 px-3 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'wall' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'wall' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                الحائط <FileText size={14} />
             </button>
             <button 
               onClick={() => togglePane('settings')}
-              className={`h-7 px-3 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'settings' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'settings' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                الضبط <Settings size={14} />
-            </button>
-            <button 
-              onClick={() => togglePane('notifications')}
-              className={`h-7 px-3 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] relative transition-colors ${activePane === 'notifications' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
-            >
-               <Bell size={14} />
-               {unreadNotifs > 0 && <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-bold shadow-md">{unreadNotifs}</span>}
             </button>
           </div>
 
