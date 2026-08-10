@@ -422,19 +422,19 @@ export default function ClassicChatPage() {
   };
 
   return (
-    <div className="fixed inset-0 h-[100dvh] w-full flex flex-col bg-white font-sans text-sm p-0 overflow-hidden select-none" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
+    <div className="fixed top-0 left-0 right-0 bottom-0 inset-0 h-[100dvh] w-full flex flex-col bg-white font-sans text-sm m-0 p-0 overflow-hidden select-none" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
       
       {/* Top Header */}
-      <div className="shrink-0 h-12 text-white px-3 flex items-center justify-between z-[60] shadow-md border-b border-[#3e2b22]" style={{ backgroundColor: settings.primaryColor }}>
+      <div className="shrink-0 h-10 w-full text-white px-3 mt-0 pt-0 flex items-center justify-between z-[60] shadow-md border-b border-[#3e2b22]" style={{ backgroundColor: settings.primaryColor }}>
         <div className="flex items-center gap-3">
-          <span className="font-bold text-[14px]">شات {server?.name || 'العرب'}</span>
+          <span className="font-bold text-[14px] leading-none">شات {server?.name || 'العرب'}</span>
         </div>
         <button 
           onClick={() => router.push(`/c/${slug}/entry`)} 
-          className="bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-sm transition-colors"
+          className="bg-red-600 hover:bg-red-700 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors"
           title="خروج من الشات"
         >
-          <X size={16} strokeWidth={2} />
+          <X size={14} strokeWidth={2} />
         </button>
       </div>
 
