@@ -549,9 +549,12 @@ export default function ChatRoomPage() {
       </div>
 
       {/* Floating Notification Bell Badge */}
-      <div className="fixed right-3 bottom-24 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-[#f45b69] text-white shadow-lg cursor-pointer">
-        <Bell size={20} />
-        <span className="absolute -bottom-1 -left-1 bg-white text-[#f45b69] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#f45b69]">0</span>
+      <div 
+        className="fixed z-[9999] flex flex-col items-center justify-center w-[40px] h-[40px] rounded-full bg-[#ec6a6a] text-white shadow-md cursor-pointer transition-transform hover:scale-105"
+        style={{ top: '60%', right: '15px' }}
+      >
+        <Bell size={16} fill="currentColor" className="mb-[1px]" />
+        <span className="text-[10px] leading-none font-bold">0</span>
       </div>
 
       {/* Input Area */}
