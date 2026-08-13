@@ -178,16 +178,11 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col order-1 overflow-x-hidden">
-          <button onClick={() => router.push(`/c/${slug}/chat`)} className="w-full flex items-center justify-center gap-2 p-2 bg-[#d9534f] hover:bg-[#c9302c] text-white rounded transition-colors font-bold text-sm">
-            العودة للشات <ArrowRight size={16} />
-          </button>
-        </div>
-      </div>
-        
-              {/* Main Content (Order 1 so it appears on the right in RTL, making sidebar on the left) */}
-      <div className="flex-1 overflow-y-auto order-1">
+      {/* Main Content (Order 1 so it appears on the right in RTL, making sidebar on the left) */}
+      <div className="flex-1 flex flex-col overflow-y-auto order-1">
+        <button onClick={() => router.push(`/c/${slug}/chat`)} className="w-full shrink-0 flex items-center justify-center gap-2 p-3 bg-[#d9534f] hover:bg-[#c9302c] text-white transition-colors font-bold text-sm shadow-md">
+          العودة للشات <ArrowRight size={16} />
+        </button>
         {/* Header */}
         <div className="h-16 bg-white border-b border-gray-200 px-8 flex items-center shadow-sm">
           <h1 className="text-2xl font-extrabold text-[#5C4033]">
