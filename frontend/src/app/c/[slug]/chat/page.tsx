@@ -1619,18 +1619,20 @@ export default function ClassicChatPage() {
           
         </div>
         {/* Floating Notification Bell */}
-        <button 
-          onClick={() => togglePane('notifications')}
-          className="fixed z-[9999] w-[45px] h-[45px] rounded-full bg-[#ff5252] text-white flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.2)] hover:bg-[#ff3333] transition-colors"
-          style={{ bottom: '90px', right: '20px' }}
-        >
-          <Bell size={20} fill="currentColor" />
-          {unreadNotifs > 0 && (
-            <span className="absolute -top-1 -right-1 bg-white text-[#ff5252] text-[10px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm border border-[#ff5252]">
-              {unreadNotifs}
-            </span>
-          )}
-        </button>
+        {!activePane && (
+          <button 
+            onClick={() => togglePane('notifications')}
+            className="fixed z-[9999] w-[45px] h-[45px] rounded-full bg-[#ff5252] text-white flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.2)] hover:bg-[#ff3333] transition-colors"
+            style={{ top: '50%', right: '20px', transform: 'translateY(-50%)' }}
+          >
+            <Bell size={20} fill="currentColor" />
+            {unreadNotifs > 0 && (
+              <span className="absolute -top-1 -right-1 bg-white text-[#ff5252] text-[10px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm border border-[#ff5252]">
+                {unreadNotifs}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Bottom Toolbar */}
         <div className="h-10 flex items-center justify-between px-2 text-white flex-shrink-0 border-t border-[#3e2b22] shadow-[0_-2px_10px_rgba(0,0,0,0.2)] text-[11px] font-bold z-20 relative overflow-hidden" style={{ backgroundColor: settings.primaryColor }} dir="ltr">
