@@ -240,7 +240,38 @@ export default function AdminDashboard() {
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-gray-700 mb-2">صورة الموقع الخارجية (رابط مباشر)</label>
                   <div className="flex flex-col sm:flex-row gap-2">
-                    <input type="text" value={server.bannerUrl} onChange={e => setServer({...server, bannerUrl: e.target.value})} placeholder="https://example.com/image.png" className="w-full border border-gray-300 rounded-md p-2.5 focus:border-[#5C4033] focus:ring-1 focus:ring-[#5C4033] outline-none font-bold text-black text-left" dir="ltr" />
+                    <input type="text" value={server.bannerUrl || ''} onChange={e => setServer({...server, bannerUrl: e.target.value})} placeholder="https://example.com/image.png" className="w-full border border-gray-300 rounded-md p-2.5 focus:border-[#5C4033] focus:ring-1 focus:ring-[#5C4033] outline-none font-bold text-black text-left" dir="ltr" />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      id="banner-upload-input" 
+                      className="hidden" 
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if(!file) return;
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const token = getToken();
+                        try {
+                          const res = await fetch(`${API_URL}/chat/media`, {
+                            method: 'POST',
+                            headers: { Authorization: `Bearer ${token}` },
+                            body: formData
+                          });
+                          if(res.ok) {
+                            const data = await res.json();
+                            setServer({...server, bannerUrl: data.mediaUrl});
+                          } else {
+                            alert('فشل رفع الصورة');
+                          }
+                        } catch(err) {
+                          alert('خطأ في الاتصال');
+                        }
+                      }} 
+                    />
+                    <button onClick={() => document.getElementById('banner-upload-input')?.click()} className="bg-gray-100 text-gray-800 px-4 py-2.5 rounded-md font-bold hover:bg-gray-200 w-full sm:w-auto shrink-0 border border-gray-300 flex items-center justify-center gap-1 whitespace-nowrap">
+                       <ImageIcon size={16} /> من الاستديو
+                    </button>
                     <button onClick={async () => {
                       const token = getToken();
                       try {
@@ -252,7 +283,7 @@ export default function AdminDashboard() {
                         if (res.ok) alert('تم حفظ صورة الموقع الخارجية بنجاح!');
                         else alert('حدث خطأ أثناء الحفظ');
                       } catch (e) { console.error(e); alert('خطأ في الاتصال'); }
-                    }} className="bg-[#5C4033] text-white px-4 rounded-md font-bold hover:bg-[#3e2b22]">حفظ الصورة</button>
+                    }} className="bg-[#5C4033] text-white px-4 py-2.5 rounded-md font-bold hover:bg-[#3e2b22] w-full sm:w-auto shrink-0 whitespace-nowrap">حفظ الصورة</button>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">تظهر هذه الصورة كغلاف وشعار خارجي لموقعك في قائمة (اكتشف المواقع).</p>
                 </div>
