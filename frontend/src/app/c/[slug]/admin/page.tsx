@@ -10,9 +10,24 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { slug } = useParams();
   
-  const [activeTab, setActiveTab] = useState<'settings' | 'requests' | 'members' | 'logs' | 'permissions' | 'shortcuts' | 'bots' | 'gifts' | 'domains' | 'roles' | 'fake-users' | 'bans' | 'emojis' | 'google-index'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'requests' | 'members' | 'logs' | 'audit' | 'messages' | 'permissions' | 'shortcuts' | 'bots' | 'gifts' | 'domains' | 'roles' | 'fake-users' | 'bans' | 'emojis' | 'google-index' | 'coming_soon'>('settings');
   const [indexingStatus, setIndexingStatus] = useState<'INDEXED' | 'PENDING' | 'FAILED'>('PENDING');
   const [indexingReason, setIndexingReason] = useState<string>('');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  const formatTimeAgo = (dateStr: string) => {
+    if (!dateStr) return 'غير معروف';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(hours / 24);
+    if (hours < 1) return 'قبل أقل من ساعة';
+    if (hours < 24) return `منذ ${hours} ساعة`;
+    if (days === 1) return 'منذ يوم';
+    if (days === 2) return 'منذ يومين';
+    return `منذ ${days} أيام`;
+  };
   
   // Mock Data
   const [server, setServer] = useState({
@@ -156,24 +171,21 @@ export default function AdminDashboard() {
         
         <div className="flex flex-col py-2 font-bold text-[13px] md:text-sm text-[#005599]">
           <button onClick={() => setActiveTab('logs')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'logs' ? 'bg-gray-100' : ''}`}>السجل</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الحالات</button>
-          <button onClick={() => setActiveTab('bans')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>المحظورين</button>
-          <button onClick={() => setActiveTab('members')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'members' ? 'bg-gray-100' : ''}`}>الأعضاء</button>
+          <button onClick={() => setActiveTab('audit')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'audit' ? 'bg-gray-100' : ''}`}>الحالات</button>
           <button onClick={() => setActiveTab('bans')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>الحظر</button>
+          <button onClick={() => setActiveTab('members')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'members' ? 'bg-gray-100' : ''}`}>الأعضاء</button>
           <button onClick={() => setActiveTab('roles')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'roles' ? 'bg-gray-100' : ''}`}>الصلاحيات</button>
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>فلتر</button>
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الغرف</button>
           <button onClick={() => setActiveTab('shortcuts')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'shortcuts' ? 'bg-gray-100' : ''}`}>الإختصارات</button>
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإشتراكات</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الرسائل</button>
-          <button onClick={() => setActiveTab('bots')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bots' ? 'bg-gray-100' : ''}`}>Bots</button>
+          <button onClick={() => setActiveTab('messages')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'messages' ? 'bg-gray-100' : ''}`}>الرسائل</button>
+          <button onClick={() => setActiveTab('fake-users')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'fake-users' ? 'bg-gray-100' : ''}`}>الهميين (Bots)</button>
           <button onClick={() => setActiveTab('requests')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'requests' ? 'bg-gray-100' : ''}`}>غرفة الانتظار</button>
-          <button onClick={() => setActiveTab('settings')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>الواجهة</button>
+          <button onClick={() => setActiveTab('settings')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>الإعدادات العامة</button>
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الصفحات</button>
-          <button onClick={() => setActiveTab('settings')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>ادارة الموقع</button>
           <button onClick={() => setActiveTab('emojis')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'emojis' ? 'bg-gray-100' : ''}`}>الرموز</button>
           <button onClick={() => setActiveTab('domains')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'domains' ? 'bg-gray-100' : ''}`}>النطاقات</button>
-          <button onClick={() => setActiveTab('settings')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>التحكم</button>
           <button onClick={() => setActiveTab('google-index')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'google-index' ? 'bg-gray-100' : ''}`}>فهرسة قوقل</button>
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإحصائيات</button>
         </div>
@@ -190,18 +202,20 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="h-16 bg-white border-b border-gray-200 px-8 flex items-center shadow-sm">
           <h1 className="text-2xl font-extrabold text-[#5C4033]">
-            {activeTab === 'settings' && 'إعدادات الشات العامة'}
+            {activeTab === 'settings' && 'الإعدادات العامة'}
             {activeTab === 'requests' && 'طلبات الانضمام المعلقة'}
-            {activeTab === 'members' && 'إدارة الأعضاء والعقوبات'}
-            {activeTab === 'logs' && 'سجل الإشراف (Audit Log)'}
+            {activeTab === 'members' && 'إدارة الأعضاء'}
+            {activeTab === 'logs' && 'سجل الدخول والخروج'}
+            {activeTab === 'audit' && 'سجل الإشراف (الحالات)'}
             {activeTab === 'roles' && 'إدارة الصلاحيات والمجموعات'}
             {activeTab === 'permissions' && 'إعدادات اللايكات'}
             {activeTab === 'shortcuts' && 'إدارة اختصارات الكلمات'}
-            {activeTab === 'bots' && 'إعدادات البوتات والترحيب'}
+            {activeTab === 'bots' && 'إعدادات البوتات'}
+            {activeTab === 'fake-users' && 'العضويات الوهمية'}
+            {activeTab === 'messages' && 'الرسائل التلقائية والترحيب'}
             {activeTab === 'gifts' && 'الهدايا والبنرات الإعلانية'}
             {activeTab === 'domains' && 'النطاقات المستضافة (SEO)'}
             {activeTab === 'bans' && 'قائمة الحظر'}
-            {activeTab === 'fake-users' && 'العضويات الوهمية'}
             {activeTab === 'emojis' && 'إدارة الفيسات (Emojis)'}
             {activeTab === 'google-index' && 'فهرسة قوقل'}
             {activeTab === 'coming_soon' && 'قريباً'}
@@ -446,7 +460,8 @@ export default function AdminDashboard() {
           )}
 
            {/* Bots Section */}
-          {activeTab === 'bots' && (
+          {/* Messages Tab (Formerly Bots) */}
+          {activeTab === 'messages' && (
              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
                <div>
                  <h3 className="text-lg font-bold text-[#5C4033] mb-4">رسالة الترحيب</h3>
@@ -456,23 +471,13 @@ export default function AdminDashboard() {
                
                <div className="border-t border-gray-200 pt-6">
                  <div className="flex justify-between items-center mb-4">
-                   <h3 className="text-lg font-bold text-[#5C4033]">بوت الرسائل التلقائية (كل 10 دقائق)</h3>
+                   <h3 className="text-lg font-bold text-[#5C4033]">رسائل النظام التلقائية (كل 10 دقائق)</h3>
                    <label className="flex items-center gap-2 cursor-pointer font-bold">
                      <input type="checkbox" className="w-5 h-5 rounded text-[#5C4033] focus:ring-[#5C4033]" /> تفعيل
                    </label>
                  </div>
                  <textarea className="w-full border border-gray-300 rounded-md p-3 outline-none focus:border-[#5C4033] min-h-[80px]" placeholder="أدخل الرسائل المجدولة هنا (رسالة في كل سطر)..." />
-                 <button onClick={() => alert('تم حفظ إعدادات البوت!')} className="bg-[#5C4033] text-white py-1.5 px-6 rounded-md hover:bg-[#3e2b22] mt-2 font-bold text-sm">حفظ رسائل البوت</button>
-               </div>
-
-               <div className="border-t border-gray-200 pt-6">
-                 <div className="flex justify-between items-center mb-2">
-                   <h3 className="text-lg font-bold text-[#5C4033]">بوت المسابقات</h3>
-                   <label className="flex items-center gap-2 cursor-pointer font-bold">
-                     <input type="checkbox" className="w-5 h-5 rounded text-[#5C4033] focus:ring-[#5C4033]" /> تشغيل البوت
-                   </label>
-                 </div>
-                 <p className="text-sm text-gray-500">يقوم البوت بطرح أسئلة عشوائية في الروم العامة تلقائياً واحتساب النقاط.</p>
+                 <button onClick={() => alert('تم حفظ إعدادات الرسائل!')} className="bg-[#5C4033] text-white py-1.5 px-6 rounded-md hover:bg-[#3e2b22] mt-2 font-bold text-sm">حفظ الرسائل</button>
                </div>
              </div>
           )}
@@ -644,40 +649,87 @@ export default function AdminDashboard() {
 
           {/* Fake Users Tab */}
           {activeTab === 'fake-users' && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden p-6">
-               <h3 className="text-lg font-bold text-[#5C4033] mb-4">إدارة العضويات الوهمية</h3>
-               <p className="text-sm text-gray-500 mb-6 font-bold">هذه العضويات تظهر في قائمة المتواجدين وتقوم بالترحيب التلقائي بالأعضاء الجدد لزيادة التفاعل.</p>
-               
-               <div className="flex gap-4 mb-6">
-                 <button className="bg-[#5C4033] text-white py-2 px-6 rounded-md hover:bg-[#3e2b22] font-bold text-sm flex items-center gap-2">
-                   إضافة عضوية وهمية جديدة
-                 </button>
-               </div>
-               
-               <table className="w-full text-right border-t border-gray-200">
-                 <thead className="bg-gray-50 text-gray-700 font-bold">
-                   <tr>
-                     <th className="p-3">الاسم</th>
-                     <th className="p-3">الصورة</th>
-                     <th className="p-3">الحالة (Status)</th>
-                     <th className="p-3">الصلاحية (الرتبة)</th>
-                     <th className="p-3 w-20">إجراء</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                   {/* Dummy row for now */}
-                   <tr className="border-t border-gray-200 hover:bg-gray-50 transition-colors">
-                     <td className="p-3 font-bold">أحمد الغامدي (بوت)</td>
-                     <td className="p-3"><img src="https://api.dicebear.com/7.x/bottts/svg?seed=fake1" className="w-8 h-8 rounded-full bg-gray-200" /></td>
-                     <td className="p-3 font-bold text-green-600">متواجد</td>
-                     <td className="p-3 font-bold text-gray-600">زائر</td>
-                     <td className="p-3">
-                       <button className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded"><Ban size={16}/></button>
-                     </td>
-                   </tr>
-                 </tbody>
-               </table>
-            </div>
+             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden p-6 flex flex-col gap-6">
+                <div>
+                  <h3 className="text-lg font-bold text-[#5C4033] mb-4">إضافة عضوية وهمية (Bot)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">اسم العضو</label>
+                      <input type="text" value={newFakeUser.name} onChange={e => setNewFakeUser({...newFakeUser, name: e.target.value})} className="w-full border border-gray-300 rounded p-2 outline-none focus:border-[#5C4033]" placeholder="مثال: أحمد" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">الحالة (Status)</label>
+                      <input type="text" value={newFakeUser.status} onChange={e => setNewFakeUser({...newFakeUser, status: e.target.value})} className="w-full border border-gray-300 rounded p-2 outline-none focus:border-[#5C4033]" placeholder="مثال: متصل، مشغول..." />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">صورة العرض (رابط أو رفع)</label>
+                      <div className="flex gap-2">
+                        <input type="text" value={newFakeUser.avatarUrl} onChange={e => setNewFakeUser({...newFakeUser, avatarUrl: e.target.value})} className="w-full border border-gray-300 rounded p-2 outline-none focus:border-[#5C4033]" placeholder="https://..." dir="ltr" />
+                        <input type="file" id="fake-avatar-upload" className="hidden" accept="image/*" onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if(file) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            const res = await fetch(`${API_URL}/chat/media`, { method: 'POST', headers: { Authorization: `Bearer ${getToken()}` }, body: formData });
+                            if (res.ok) {
+                              const data = await res.json();
+                              setNewFakeUser({...newFakeUser, avatarUrl: data.url});
+                            }
+                          }
+                        }} />
+                        <button onClick={() => document.getElementById('fake-avatar-upload')?.click()} className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 rounded font-bold text-xs whitespace-nowrap">من الاستديو</button>
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={async () => {
+                    if (!newFakeUser.name) return alert('أدخل الاسم');
+                    const res = await fetch(`${API_URL}/community/${slug}/fake-users`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+                      body: JSON.stringify(newFakeUser)
+                    });
+                    if (res.ok) {
+                      const added = await res.json();
+                      setFakeUsers([...fakeUsers, added]);
+                      setNewFakeUser({ name: '', status: 'متصل', avatarUrl: '', roleId: '' });
+                    }
+                  }} className="bg-[#5C4033] text-white py-2 px-6 rounded-md hover:bg-[#3e2b22] font-bold text-sm mt-4">إضافة العضو</button>
+                </div>
+
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-bold text-[#5C4033] mb-4">قائمة العضويات الوهمية</h3>
+                  <table className="w-full text-right border-t border-gray-200">
+                    <thead className="bg-gray-50 text-gray-700 font-bold">
+                      <tr>
+                        <th className="p-3">العضو</th>
+                        <th className="p-3">الحالة (Status)</th>
+                        <th className="p-3 w-20">إجراء</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fakeUsers.length === 0 ? (
+                        <tr><td colSpan={3} className="text-center p-4 text-gray-500 font-bold">لا يوجد عضويات وهمية مضافة.</td></tr>
+                      ) : fakeUsers.map((fu: any) => (
+                        <tr key={fu.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <td className="p-3 font-bold flex items-center gap-3">
+                            <img src={fu.avatarUrl || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + fu.name} className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
+                            {fu.name}
+                          </td>
+                          <td className="p-3 font-bold text-gray-600">{fu.status || 'متصل'}</td>
+                          <td className="p-3">
+                            <button onClick={async () => {
+                              if(confirm('متأكد من الحذف؟')) {
+                                await fetch(`${API_URL}/community/${slug}/fake-users/${fu.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } });
+                                setFakeUsers(fakeUsers.filter(f => f.id !== fu.id));
+                              }
+                            }} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded"><Ban size={16}/></button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+             </div>
           )}
 
           {/* Emojis Tab */}
@@ -814,8 +866,9 @@ export default function AdminDashboard() {
                     <tr key={member.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                       <td className="p-4 font-bold text-[#5C4033]">
                         {member.user?.username || member.name || 'عضو'}
-                        <div className="text-[10px] text-gray-400">آخر ظهور: {member.lastSeen ? new Date(member.lastSeen).toLocaleString() : 'غير معروف'}</div>
+                        <div className="text-[10px] text-gray-400">آخر ظهور: {formatTimeAgo(member.lastSeen)}</div>
                         <div className="text-[10px] text-gray-400">IP: {member.lastIp || 'غير معروف'}</div>
+                        <div className="text-[10px] text-gray-400">الجهاز: {member.device || 'غير معروف'}</div>
                       </td>
                       <td className="p-4">
                         <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded-sm font-bold border border-gray-200">
@@ -829,38 +882,48 @@ export default function AdminDashboard() {
                            <span className="text-red-600 font-bold text-sm flex items-center gap-1"><Ban size={14}/> محظور (باند)</span>
                         )}
                       </td>
-                      <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                            <button onClick={async () => {
-                              const newPass = prompt('أدخل كلمة المرور الجديدة:');
-                              if (newPass && newPass.trim() !== '') {
-                                const token = getToken();
-                                try {
-                                  const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}/password`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                                    body: JSON.stringify({ newPassword: newPass })
-                                  });
-                                  if (res.ok) alert('تم تغيير كلمة المرور بنجاح');
-                                  else alert('خطأ في تغيير كلمة المرور');
-                                } catch(e) { alert('خطأ في الاتصال'); }
-                              }
-                            }} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-sm font-bold text-xs shadow-sm">تغيير رقم سري</button>
-                            <button onClick={async () => {
-                              if(confirm('هل أنت متأكد من حذف هذه العضوية بالكامل؟')) {
-                                const token = getToken();
-                                try {
-                                  const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}`, {
-                                    method: 'DELETE',
-                                    headers: { Authorization: `Bearer ${token}` }
-                                  });
-                                  if (res.ok) {
-                                    setMembers(members.filter(m => m.id !== member.id));
-                                    alert('تم حذف العضوية بنجاح');
-                                  } else alert('خطأ في الحذف');
-                                } catch(e) { alert('خطأ في الاتصال'); }
-                              }
-                            }} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-sm font-bold text-xs shadow-sm">حذف عضوية</button>
+                      <td className="p-4 text-center relative">
+                        <div className="flex items-center justify-center">
+                            <button onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-full transition-colors border border-gray-200">
+                               <Settings size={16} />
+                            </button>
+                            
+                            {openMenuId === member.id && (
+                              <div className="absolute left-6 top-10 bg-white border border-gray-200 shadow-xl rounded-md w-36 z-50 flex flex-col overflow-hidden text-sm font-bold">
+                                <button onClick={async () => {
+                                  setOpenMenuId(null);
+                                  const newPass = prompt('أدخل كلمة المرور الجديدة:');
+                                  if (newPass && newPass.trim() !== '') {
+                                    const token = getToken();
+                                    try {
+                                      const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}/password`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                        body: JSON.stringify({ newPassword: newPass })
+                                      });
+                                      if (res.ok) alert('تم تغيير كلمة المرور بنجاح');
+                                      else alert('خطأ في تغيير كلمة المرور');
+                                    } catch(e) { alert('خطأ في الاتصال'); }
+                                  }
+                                }} className="p-2.5 text-blue-600 hover:bg-blue-50 text-right w-full border-b border-gray-100 transition-colors">تغيير الرقم السري</button>
+                                <button onClick={async () => {
+                                  setOpenMenuId(null);
+                                  if(confirm('هل أنت متأكد من حذف هذه العضوية بالكامل؟')) {
+                                    const token = getToken();
+                                    try {
+                                      const res = await fetch(`${API_URL}/community/${slug}/members/${member.id}`, {
+                                        method: 'DELETE',
+                                        headers: { Authorization: `Bearer ${token}` }
+                                      });
+                                      if (res.ok) {
+                                        setMembers(members.filter(m => m.id !== member.id));
+                                        alert('تم حذف العضوية بنجاح');
+                                      } else alert('خطأ في الحذف');
+                                    } catch(e) { alert('خطأ في الاتصال'); }
+                                  }
+                                }} className="p-2.5 text-red-600 hover:bg-red-50 text-right w-full transition-colors">حذف عضوية</button>
+                              </div>
+                            )}
                         </div>
                       </td>
                     </tr>
@@ -873,22 +936,55 @@ export default function AdminDashboard() {
           {/* Logs Tab */}
           {activeTab === 'logs' && (
              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-4">
-                {logs.length === 0 ? (
-                  <div className="text-center text-gray-500 font-bold p-6">لا توجد سجلات حالياً</div>
+                {logs.filter(l => l.action?.includes('دخول') || l.action?.includes('خروج') || l.action === 'LOGIN' || l.action === 'LOGOUT').length === 0 ? (
+                  <div className="text-center text-gray-500 font-bold p-6">لا يوجد سجل دخول وخروج حالياً</div>
                 ) : (
-                  logs.map((log: any) => (
-                    <div key={log.id} className="flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-md">
-                       <div className="bg-gray-200 p-2 rounded-full text-gray-600"><Clock size={16}/></div>
-                       <div>
-                         <p className="text-sm font-bold text-gray-800">{log.action}</p>
-                         <p className="text-xs text-gray-500 mt-1 font-bold">IP: {log.ipAddress || 'N/A'} - Device: {log.device || 'N/A'}</p>
-                         <p className="text-xs text-gray-500 mt-1 font-bold">{new Date(log.createdAt).toLocaleString()}</p>
+                  logs.filter(l => l.action?.includes('دخول') || l.action?.includes('خروج') || l.action === 'LOGIN' || l.action === 'LOGOUT').map((log: any) => {
+                    const isLogin = log.action?.includes('دخول') || log.action === 'LOGIN';
+                    return (
+                      <div key={log.id} className="flex items-start justify-between p-3 bg-gray-50 border border-gray-200 rounded-md">
+                         <div className="flex items-start gap-3">
+                           <div className={`p-2 rounded-full text-white ${isLogin ? 'bg-green-500' : 'bg-red-500'}`}>
+                             {isLogin ? <ArrowRight size={16}/> : <X size={16}/>}
+                           </div>
+                           <div>
+                             <p className="text-sm font-bold text-gray-800">{log.user?.username || 'العضو'} قام بـ {isLogin ? 'تسجيل الدخول' : 'تسجيل الخروج'}</p>
+                             <p className="text-xs text-gray-500 mt-1 font-bold">IP: {log.ipAddress || 'غير معروف'} - الجهاز: {log.device || 'غير معروف'}</p>
+                           </div>
+                         </div>
+                         <div className="text-xs font-bold text-gray-500 bg-gray-200 px-2 py-1 rounded-sm">
+                           {formatTimeAgo(log.createdAt)}
+                         </div>
+                      </div>
+                    );
+                  })
+                )}
+             </div>
+          )}
+
+          {/* Audit Tab */}
+          {activeTab === 'audit' && (
+             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-4">
+                {logs.filter(l => !(l.action?.includes('دخول') || l.action?.includes('خروج') || l.action === 'LOGIN' || l.action === 'LOGOUT')).length === 0 ? (
+                  <div className="text-center text-gray-500 font-bold p-6">لا توجد حالات سجل إشراف حالياً</div>
+                ) : (
+                  logs.filter(l => !(l.action?.includes('دخول') || l.action?.includes('خروج') || l.action === 'LOGIN' || l.action === 'LOGOUT')).map((log: any) => (
+                    <div key={log.id} className="flex items-start justify-between p-3 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 transition-colors">
+                       <div className="flex items-start gap-3">
+                         <div className="bg-blue-100 p-2 rounded-full text-blue-600 border border-blue-200"><ShieldAlert size={16}/></div>
+                         <div>
+                           <p className="text-sm font-bold text-gray-800">{log.action}</p>
+                           <p className="text-xs text-gray-500 mt-1 font-bold">المشرف: {log.user?.username || 'النظام'} | IP: {log.ipAddress || 'غير معروف'}</p>
+                         </div>
+                       </div>
+                       <div className="text-xs font-bold text-gray-500">
+                         {formatTimeAgo(log.createdAt)}
                        </div>
                     </div>
                   ))
                 )}
-              </div>
-           )}
+             </div>
+          )}
 
           {/* Bans Tab */}
           {activeTab === 'bans' && (
