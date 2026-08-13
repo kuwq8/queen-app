@@ -2194,34 +2194,34 @@ export default function ClassicChatPage() {
       {/* Members Drawer Backdrop Overlay */}
       {activePane === 'members' && (
         <div 
-          className="fixed inset-0 bg-transparent z-[99998]" 
+          className="fixed inset-0 bg-black/60 z-[99998]" 
           onClick={() => setActivePane(null)}
         />
       )}
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-full sm:w-[350px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[350px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl m-0 p-0 border-none outline-none" dir="rtl">
           
           {/* Header */}
-          <div className="shrink-0 bg-[#4a4641] flex items-center justify-between h-12 shadow-sm z-10 m-0 w-full p-0">
+          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-14 shadow-sm z-10 m-0 w-full p-0">
             <button 
               onClick={() => setActivePane(null)} 
-              className="w-12 h-12 bg-red-600 flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
+              className="w-14 h-14 bg-red-600 shrink-0 flex items-center justify-center text-white text-lg font-bold border-none rounded-none m-0 p-0"
             >
-              <X size={20} strokeWidth={2} />
+              <X size={24} strokeWidth={2.5} />
             </button>
-            <span className="text-white font-bold text-[14px] px-3">المتواجدين</span>
+            <span className="text-white font-bold text-[15px] px-3">المتواجدين</span>
           </div>
 
           {/* Search Bar */}
-          <div className="shrink-0 bg-[#5c5751] p-1.5 z-10 w-full flex items-center justify-center">
+          <div className="shrink-0 bg-[#5c5751] z-10 w-full flex items-center justify-center">
             <input 
               type="text" 
               placeholder="البحث .." 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)} 
-              className="w-full bg-[#5c5751] text-white placeholder-gray-300 border-none rounded-none text-[12px] p-1 font-bold outline-none focus:outline-none focus:ring-0 text-right shadow-none" 
+              className="w-full bg-[#5c5751] text-white placeholder-gray-300 border-none rounded-none text-[13px] p-2 font-bold outline-none focus:outline-none focus:ring-0 text-right shadow-none" 
             />
           </div>
 
