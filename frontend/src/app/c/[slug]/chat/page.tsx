@@ -515,14 +515,14 @@ export default function ClassicChatPage() {
         <div className="flex-1 flex overflow-hidden bg-[#FDFDFD]">
           
           {/* 1. Right Sidebar (Settings, or Wall) */}
-          <div className={`${activePane && activePane !== 'members' ? 'flex' : 'hidden'} absolute sm:relative right-0 inset-y-0 w-[360px] max-w-full bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-20`}>
+          <div className={`${activePane && activePane !== 'members' ? 'flex' : 'hidden'} absolute sm:relative right-0 inset-y-0 w-[68%] max-w-[68%] sm:w-[320px] sm:max-w-[320px] bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-20`}>
             
             {/* Settings Pane */}
             {activePane === 'settings' && (
               <>
-                <div className="h-8 bg-primary text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#3e2b22] flex-shrink-0 shadow-md">
-                  <span>الإعدادات</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">الإعدادات</span>
                 </div>
                 <div className="flex-1 overflow-y-auto bg-chatbg p-1.5 space-y-1.5 text-[11px] font-bold text-primary">
                   {/* الزخرفة */}
@@ -633,9 +633,9 @@ export default function ClassicChatPage() {
             {/* Games Pane (الألعاب) */}
             {activePane === 'games' && (
               <>
-                <div className="h-8 bg-[#584852] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#3b3038] flex-shrink-0 shadow-md">
-                  <span>الألعاب</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#e74c3c] hover:bg-[#c0392b] rounded-sm w-5 h-5 flex items-center justify-center font-bold text-white"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">الألعاب</span>
                 </div>
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#e3e2ff] to-[#f3e5f5] p-3 space-y-4 flex flex-col font-bold" dir="rtl">
                   
@@ -781,9 +781,9 @@ export default function ClassicChatPage() {
             {/* Addons Pane */}
             {activePane === 'addons' && (
               <>
-                <div className="h-8 bg-[#3d234a] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#2a1733] flex-shrink-0 shadow-md">
-                  <span>الاضافات والميزات</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">الاضافات والميزات</span>
                 </div>
                 <div className="flex-1 overflow-y-auto bg-[#361e40] p-3 space-y-2 font-bold text-white">
                   
@@ -858,9 +858,9 @@ export default function ClassicChatPage() {
             {/* Wall Trend Pane */}
             {activePane === 'wall-trend' && (
               <>
-                <div className="h-8 bg-primary text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#3e2b22] flex-shrink-0 shadow-md">
-                  <span>ترند الحائط</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">ترند الحائط</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-[#FDFDFD] flex flex-col">
@@ -959,9 +959,9 @@ export default function ClassicChatPage() {
             {/* Wall Creator Pane */}
             {activePane === 'wall-creator' && (
               <>
-                <div className="h-8 bg-[#4a2c6d] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#2a1b3d] flex-shrink-0 shadow-md">
-                  <span>مبدع الحائط</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">مبدع الحائط</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#6b21a8] to-[#3b0764] flex flex-col text-white">
@@ -1035,9 +1035,9 @@ export default function ClassicChatPage() {
             {/* Mic Stars Pane */}
             {activePane === 'mic-stars' && (
               <>
-                <div className="h-8 bg-[#1e3a8a] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#172554] flex-shrink-0 shadow-md">
-                  <span>نجوم المايك</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">نجوم المايك</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#1e40af] to-[#1e3a8a] flex flex-col text-white">
@@ -1111,9 +1111,9 @@ export default function ClassicChatPage() {
             {/* Profile Design Pane */}
             {activePane === 'profile-design' && (
               <>
-                <div className="h-8 bg-[#4a2c6d] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#2a1b3d] flex-shrink-0 shadow-md">
-                  <span>تصميم العضوية</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">تصميم العضوية</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-[#FDFDFD] flex flex-col p-3 space-y-4 font-bold" dir="rtl">
@@ -1145,9 +1145,9 @@ export default function ClassicChatPage() {
             {/* Ludo Stars Pane */}
             {activePane === 'ludo-stars' && (
               <>
-                <div className="h-8 bg-[#198754] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#146c43] flex-shrink-0 shadow-md">
-                  <span>أبطال لودو</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">أبطال لودو</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#198754] to-[#20c997] flex flex-col text-white pb-4" dir="rtl">
@@ -1176,9 +1176,9 @@ export default function ClassicChatPage() {
             {/* XO Stars Pane */}
             {activePane === 'xo-stars' && (
               <>
-                <div className="h-8 bg-[#6f42c1] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#59339e] flex-shrink-0 shadow-md">
-                  <span>أبطال X-O</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">أبطال X-O</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#6f42c1] to-[#a370f7] flex flex-col text-white pb-4" dir="rtl">
@@ -1207,9 +1207,9 @@ export default function ClassicChatPage() {
             {/* Notifications Pane */}
             {activePane === 'notifications' && (
               <>
-                <div className="h-8 bg-[#4a2c6d] text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#2a1b3d] flex-shrink-0 shadow-md">
-                  <span>الإشعارات</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">الإشعارات</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-[#FDFDFD] flex flex-col relative">
@@ -1248,9 +1248,9 @@ export default function ClassicChatPage() {
             {/* Rooms Pane */}
             {activePane === 'rooms' && (
               <>
-                <div className="h-8 bg-primary text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#3e2b22] flex-shrink-0 shadow-md">
-                  <span>غرف الدردشه : 45</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"><X size={14} /></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">{`غرف الدردشه : ${server?.rooms?.length || 0}`}</span>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto bg-[#FDFDFD] flex flex-col">
@@ -1299,9 +1299,9 @@ export default function ClassicChatPage() {
             {/* Wall Pane */}
             {activePane === 'wall' && (
               <>
-                <div className="h-[40px] bg-primary text-white flex items-center justify-between px-3 font-bold text-[13px] border-b border-[#3e2b22] flex-shrink-0 shadow-md">
-                  <span>الحائط</span>
-                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a] transition-colors"><X size={14} strokeWidth={2.5}/></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">الحائط</span>
                 </div>
                 
                 <div className="flex-1 flex flex-col overflow-hidden bg-[#F5DEB3]">
@@ -1413,9 +1413,9 @@ export default function ClassicChatPage() {
             {/* Private Chats Pane */}
             {activePane === 'private' && (
               <>
-                <div className="h-8 bg-primary text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#3e2b22] flex-shrink-0 shadow-md">
-                  <span className="flex-1 text-center pr-4 text-[12px]">المحادثات الخاصة</span>
-                  <button onClick={() => togglePane('private')} className="text-white hover:text-red-400 transition-colors bg-[#d9534f] px-1.5 py-0.5 rounded-sm shadow-sm"><X size={14}/></button>
+                <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
+                  <button onClick={() => togglePane('private')} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                  <span className="text-white px-2 font-bold text-[15px]">المحادثات الخاصة</span>
                 </div>
                 <div className="flex-1 overflow-y-auto bg-[#FDFDFD] flex flex-col">
                   {privateChatsList.map(chat => (
@@ -2204,14 +2204,14 @@ export default function ClassicChatPage() {
         <div className="fixed top-8 right-0 h-[calc(100dvh-72px)] w-[68%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 shadow-2xl overflow-hidden border-none" dir="rtl">
           
           {/* Header */}
-          <div className="h-8 bg-primary text-white flex items-center justify-between px-2 font-bold text-[13px] border-b border-[#3e2b22] flex-shrink-0 shadow-md">
-            <span>المتواجدين</span>
+          <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
             <button 
               onClick={() => setActivePane(null)} 
-              className="bg-[#d9534f] hover:bg-[#c9302c] rounded-sm w-5 h-5 flex items-center justify-center font-bold border border-[#d43f3a]"
+              className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"
             >
-              <X size={14} />
+              <X size={18} strokeWidth={2.5} />
             </button>
+            <span className="text-white px-2 font-bold text-[15px]">المتواجدين</span>
           </div>
 
           {/* Search Bar */}
