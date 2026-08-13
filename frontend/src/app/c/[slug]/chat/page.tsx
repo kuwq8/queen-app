@@ -423,11 +423,6 @@ export default function ClassicChatPage() {
 
   return (
     <div className="fixed top-0 left-0 right-0 bottom-0 inset-0 h-[100dvh] w-full flex flex-col bg-white font-sans text-sm m-0 p-0 overflow-hidden select-none" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
-      
-      {/* Top Header */}
-      <div className="shrink-0 w-full h-8 text-white px-3 pt-0 pb-1 m-0 top-0 flex items-center justify-center z-[60] shadow-md border-b border-[#3e2b22] relative" style={{ backgroundColor: settings.primaryColor }}>
-        <span className="font-bold text-[14px] leading-none m-0 p-0 text-center">شات {server?.name || 'العرب'}</span>
-      </div>
 
       {/* Top Marquee */}
       {settings.isMarqueeEnabled && settings.marqueeText && settings.marqueeText.trim().length > 0 && (
@@ -514,7 +509,7 @@ export default function ClassicChatPage() {
         {/* Right Sidebar Backdrop Overlay */}
         {(activePane && activePane !== 'members') && (
           <div 
-            className="fixed top-8 left-0 right-0 h-[calc(100dvh-72px)] bg-transparent z-[89] sm:hidden" 
+            className="fixed top-0 left-0 right-0 h-[calc(100dvh-40px)] bg-transparent z-[89] sm:hidden" 
             onClick={() => setActivePane(null)}
           />
         )}
@@ -523,7 +518,7 @@ export default function ClassicChatPage() {
         <div className="flex-1 flex overflow-hidden bg-[#FDFDFD] relative">
           
           {/* 1. Right Sidebar (Settings, or Wall) */}
-          <div className={`${activePane && activePane !== 'members' ? 'flex' : 'hidden'} fixed sm:relative top-8 sm:top-auto right-0 h-[calc(100dvh-72px)] sm:h-auto sm:inset-y-0 w-[68%] max-w-[68%] sm:w-[320px] sm:max-w-[320px] bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-[90] sm:z-20`}>
+          <div className={`${activePane && activePane !== 'members' ? 'flex' : 'hidden'} fixed sm:relative top-0 sm:top-auto right-0 h-[calc(100dvh-40px)] sm:h-auto sm:inset-y-0 w-[68%] max-w-[68%] sm:w-[320px] sm:max-w-[320px] bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-[90] sm:z-20`}>
             
             {/* Settings Pane */}
             {activePane === 'settings' && (
@@ -2204,14 +2199,14 @@ export default function ClassicChatPage() {
       {/* Members Drawer Backdrop Overlay */}
       {activePane === 'members' && (
         <div 
-          className="fixed top-8 left-0 right-0 h-[calc(100dvh-72px)] bg-transparent z-[99998]" 
+          className="fixed top-0 left-0 right-0 h-[calc(100dvh-40px)] bg-transparent z-[99998]" 
           onClick={() => setActivePane(null)}
         />
       )}
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-8 right-0 h-[calc(100dvh-72px)] w-[68%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 shadow-2xl overflow-hidden border-none" dir="rtl">
+        <div className="fixed top-0 right-0 h-[calc(100dvh-40px)] w-[68%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 shadow-2xl overflow-hidden border-none" dir="rtl">
           
           {/* Header */}
           <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
