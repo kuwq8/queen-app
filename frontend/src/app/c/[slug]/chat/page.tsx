@@ -1298,20 +1298,22 @@ export default function ClassicChatPage() {
 
                       return (
                         <div key={room.id} onClick={() => changeRoom(room)} className="flex items-center justify-between p-1.5 border-b border-gray-200 hover:bg-gray-50 cursor-pointer bg-white">
-                          <div className="flex items-center gap-2">
-                            <img src={room.icon} alt={room.name} className="w-10 h-10 object-cover border border-gray-300 rounded-sm" />
-                            <div className="flex flex-col justify-center">
-                              <span className="text-[12px] font-bold text-gray-800 flex items-center gap-1">
-                                {room.isLocked && <span className="text-yellow-500 text-[10px]">🔒</span>}
-                                {room.name}
-                              </span>
-                              {room.desc && <span className="text-[10px] text-gray-500 max-w-[150px] truncate">{room.desc}</span>}
-                            </div>
-                          </div>
                           
-                          <div className={`flex items-center gap-1 px-3 py-1 rounded-sm text-white text-[11px] font-bold shadow-sm ${room.hasMic ? 'bg-[#d9534f]' : 'bg-gray-500'}`}>
-                            {room.hasMic ? '🎤' : '👤'} {room.users}/{room.max}
+                          <div className="flex flex-col justify-center">
+                            <span className="text-[12px] font-bold text-gray-800 flex items-center gap-1">
+                              {room.isLocked && <span className="text-yellow-500 text-[10px]">🔒</span>}
+                              {room.name}
+                            </span>
+                            {room.desc && <span className="text-[10px] text-gray-500 max-w-[150px] truncate">{room.desc}</span>}
                           </div>
+
+                          <div className="flex items-center gap-2">
+                            <div className={`flex items-center gap-1 px-3 py-1 rounded-sm text-white text-[11px] font-bold shadow-sm ${room.hasMic ? 'bg-[#d9534f]' : 'bg-gray-500'}`}>
+                              {room.hasMic ? '🎤' : '👤'} {room.users}/{room.max}
+                            </div>
+                            <img src={room.icon} alt={room.name} className="w-10 h-10 object-cover border border-gray-300 rounded-sm" />
+                          </div>
+
                         </div>
                       );
                     })}
