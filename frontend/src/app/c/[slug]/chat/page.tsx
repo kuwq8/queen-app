@@ -2204,24 +2204,24 @@ export default function ClassicChatPage() {
         <div className="fixed top-0 right-0 h-[calc(100dvh-40px)] w-[68%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 shadow-2xl overflow-hidden border-none" dir="rtl">
           
           {/* Header */}
-          <div className="flex flex-row items-center justify-start bg-[#4a4641] w-full h-12 px-0 m-0 shrink-0 border-none">
+          <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
             <button 
               onClick={() => setActivePane(null)} 
-              className="bg-[#d9534f] hover:bg-[#c9302c] w-12 h-12 flex items-center justify-center text-white shrink-0 m-0 rounded-none border-none"
+              className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"
             >
-              <X size={22} strokeWidth={2.5} />
+              <X size={18} strokeWidth={2.5} />
             </button>
-            <span className="text-white px-3 font-bold text-[14px]">المتواجدين</span>
+            <span className="text-white px-2 font-bold text-[15px]">المتواجدين</span>
           </div>
 
           {/* Search Bar */}
-          <div className="shrink-0 bg-[#5c5751] z-10 w-full flex items-center justify-center border-none">
+          <div className="shrink-0 bg-[#5c5751] z-10 w-full flex items-center justify-center border-b border-[#3e2b22]">
             <input 
               type="text" 
               placeholder="البحث .." 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)} 
-              className="w-full bg-[#5c5751] text-white placeholder-gray-300 border-none rounded-none text-[13px] px-3 py-2 font-bold outline-none focus:outline-none focus:ring-0 text-right shadow-none" 
+              className="w-full bg-[#5c5751] text-white placeholder-gray-300 border-none rounded-none text-[13px] px-3 py-1.5 font-bold outline-none focus:outline-none focus:ring-0 text-right shadow-none" 
             />
           </div>
 
