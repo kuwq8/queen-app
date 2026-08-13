@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Settings, Users, Menu, Smile, X, Send, Heart, MessageSquare, Plus, Bell, Volume2, VolumeX, Mic, Lock, Image as ImageIcon, Reply, Camera, LogOut, Palette, BellOff, TrendingUp, Award, Mic2, MessageCircle, Grid, FileText } from 'lucide-react';
+import { Settings, Users, Menu, Smile, X, Send, Heart, MessageSquare, Plus, Bell, Volume2, VolumeX, Mic, Lock, Image as ImageIcon, Reply, Camera, LogOut, Palette, BellOff, TrendingUp, Award, Mic2, MessageCircle, Grid, FileText, Eye, Trophy } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ClassicChatPage() {
@@ -18,7 +18,7 @@ export default function ClassicChatPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [fakeUsers, setFakeUsers] = useState<any[]>([]);
-  const [activePane, setActivePane] = useState<'members' | 'settings' | 'wall' | 'addons' | 'games' | 'wall-trend' | 'wall-creator' | 'mic-stars' | 'notifications' | 'rooms' | 'private' | 'profile-design' | 'ludo-stars' | 'xo-stars' | 'likes-settings' | 'ludo-invites' | 'xo-invites' | null>(null);
+  const [activePane, setActivePane] = useState<'members' | 'settings' | 'wall' | 'addons' | 'games' | 'wall-trend' | 'wall-creator' | 'mic-stars' | 'notifications' | 'rooms' | 'private' | 'profile-design' | 'ludo-stars' | 'xo-stars' | 'likes-settings' | 'ludo-invites' | 'xo-invites' | 'profile-visitors' | null>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [activePrivateChat, setActivePrivateChat] = useState<any>(null);
   const [ignoredUserIds, setIgnoredUserIds] = useState<string[]>([]);
@@ -808,6 +808,15 @@ export default function ClassicChatPage() {
 
                   <div className="text-center text-white/50 text-[10px] my-0.5">•••</div>
 
+                  {/* Button 3 */}
+                  <div onClick={() => setActivePane('profile-visitors')} className="bg-gradient-to-l from-[#3b82f6] to-[#60a5fa] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
+                    <span className="flex-1 text-center text-[12px] font-extrabold pr-10">زائرين الملف الشخصي</span>
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><Eye size={18} /></div>
+                    <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">3</div>
+                  </div>
+
+                  <div className="text-center text-white/50 text-[10px] my-0.5">•••</div>
+
                   {/* Button 4 */}
                   <div onClick={() => setActivePane('wall-trend')} className="bg-gradient-to-l from-[#7e22ce] to-[#8b5cf6] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
                     <span className="flex-1 text-center text-[12px] font-extrabold pr-10">ترند الحائط</span>
@@ -1451,13 +1460,98 @@ export default function ClassicChatPage() {
             )}
           </div>
 
+          {/* Profile Visitors Pane */}
+          {activePane === 'profile-visitors' && (
+            <div className="absolute right-0 top-11 bottom-[49px] w-[300px] max-w-[80vw] bg-gradient-to-b from-[#6e2b6d] to-[#295c7a] flex flex-col border-l border-gray-300 shadow-xl z-20">
+              <div className="flex items-center justify-between bg-black/20 w-full h-11 px-2 shrink-0 border-b border-white/10">
+                <button onClick={() => setActivePane(null)} className="bg-[#d9534f] hover:bg-[#c9302c] w-8 h-8 flex items-center justify-center text-white shrink-0 m-0 rounded-[4px] border border-[#2b2b2b] shadow-sm"><X size={18} strokeWidth={2.5} /></button>
+                <span className="text-white px-2 font-bold text-[15px]">زائرين الملف الشخصي</span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+                 
+                 <div className="flex justify-center gap-2 mb-2">
+                   <button className="bg-white/20 hover:bg-white/30 text-white rounded-full px-4 py-1.5 text-xs font-bold transition-colors">شهري</button>
+                   <button className="bg-white/20 hover:bg-white/30 text-white rounded-full px-4 py-1.5 text-xs font-bold transition-colors">اسبوعي</button>
+                   <button className="bg-pink-500 text-white rounded-full px-4 py-1.5 text-xs font-bold shadow-md">يومي</button>
+                 </div>
+
+                 <div className="text-center font-bold text-white mb-2">الأكثر زيارة</div>
+
+                 <div className="flex justify-center items-end gap-2 mb-6">
+                    {/* Second Place */}
+                    <div className="flex flex-col items-center bg-white/10 p-2 rounded-xl border border-white/20 shadow-sm relative w-[80px]">
+                      <div className="absolute -top-3 left-1 bg-gray-300 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">2</div>
+                      <img src="https://api.dicebear.com/7.x/initials/svg?seed=Latifa" className="w-12 h-12 rounded-full border-2 border-gray-300 object-cover mb-2 shadow-sm" />
+                      <div className="text-white font-bold text-[11px] truncate w-full text-center mt-1">لـطيفة</div>
+                      <div className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full mt-1">257</div>
+                    </div>
+                    {/* First Place */}
+                    <div className="flex flex-col items-center bg-white/20 p-2 rounded-xl border border-white/30 shadow-md relative w-[90px] mb-4">
+                      <div className="absolute -top-3 left-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-yellow-900 shadow-sm"><Trophy size={10}/></div>
+                      <img src="https://api.dicebear.com/7.x/initials/svg?seed=Reem" className="w-14 h-14 rounded-full border-2 border-yellow-400 object-cover mb-2 shadow-sm" />
+                      <div className="text-white font-bold text-[12px] truncate w-full text-center mt-1">عـيون الريم</div>
+                      <div className="bg-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full mt-1">286</div>
+                    </div>
+                    {/* Third Place */}
+                    <div className="flex flex-col items-center bg-white/10 p-2 rounded-xl border border-white/20 shadow-sm relative w-[80px]">
+                      <div className="absolute -top-3 left-1 bg-amber-700 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-white">3</div>
+                      <img src="https://api.dicebear.com/7.x/initials/svg?seed=NAS" className="w-12 h-12 rounded-full border-2 border-amber-700 object-cover mb-2 shadow-sm" />
+                      <div className="text-white font-bold text-[10px] truncate w-full text-center leading-tight mt-1">القـناص<br/>N A S</div>
+                      <div className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full mt-1">22</div>
+                    </div>
+                 </div>
+
+                 <div className="text-center font-bold text-white mb-2">آخر الزيارات</div>
+                 <div className="bg-white rounded-xl p-6 flex flex-col items-center justify-center shadow-md">
+                   <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center text-purple-400 mb-4 border border-purple-200">
+                     <Eye size={24} />
+                   </div>
+                   <div className="text-[#5C4033] font-bold text-sm mb-1">لا توجد زيارات بعد</div>
+                   <div className="text-gray-400 text-xs text-center font-bold">ستظهر هنا عند زيارة اعضاء لملفك</div>
+                 </div>
+              </div>
+            </div>
+          )}
+
           {/* 2. Chat Messages (Center) */}
           <div className="flex-1 flex flex-col relative z-0" style={{ backgroundColor: settings.backgroundColor }} dir="ltr">
             <div className="flex-1 overflow-y-auto p-0" style={{ fontSize: `${fontSize}%` }}>
               {messages.filter(msg => !ignoredUserIds.includes(msg.sender?.id)).map((msg, idx) => {
+                const parseRoomAction = (content: string) => {
+                  const enterMatch = content.match(/هذا المستخدم قد دخل الغرفة \[(.*?)\]/);
+                  const leaveMatch = content.match(/هذا المستخدم قد غادر الغرفة \[(.*?)\]/);
+                  const movedMatch = content.match(/هذا المستخدم قد نُقل للغرفة \[(.*?)\]/);
+                  const oldEnterMatch = content.match(/هذا المستخدم دخل الى \[(.*?)\]/);
+                  
+                  const targetMatch = enterMatch || leaveMatch || movedMatch || oldEnterMatch;
+                  
+                  if (targetMatch) {
+                    const actionText = enterMatch ? 'هذا المستخدم قد دخل الغرفة ' : 
+                                       leaveMatch ? 'هذا المستخدم قد غادر الغرفة ' : 
+                                       movedMatch ? 'هذا المستخدم قد نُقل للغرفة ' :
+                                       'هذا المستخدم دخل الى ';
+                    const roomName = targetMatch[1]; 
+                    return (
+                      <>
+                        {actionText}
+                        <button onClick={() => {
+                          const room = MOCK_ROOMS.find(r => r.name === roomName);
+                          if (room) {
+                            changeRoom(room);
+                          }
+                        }} className="text-white hover:bg-[#4a3f3e] mx-1 bg-[#5a4e4d] px-2 py-0.5 rounded-sm shadow-sm inline-flex items-center gap-1 cursor-pointer font-bold text-[11px] align-middle">
+                          <Volume2 size={12} className="text-white" />
+                          {roomName}
+                        </button>
+                      </>
+                    );
+                  }
+                  return renderContentWithEmojis(content);
+                };
+
                 if (msg.isSystem || msg.isSystemMessage) {
                   return (
-                    <div key={msg.id} className={`flex items-start gap-2 p-1.5 border-b border-gray-300 relative group ${idx % 2 === 0 ? 'bg-white' : 'bg-[#fcfcfa]'}`} dir="ltr">
+                    <div key={msg.id} className={`flex items-start gap-2 p-1.5 border-b border-gray-300 relative group ${idx % 2 === 0 ? 'bg-[#ebd576]' : 'bg-[#e3c75f]'}`} dir="ltr">
                       
                       {/* Avatar (Left) */}
                       <div className="w-10 h-10 flex-shrink-0 border border-gray-300 rounded-sm overflow-hidden bg-white p-0.5 shadow-sm">
@@ -1469,7 +1563,7 @@ export default function ClassicChatPage() {
                         <div className="flex items-center gap-1 flex-wrap" dir="rtl">
                           <span className="font-extrabold text-gray-800 text-[13px]">{msg.sender.username || 'النظام'}</span>
                         </div>
-                        <div className="text-[13px] text-gray-800 font-bold mt-0.5 flex items-center gap-1 justify-end text-left" dir="rtl">{msg.content} 🚪</div>
+                        <div className="text-[13px] text-gray-800 font-bold mt-0.5 flex items-center gap-1 justify-end text-left" dir="rtl">{parseRoomAction(msg.content)} 🚪</div>
                       </div>
                       
                       {/* Controls (Right) */}
@@ -1483,20 +1577,23 @@ export default function ClassicChatPage() {
 
                 if (msg.isAnnouncement) {
                   return (
-                    <div key={msg.id} className="flex items-start gap-2 p-2 border-b border-[#e1e8ed] bg-[#f0f4f8]">
+                    <div key={msg.id} className="flex items-start gap-2 p-2 border-b border-[#e1e8ed] bg-[#d0f0fd]">
                       <div className="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden border border-gray-300 bg-white shadow-sm flex items-center justify-center p-0.5">
                          <img src="https://api.dicebear.com/7.x/initials/svg?seed=AL-WEED" className="w-full h-full object-contain" />
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-center pt-1">
                         <div className="font-extrabold text-red-600 text-[14px]">{msg.isSuperAnnouncement ? 'إعلان خاص للسوابر' : 'توجيه إداري مُهمٌ'}</div>
-                        <div className="text-[13px] text-gray-900 font-bold leading-relaxed whitespace-pre-wrap mt-0.5 break-words">{renderContentWithEmojis(msg.content)}</div>
+                        <div className="text-[13px] text-gray-900 font-bold leading-relaxed whitespace-pre-wrap mt-0.5 break-words">{parseRoomAction(msg.content)}</div>
                       </div>
                     </div>
                   );
                 }
 
+                const isBotMessage = msg.sender?.role === 'bot' || msg.isBot;
+                const messageBgClass = isBotMessage ? 'bg-[#d0f0fd]' : (idx % 2 === 0 ? 'bg-[#fdf7f0]' : 'bg-[#f5eede]');
+
                 return (
-                  <div key={msg.id} className={`flex items-start gap-2 p-1.5 border-b border-gray-300 relative group ${idx % 2 === 0 ? 'bg-[#fdf7f0]' : 'bg-[#f5eede]'}`} dir="ltr" style={{ backgroundColor: (msg.sender.communityMembers?.[0]?.bgColor && msg.sender.communityMembers?.[0]?.bgColor !== 'transparent') ? msg.sender.communityMembers?.[0]?.bgColor : undefined }}>
+                  <div key={msg.id} className={`flex items-start gap-2 p-1.5 border-b border-gray-300 relative group ${messageBgClass}`} dir="ltr" style={{ backgroundColor: (!isBotMessage && msg.sender.communityMembers?.[0]?.bgColor && msg.sender.communityMembers?.[0]?.bgColor !== 'transparent') ? msg.sender.communityMembers?.[0]?.bgColor : undefined }}>
                     
                     {/* 1. Avatar (Left) */}
                     <div onClick={() => setSelectedUser(msg.sender)} className="w-10 h-10 flex-shrink-0 border border-gray-300 rounded-sm overflow-hidden bg-white p-0.5 shadow-sm cursor-pointer hover:border-gray-400">
@@ -1510,26 +1607,7 @@ export default function ClassicChatPage() {
                         {msg.sender.username === isCurrentUserAdmin ? currentUser?.username : null && <span className="text-[10px] bg-red-600 text-white px-1 py-0.5 rounded-sm font-bold shadow-sm">إدارة</span>}
                       </div>
                       <div className="text-[14px] font-bold leading-relaxed whitespace-pre-wrap mt-0.5 break-words text-left" dir="rtl" style={{ color: msg.sender.communityMembers?.[0]?.textColor || 'black' }}>
-                        {msg.content.match(/هذا المستخدم دخل الى \[(.*?)\]/) ? (
-                          <>
-                            هذا المستخدم دخل الى 
-                            <button onClick={() => {
-                              const match = msg.content.match(/\[(.*?)\]/);
-                              if (match) {
-                                const roomName = match[1];
-                                const room = MOCK_ROOMS.find(r => r.name === roomName);
-                                if (room) {
-                                  changeRoom(room);
-                                }
-                              }
-                            }} className="text-white hover:bg-[#4a3f3e] mx-1 bg-[#5a4e4d] px-2 py-0.5 rounded-sm shadow-sm inline-flex items-center gap-1 cursor-pointer font-bold text-[11px] align-middle">
-                              <Volume2 size={12} className="text-white" />
-                              {msg.content.match(/\[(.*?)\]/)?.[1]}
-                            </button>
-                          </>
-                        ) : (
-                          renderContentWithEmojis(msg.content)
-                        )}
+                        {parseRoomAction(msg.content)}
                         {msg.mediaUrl && (
                           <div className="mt-1">
                             <img src={msg.mediaUrl} className="max-w-[150px] max-h-[150px] object-contain rounded-md shadow-sm" alt="Media" />
