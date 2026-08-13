@@ -144,42 +144,43 @@ export default function AdminDashboard() {
   const [emojis, setEmojis] = useState<any[]>([]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans" dir="rtl">
+    <div className="h-[100dvh] overflow-hidden bg-gray-50 flex font-sans w-full" dir="rtl">
       
-      {/* Sidebar (Fixed on the left) */}
-      <div className="w-40 h-full fixed top-0 left-0 bg-white flex flex-col z-50 border-r border-gray-300 shadow-sm overflow-y-auto">
+      {/* Sidebar (Order 2 -> Left side in RTL) */}
+      <div className="w-32 md:w-40 flex-shrink-0 h-full bg-white flex flex-col z-50 border-r border-gray-300 shadow-sm overflow-y-auto order-2 relative">
         <div className="flex justify-end p-1 border-b border-gray-200">
           <button onClick={() => window.location.reload()} className="bg-[#5cb85c] hover:bg-[#4cae4c] text-white p-1 rounded-sm shadow-sm transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           </button>
         </div>
         
-        <div className="flex flex-col py-2 font-bold text-[13px] text-[#005599]">
-          <button onClick={() => setActiveTab('logs')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'logs' ? 'bg-gray-100' : ''}`}>السجل</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الحالات</button>
-          <button onClick={() => setActiveTab('bans')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>المحظورين</button>
-          <button onClick={() => setActiveTab('members')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'members' ? 'bg-gray-100' : ''}`}>الأعضاء</button>
-          <button onClick={() => setActiveTab('bans')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>الحظر</button>
-          <button onClick={() => setActiveTab('roles')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'roles' ? 'bg-gray-100' : ''}`}>الصلاحيات</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>فلتر</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الغرف</button>
-          <button onClick={() => setActiveTab('shortcuts')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'shortcuts' ? 'bg-gray-100' : ''}`}>الإختصارات</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإشتراكات</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الرسائل</button>
-          <button onClick={() => setActiveTab('bots')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bots' ? 'bg-gray-100' : ''}`}>Bots</button>
-          <button onClick={() => setActiveTab('requests')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'requests' ? 'bg-gray-100' : ''}`}>غرفة الانتظار</button>
-          <button onClick={() => setActiveTab('settings')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>الواجهة</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الصفحات</button>
-          <button onClick={() => setActiveTab('settings')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>ادارة الموقع</button>
-          <button onClick={() => setActiveTab('emojis')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'emojis' ? 'bg-gray-100' : ''}`}>الرموز</button>
-          <button onClick={() => setActiveTab('domains')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'domains' ? 'bg-gray-100' : ''}`}>النطاقات</button>
-          <button onClick={() => setActiveTab('settings')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>التحكم</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإحصائيات</button>
+        <div className="flex flex-col py-2 font-bold text-[13px] md:text-sm text-[#005599]">
+          <button onClick={() => setActiveTab('logs')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'logs' ? 'bg-gray-100' : ''}`}>السجل</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الحالات</button>
+          <button onClick={() => setActiveTab('bans')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>المحظورين</button>
+          <button onClick={() => setActiveTab('members')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'members' ? 'bg-gray-100' : ''}`}>الأعضاء</button>
+          <button onClick={() => setActiveTab('bans')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>الحظر</button>
+          <button onClick={() => setActiveTab('roles')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'roles' ? 'bg-gray-100' : ''}`}>الصلاحيات</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>فلتر</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الغرف</button>
+          <button onClick={() => setActiveTab('shortcuts')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'shortcuts' ? 'bg-gray-100' : ''}`}>الإختصارات</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإشتراكات</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الرسائل</button>
+          <button onClick={() => setActiveTab('bots')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bots' ? 'bg-gray-100' : ''}`}>Bots</button>
+          <button onClick={() => setActiveTab('requests')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'requests' ? 'bg-gray-100' : ''}`}>غرفة الانتظار</button>
+          <button onClick={() => setActiveTab('settings')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>الواجهة</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الصفحات</button>
+          <button onClick={() => setActiveTab('settings')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>ادارة الموقع</button>
+          <button onClick={() => setActiveTab('emojis')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'emojis' ? 'bg-gray-100' : ''}`}>الرموز</button>
+          <button onClick={() => setActiveTab('domains')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'domains' ? 'bg-gray-100' : ''}`}>النطاقات</button>
+          <button onClick={() => setActiveTab('settings')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>التحكم</button>
+          <button onClick={() => setActiveTab('google-index')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'google-index' ? 'bg-gray-100' : ''}`}>فهرسة قوقل</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإحصائيات</button>
         </div>
       </div>
 
-      {/* Main Content Area (width calc to prevent overlap with fixed left sidebar) */}
-      <div className="w-[calc(100%-10rem)] flex flex-col overflow-y-auto min-h-screen">
+      {/* Main Content Area (Order 1 -> Right side) */}
+      <div className="flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden order-1 bg-gray-50 relative min-w-0">
         <button onClick={() => router.push(`/c/${slug}/chat`)} className="w-full shrink-0 flex flex-row-reverse items-center justify-between px-4 py-3 bg-[#d9534f] hover:bg-[#c9302c] text-white transition-colors font-bold text-sm shadow-md">
           <div className="flex items-center gap-2" dir="ltr">
             <span>العودة للشات</span> <ArrowRight size={16} />
@@ -208,7 +209,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Content Area */}
-        <div className="p-8 max-w-5xl mx-auto flex-1">
+        <div className="p-3 md:p-8 max-w-5xl mx-auto flex-1 w-full">
           
           {/* Coming Soon Tab */}
           {activeTab === 'coming_soon' && (
