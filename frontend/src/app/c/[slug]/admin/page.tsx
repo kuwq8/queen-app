@@ -10,7 +10,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { slug } = useParams();
   
-  const [activeTab, setActiveTab] = useState<'settings' | 'requests' | 'members' | 'logs' | 'audit' | 'messages' | 'permissions' | 'shortcuts' | 'bots' | 'gifts' | 'domains' | 'roles' | 'fake-users' | 'bans' | 'emojis' | 'google-index' | 'coming_soon'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'requests' | 'members' | 'logs' | 'audit' | 'messages' | 'permissions' | 'shortcuts' | 'filters' | 'rooms' | 'bots' | 'gifts' | 'domains' | 'roles' | 'fake-users' | 'bans' | 'emojis' | 'google-index' | 'coming_soon'>('settings');
   const [indexingStatus, setIndexingStatus] = useState<'INDEXED' | 'PENDING' | 'FAILED'>('PENDING');
   const [indexingReason, setIndexingReason] = useState<string>('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -44,7 +44,11 @@ export default function AdminDashboard() {
     backgroundColor: '#EAEAD2',
     isMarqueeEnabled: true,
     marqueeText: 'عامل الناس بما تحب أن تعامل ... مرحباً بكم في شاتنا ... نرجو الالتزام بالقوانين وعدم الإساءة للآخرين ...',
-    areAddonsEnabled: true
+    areAddonsEnabled: true,
+    likesForGeneral: 0,
+    likesForWall: 0,
+    likesForPrivate: 0,
+    likesForMedia: 0
   });
 
   const [shortcuts, setShortcuts] = useState<any[]>([]);
@@ -55,6 +59,11 @@ export default function AdminDashboard() {
   const [newDomain, setNewDomain] = useState({ domain: '', seoTitle: '', seoDescription: '', seoKeywords: '' });
   const [fakeUsers, setFakeUsers] = useState<any[]>([]);
   const [newFakeUser, setNewFakeUser] = useState({ name: '', status: 'متصل', avatarUrl: '', roleId: '' });
+  const [filters, setFilters] = useState<any[]>([]);
+  const [newFilter, setNewFilter] = useState('');
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [newRoom, setNewRoom] = useState({ name: '', isPrivate: false, password: '' });
+  
   useEffect(() => {
     if (activeTab === 'settings') {
       const token = getToken();
@@ -94,18 +103,22 @@ export default function AdminDashboard() {
       fetch(`${API_URL}/community/${slug}/logs`, { headers }).then(res => res.json()),
       fetch(`${API_URL}/community/${slug}/bans`, { headers }).then(res => res.json()),
       fetch(`${API_URL}/community/${slug}/members`, { headers }).then(res => res.json()),
-      fetch(`${API_URL}/community/${slug}/emojis`, { headers }).then(res => res.json())
-    ]).then(([sData, bData, gData, bnData, dData, rData, lData, baData, mData, eData]) => {
+      fetch(`${API_URL}/community/${slug}/emojis`, { headers }).then(res => res.json()),
+      fetch(`${API_URL}/community/${slug}/rooms`, { headers }).then(res => res.json()).catch(() => []),
+      fetch(`${API_URL}/community/${slug}/filters`, { headers }).then(res => res.json()).catch(() => [])
+    ]).then(([sData, bData, gData, bnData, dData, rData, lData, baData, mData, eData, roomsData, filtersData]) => {
       if(Array.isArray(sData)) setShortcuts(sData);
       if(Array.isArray(bData)) setBots(bData);
       if(Array.isArray(gData)) setGifts(gData);
       if(Array.isArray(bnData)) setBanners(bnData);
       if(Array.isArray(dData)) setDomains(dData);
       if(Array.isArray(rData)) setRoles(rData);
-      if(Array.isArray(lData)) setLogs(lData);
+      if(Array.isArray(lData)) setLogs(lData.sort((a:any, b:any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       if(Array.isArray(baData)) setBans(baData);
       if(Array.isArray(mData)) setMembers(mData);
       if(Array.isArray(eData)) setEmojis(eData);
+      if(Array.isArray(roomsData)) setRooms(roomsData);
+      if(Array.isArray(filtersData)) setFilters(filtersData);
     }).catch(console.error);
 
     const initIndexing = async () => {
@@ -138,6 +151,8 @@ export default function AdminDashboard() {
         body: JSON.stringify(settings)
       });
       if (res.ok) {
+        localStorage.setItem(`likes_thresholds_${slug}`, JSON.stringify(likesThresholds));
+        window.dispatchEvent(new Event('likesThresholdsUpdated'));
         alert('تم حفظ الإعدادات بنجاح!');
       } else {
         alert('حدث خطأ أثناء الحفظ (تأكد من تسجيل الدخول بحساب المالك)');
@@ -175,8 +190,8 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab('bans')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>الحظر</button>
           <button onClick={() => setActiveTab('members')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'members' ? 'bg-gray-100' : ''}`}>الأعضاء</button>
           <button onClick={() => setActiveTab('roles')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'roles' ? 'bg-gray-100' : ''}`}>الصلاحيات</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>فلتر</button>
-          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الغرف</button>
+          <button onClick={() => setActiveTab('filters')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'filters' ? 'bg-gray-100' : ''}`}>فلتر</button>
+          <button onClick={() => setActiveTab('rooms')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'rooms' ? 'bg-gray-100' : ''}`}>الغرف</button>
           <button onClick={() => setActiveTab('shortcuts')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'shortcuts' ? 'bg-gray-100' : ''}`}>الإختصارات</button>
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإشتراكات</button>
           <button onClick={() => setActiveTab('messages')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'messages' ? 'bg-gray-100' : ''}`}>الرسائل</button>
@@ -209,6 +224,8 @@ export default function AdminDashboard() {
             {activeTab === 'audit' && 'سجل الإشراف (الحالات)'}
             {activeTab === 'roles' && 'إدارة الصلاحيات والمجموعات'}
             {activeTab === 'permissions' && 'إعدادات اللايكات'}
+            {activeTab === 'filters' && 'الكلمات الممنوعة (الفلتر)'}
+            {activeTab === 'rooms' && 'إدارة الغرف (الرومات)'}
             {activeTab === 'shortcuts' && 'إدارة اختصارات الكلمات'}
             {activeTab === 'bots' && 'إعدادات البوتات'}
             {activeTab === 'fake-users' && 'العضويات الوهمية'}
@@ -355,6 +372,30 @@ export default function AdminDashboard() {
                     <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-500"></div>
                   </label>
                 </div>
+
+                {/* Move Likes Settings Here */}
+                <div className="md:col-span-2 mt-4">
+                  <h2 className="text-xl font-extrabold text-[#5C4033] mb-4 border-b pb-2">صلاحيات اللايكات (0 = مسموح للجميع)</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">الكتابة في الشات العام</span>
+                      <input type="number" min="0" value={likesThresholds.publicChat} onChange={e => setLikesThresholds({...likesThresholds, publicChat: Number(e.target.value) || 0})} className="w-24 p-1.5 text-center text-black font-bold border border-gray-300 rounded-md outline-none focus:border-[#5C4033]" />
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">المحادثات الخاصة</span>
+                      <input type="number" min="0" value={likesThresholds.privateChat} onChange={e => setLikesThresholds({...likesThresholds, privateChat: Number(e.target.value) || 0})} className="w-24 p-1.5 text-center text-black font-bold border border-gray-300 rounded-md outline-none focus:border-[#5C4033]" />
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">نشر في الحائط</span>
+                      <input type="number" min="0" value={likesThresholds.wall} onChange={e => setLikesThresholds({...likesThresholds, wall: Number(e.target.value) || 0})} className="w-24 p-1.5 text-center text-black font-bold border border-gray-300 rounded-md outline-none focus:border-[#5C4033]" />
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">رابط وسائط (صور/فيديو)</span>
+                      <input type="number" min="0" value={likesThresholds.media} onChange={e => setLikesThresholds({...likesThresholds, media: Number(e.target.value) || 0})} className="w-24 p-1.5 text-center text-black font-bold border border-gray-300 rounded-md outline-none focus:border-[#5C4033]" />
+                    </div>
+                  </div>
+                </div>
+
               </div>
               <div className="mt-6 flex justify-between">
                 <button onClick={() => { if(confirm('هل أنت متأكد من حذف الشات بالكامل؟ لا يمكن التراجع عن هذا الإجراء.')) alert('تم حذف الشات.'); }} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-md font-bold flex items-center gap-2 shadow-md transition-colors">
@@ -368,62 +409,6 @@ export default function AdminDashboard() {
             </div>
             )}
           
-{/* Permissions Section */}
-          {activeTab === 'permissions' && (
-             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
-                <div>
-                  <h3 className="text-lg font-bold text-[#5C4033] mb-4">التحكم العام بالدردشة</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <label className="flex items-center gap-2 font-bold text-gray-700">
-                      <input type="checkbox" defaultChecked className="w-5 h-5 rounded text-[#5C4033] focus:ring-[#5C4033]" />
-                      السماح بالكتابة في العام
-                    </label>
-                    <label className="flex items-center gap-2 font-bold text-gray-700">
-                      <input type="checkbox" defaultChecked className="w-5 h-5 rounded text-[#5C4033] focus:ring-[#5C4033]" />
-                      السماح بالمحادثات الخاصة
-                    </label>
-                    <label className="flex items-center gap-2 font-bold text-gray-700">
-                      <input type="checkbox" defaultChecked className="w-5 h-5 rounded text-[#5C4033] focus:ring-[#5C4033]" />
-                      السماح بالتنبيهات
-                    </label>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-6 mt-4">
-                  <h3 className="text-lg font-bold text-[#5C4033] mb-4">صلاحيات اللايكات (0 = مسموح للجميع)</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
-                      <span className="font-bold text-gray-700 text-sm">الكتابة في الشات العام</span>
-                      <input type="number" min="0" value={likesThresholds.publicChat} onChange={e => setLikesThresholds({...likesThresholds, publicChat: Number(e.target.value) || 0})} className="w-20 p-1 text-center text-black font-bold border border-gray-300 rounded outline-none focus:border-[#5C4033]" />
-                    </div>
-                    <div className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
-                      <span className="font-bold text-gray-700 text-sm">المحادثات الخاصة</span>
-                      <input type="number" min="0" value={likesThresholds.privateChat} onChange={e => setLikesThresholds({...likesThresholds, privateChat: Number(e.target.value) || 0})} className="w-20 p-1 text-center text-black font-bold border border-gray-300 rounded outline-none focus:border-[#5C4033]" />
-                    </div>
-                    <div className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
-                      <span className="font-bold text-gray-700 text-sm">إرسال التنبيهات</span>
-                      <input type="number" min="0" value={likesThresholds.alert} onChange={e => setLikesThresholds({...likesThresholds, alert: Number(e.target.value) || 0})} className="w-20 p-1 text-center text-black font-bold border border-gray-300 rounded outline-none focus:border-[#5C4033]" />
-                    </div>
-                    <div className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
-                      <span className="font-bold text-gray-700 text-sm">نشر في الحائط</span>
-                      <input type="number" min="0" value={likesThresholds.wall} onChange={e => setLikesThresholds({...likesThresholds, wall: Number(e.target.value) || 0})} className="w-20 p-1 text-center text-black font-bold border border-gray-300 rounded outline-none focus:border-[#5C4033]" />
-                    </div>
-                    <div className="flex items-center justify-between bg-gray-50 p-2 rounded border border-gray-200">
-                      <span className="font-bold text-gray-700 text-sm">رابط وسائط (صور/فيديو)</span>
-                      <input type="number" min="0" value={likesThresholds.media} onChange={e => setLikesThresholds({...likesThresholds, media: Number(e.target.value) || 0})} className="w-20 p-1 text-center text-black font-bold border border-gray-300 rounded outline-none focus:border-[#5C4033]" />
-                    </div>
-                  </div>
-                </div>
-                
-                <button onClick={() => {
-                  localStorage.setItem(`likes_thresholds_${slug}`, JSON.stringify(likesThresholds));
-                  window.dispatchEvent(new Event('likesThresholdsUpdated'));
-                  alert('تم حفظ إعدادات الصلاحيات بنجاح');
-                }} className="bg-[#5C4033] text-white py-2 px-6 rounded-md hover:bg-[#3e2b22] transition-colors font-bold w-fit mt-4 flex items-center gap-2">
-                  <Save size={18} /> حفظ إعدادات الصلاحيات
-                </button>
-             </div>
-          )}
 
            {/* Shortcuts Section */}
           {activeTab === 'shortcuts' && (
@@ -730,6 +715,133 @@ export default function AdminDashboard() {
                   </table>
                 </div>
              </div>
+          )}
+
+          {/* Filters Tab */}
+          {activeTab === 'filters' && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
+               <h3 className="text-lg font-bold text-[#5C4033] mb-2">إدارة الفلتر (الكلمات الممنوعة)</h3>
+               <p className="text-sm text-gray-500 mb-4 font-bold">الكلمات المضافة هنا سيتم تصفيتها وتحويلها إلى (***) تلقائياً لمنع الإساءة في الشات.</p>
+               
+               <div className="flex gap-2 mb-6">
+                 <input type="text" value={newFilter} onChange={e => setNewFilter(e.target.value)} placeholder="أدخل كلمة لمنعها..." className="border border-gray-300 rounded p-2 outline-none focus:border-[#5C4033] w-full max-w-sm font-bold" />
+                 <button onClick={async () => {
+                   if(newFilter.trim()){
+                     const token = getToken();
+                     try {
+                        const res = await fetch(`${API_URL}/community/${slug}/filters`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                          body: JSON.stringify({ word: newFilter.trim() })
+                        });
+                        if (res.ok) {
+                          const nf = await res.json();
+                          setFilters([...filters, nf]);
+                          setNewFilter('');
+                        }
+                     } catch(e) {}
+                   }
+                 }} className="bg-[#5C4033] text-white py-2 px-6 rounded-md hover:bg-[#3e2b22] font-bold text-sm whitespace-nowrap">إضافة الكلمة</button>
+               </div>
+               
+               <div className="flex flex-wrap gap-2">
+                 {filters.length === 0 ? (
+                   <span className="text-gray-400 text-sm font-bold">لا توجد كلمات ممنوعة حتى الآن.</span>
+                 ) : filters.map((filter: any) => (
+                   <div key={filter.id} className="bg-gray-100 border border-gray-200 rounded-full px-4 py-1.5 flex items-center gap-2 group">
+                     <span className="font-bold text-gray-700">{filter.word}</span>
+                     <button onClick={async () => {
+                       if(confirm('متأكد من حذف هذه الكلمة؟')) {
+                          try {
+                            await fetch(`${API_URL}/community/${slug}/filters/${filter.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } });
+                            setFilters(filters.filter(f => f.id !== filter.id));
+                          } catch(e) {}
+                       }
+                     }} className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"><X size={14}/></button>
+                   </div>
+                 ))}
+               </div>
+            </div>
+          )}
+
+          {/* Rooms Tab */}
+          {activeTab === 'rooms' && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden p-6 flex flex-col gap-6">
+               <h3 className="text-lg font-bold text-[#5C4033] mb-4">إدارة الغرف (الرومات)</h3>
+               
+               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
+                 <div className="md:col-span-2">
+                   <label className="block text-sm font-bold text-gray-700 mb-2">اسم الغرفة الجديدة</label>
+                   <input type="text" value={newRoom.name} onChange={e => setNewRoom({...newRoom, name: e.target.value})} className="w-full border border-gray-300 rounded p-2 outline-none focus:border-[#5C4033]" placeholder="مثال: روم السوالف" />
+                 </div>
+                 <div>
+                   <label className="flex items-center gap-2 cursor-pointer font-bold h-[42px] mt-6 bg-gray-50 border border-gray-200 rounded px-3">
+                     <input type="checkbox" checked={newRoom.isPrivate} onChange={e => setNewRoom({...newRoom, isPrivate: e.target.checked})} className="w-4 h-4 rounded text-[#5C4033]" /> خاصة بكلمة مرور
+                   </label>
+                 </div>
+                 <div>
+                   <button onClick={async () => {
+                     if(newRoom.name.trim()) {
+                        const token = getToken();
+                        try {
+                           const res = await fetch(`${API_URL}/community/${slug}/rooms`, {
+                             method: 'POST',
+                             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                             body: JSON.stringify(newRoom)
+                           });
+                           if(res.ok) {
+                             const created = await res.json();
+                             setRooms([...rooms, created]);
+                             setNewRoom({ name: '', isPrivate: false, password: '' });
+                           }
+                        } catch(e) {}
+                     }
+                   }} className="bg-[#5C4033] text-white py-2 px-6 rounded-md hover:bg-[#3e2b22] font-bold text-sm w-full h-[42px]">إضافة غرفة</button>
+                 </div>
+                 {newRoom.isPrivate && (
+                   <div className="md:col-span-4 mt-2">
+                      <label className="block text-sm font-bold text-gray-700 mb-2">كلمة المرور للغرفة</label>
+                      <input type="text" value={newRoom.password} onChange={e => setNewRoom({...newRoom, password: e.target.value})} className="w-full border border-gray-300 rounded p-2 outline-none focus:border-[#5C4033]" placeholder="أدخل كلمة المرور..." />
+                   </div>
+                 )}
+               </div>
+
+               <table className="w-full text-right border-t border-gray-200 mt-4">
+                 <thead className="bg-gray-50 text-gray-700 font-bold">
+                   <tr>
+                     <th className="p-3">الغرفة</th>
+                     <th className="p-3">النوع</th>
+                     <th className="p-3 w-20">إجراء</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {rooms.length === 0 ? (
+                      <tr><td colSpan={3} className="text-center p-4 text-gray-500 font-bold">لا يوجد غرف مضافة حالياً.</td></tr>
+                   ) : rooms.map((room: any) => (
+                      <tr key={room.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td className="p-3 font-bold text-[#5C4033]">{room.name}</td>
+                        <td className="p-3">
+                          {room.isPrivate ? (
+                            <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200 flex items-center gap-1 w-max"><Lock size={12}/> خاصة</span>
+                          ) : (
+                            <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded font-bold border border-green-200 flex items-center gap-1 w-max"><Globe size={12}/> عامة</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                           <button onClick={async () => {
+                             if(confirm('متأكد من حذف الغرفة؟ سيتم حذف رسائلها.')) {
+                                try {
+                                  await fetch(`${API_URL}/community/${slug}/rooms/${room.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } });
+                                  setRooms(rooms.filter(r => r.id !== room.id));
+                                } catch(e) {}
+                             }
+                           }} className="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded"><Ban size={16}/></button>
+                        </td>
+                      </tr>
+                   ))}
+                 </tbody>
+               </table>
+            </div>
           )}
 
           {/* Emojis Tab */}
