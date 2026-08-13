@@ -511,11 +511,19 @@ export default function ClassicChatPage() {
           </div>
         )}
 
+        {/* Right Sidebar Backdrop Overlay */}
+        {(activePane && activePane !== 'members') && (
+          <div 
+            className="fixed top-8 left-0 right-0 h-[calc(100dvh-72px)] bg-transparent z-[89] sm:hidden" 
+            onClick={() => setActivePane(null)}
+          />
+        )}
+
         {/* Middle Area (Right Sidebar + Chat) */}
         <div className="flex-1 flex overflow-hidden bg-[#FDFDFD] relative">
           
           {/* 1. Right Sidebar (Settings, or Wall) */}
-          <div className={`${activePane && activePane !== 'members' ? 'flex' : 'hidden'} absolute sm:relative right-0 inset-y-0 w-[68%] max-w-[68%] sm:w-[320px] sm:max-w-[320px] bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-20`}>
+          <div className={`${activePane && activePane !== 'members' ? 'flex' : 'hidden'} fixed sm:relative top-8 sm:top-auto right-0 h-[calc(100dvh-72px)] sm:h-auto sm:inset-y-0 w-[68%] max-w-[68%] sm:w-[320px] sm:max-w-[320px] bg-[#FDFDFD] flex-shrink-0 flex-col border-l border-[#D2B48C] shadow-[-5px_0_15px_rgba(0,0,0,0.1)] sm:shadow-none z-[90] sm:z-20`}>
             
             {/* Settings Pane */}
             {activePane === 'settings' && (
