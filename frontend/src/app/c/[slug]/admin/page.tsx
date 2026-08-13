@@ -239,8 +239,8 @@ export default function AdminDashboard() {
                 
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-gray-700 mb-2">صورة الموقع الخارجية (رابط مباشر)</label>
-                  <div className="flex gap-2">
-                    <input type="text" value={server.bannerUrl} onChange={e => setServer({...server, bannerUrl: e.target.value})} placeholder="https://example.com/image.png" className="flex-1 border border-gray-300 rounded-md p-2.5 focus:border-[#5C4033] focus:ring-1 focus:ring-[#5C4033] outline-none font-bold text-black text-left" dir="ltr" />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input type="text" value={server.bannerUrl} onChange={e => setServer({...server, bannerUrl: e.target.value})} placeholder="https://example.com/image.png" className="w-full border border-gray-300 rounded-md p-2.5 focus:border-[#5C4033] focus:ring-1 focus:ring-[#5C4033] outline-none font-bold text-black text-left" dir="ltr" />
                     <button onClick={async () => {
                       const token = getToken();
                       try {
@@ -384,8 +384,8 @@ export default function AdminDashboard() {
           {activeTab === 'shortcuts' && (
              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                <h3 className="text-lg font-bold text-[#5C4033] mb-4">إضافة اختصار جديد</h3>
-               <div className="flex gap-4 items-end mb-8">
-                 <div className="flex-1">
+               <div className="flex flex-col sm:flex-row gap-4 sm:items-end mb-8">
+                 <div className="flex-1 w-full">
                    <label className="block text-sm font-bold text-gray-700 mb-1">الاختصار (مثال: س1)</label>
                    <input type="text" className="w-full border border-gray-300 rounded-md p-2 outline-none focus:border-[#5C4033]" placeholder="الكلمة المختصرة" />
                  </div>
@@ -393,7 +393,7 @@ export default function AdminDashboard() {
                    <label className="block text-sm font-bold text-gray-700 mb-1">الكلمة البديلة (مثال: السلام عليكم ورحمة الله)</label>
                    <input type="text" className="w-full border border-gray-300 rounded-md p-2 outline-none focus:border-[#5C4033]" placeholder="النص الكامل" />
                  </div>
-                 <button onClick={() => alert('تمت إضافة الاختصار بنجاح وسيبدأ العمل به بعد الحفظ.')} className="bg-green-600 text-white p-2 px-6 rounded-md font-bold hover:bg-green-700">إضافة</button>
+                 <button onClick={() => alert('تمت إضافة الاختصار بنجاح وسيبدأ العمل به بعد الحفظ.')} className="bg-green-600 text-white p-2 px-6 rounded-md font-bold hover:bg-green-700 w-full sm:w-auto mt-4 sm:mt-0">إضافة</button>
                </div>
                
                <h3 className="text-lg font-bold text-[#5C4033] mb-4">الاختصارات الحالية</h3>
@@ -864,9 +864,9 @@ export default function AdminDashboard() {
              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                   <h3 className="font-bold text-gray-800 text-lg text-right" dir="rtl">إضافة حظر جديد (آي بي أو جهاز)</h3>
-                  <div className="flex gap-2">
-                    <input type="text" id="ban-ip" placeholder="عنوان IP" className="border border-gray-300 rounded p-2 outline-none flex-1" />
-                    <input type="text" id="ban-device" placeholder="معرف الجهاز" className="border border-gray-300 rounded p-2 outline-none flex-1" />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="ban-ip" placeholder="عنوان IP" className="border border-gray-300 rounded p-2 outline-none w-full" />
+                    <input type="text" id="ban-device" placeholder="معرف الجهاز" className="border border-gray-300 rounded p-2 outline-none w-full" />
                     <button onClick={async () => {
                       const ip = (document.getElementById('ban-ip') as HTMLInputElement).value;
                       const device = (document.getElementById('ban-device') as HTMLInputElement).value;
@@ -885,7 +885,7 @@ export default function AdminDashboard() {
                           (document.getElementById('ban-device') as HTMLInputElement).value = '';
                         }
                       } catch (e) { alert('خطأ في الاتصال'); }
-                    }} className="bg-red-600 text-white font-bold py-2 px-6 rounded hover:bg-red-700">حظر</button>
+                    }} className="bg-red-600 text-white font-bold py-2 px-6 rounded hover:bg-red-700 w-full sm:w-auto">حظر</button>
                   </div>
                 </div>
 
