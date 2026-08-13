@@ -48,7 +48,12 @@ export default function AdminDashboard() {
     likesForGeneral: 0,
     likesForWall: 0,
     likesForPrivate: 0,
-    likesForMedia: 0
+    likesForMedia: 0,
+    showStory: true,
+    showWallCreator: true,
+    showWallTrend: true,
+    showProfileVisitors: true,
+    showMicStars: true
   });
 
   const [shortcuts, setShortcuts] = useState<any[]>([]);
@@ -371,6 +376,47 @@ export default function AdminDashboard() {
                     <input type="checkbox" className="sr-only peer" checked={settings.areAddonsEnabled} onChange={e => setSettings({...settings, areAddonsEnabled: e.target.checked})} />
                     <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-500"></div>
                   </label>
+                </div>
+
+                <div className="md:col-span-2 mt-4">
+                  <h2 className="text-xl font-extrabold text-[#5C4033] mb-4 border-b pb-2">التحكم بظهور الإضافات</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">إظهار الاستوري (القصص)</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" checked={settings.showStory !== false} onChange={e => setSettings({...settings, showStory: e.target.checked})} />
+                        <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">إظهار مبدع الحائط</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" checked={settings.showWallCreator !== false} onChange={e => setSettings({...settings, showWallCreator: e.target.checked})} />
+                        <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">إظهار ترند الحائط</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" checked={settings.showWallTrend !== false} onChange={e => setSettings({...settings, showWallTrend: e.target.checked})} />
+                        <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">إظهار زائرين الملف الشخصي</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" checked={settings.showProfileVisitors !== false} onChange={e => setSettings({...settings, showProfileVisitors: e.target.checked})} />
+                        <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between bg-gray-50 p-3 rounded-md border border-gray-200">
+                      <span className="font-bold text-gray-700 text-sm">إظهار نجوم المايك</span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" checked={settings.showMicStars !== false} onChange={e => setSettings({...settings, showMicStars: e.target.checked})} />
+                        <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Move Likes Settings Here */}

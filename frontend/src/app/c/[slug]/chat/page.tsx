@@ -809,34 +809,45 @@ export default function ClassicChatPage() {
                   <div className="text-center text-white/50 text-[10px] my-0.5">•••</div>
 
                   {/* Button 3 */}
-                  <div onClick={() => setActivePane('profile-visitors')} className="bg-gradient-to-l from-[#3b82f6] to-[#60a5fa] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
-                    <span className="flex-1 text-center text-[12px] font-extrabold pr-10">زائرين الملف الشخصي</span>
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><Eye size={18} /></div>
-                    <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">3</div>
-                  </div>
+                  {settings.showProfileVisitors !== false && (
+                    <>
+                      <div onClick={() => setActivePane('profile-visitors')} className="bg-gradient-to-l from-[#3b82f6] to-[#60a5fa] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
+                        <span className="flex-1 text-center text-[12px] font-extrabold pr-10">زائرين الملف الشخصي</span>
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><Eye size={18} /></div>
+                        <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">3</div>
+                      </div>
+                      <div className="text-center text-white/50 text-[10px] my-0.5">•••</div>
+                    </>
+                  )}
 
                   <div className="text-center text-white/50 text-[10px] my-0.5">•••</div>
 
                   {/* Button 4 */}
-                  <div onClick={() => setActivePane('wall-trend')} className="bg-gradient-to-l from-[#7e22ce] to-[#8b5cf6] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
-                    <span className="flex-1 text-center text-[12px] font-extrabold pr-10">ترند الحائط</span>
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><TrendingUp size={18} /></div>
-                    <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">4</div>
-                  </div>
+                  {settings.showWallTrend !== false && (
+                    <div onClick={() => setActivePane('wall-trend')} className="bg-gradient-to-l from-[#7e22ce] to-[#8b5cf6] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
+                      <span className="flex-1 text-center text-[12px] font-extrabold pr-10">ترند الحائط</span>
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><TrendingUp size={18} /></div>
+                      <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">4</div>
+                    </div>
+                  )}
 
                   {/* Button 5 */}
-                  <div onClick={() => setActivePane('wall-creator')} className="bg-gradient-to-l from-[#7e22ce] to-[#8b5cf6] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
-                    <span className="flex-1 text-center text-[12px] font-extrabold pr-10">مبدع الحائط</span>
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><Award size={18} /></div>
-                    <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">5</div>
-                  </div>
+                  {settings.showWallCreator !== false && (
+                    <div onClick={() => setActivePane('wall-creator')} className="bg-gradient-to-l from-[#7e22ce] to-[#8b5cf6] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
+                      <span className="flex-1 text-center text-[12px] font-extrabold pr-10">مبدع الحائط</span>
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><Award size={18} /></div>
+                      <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">5</div>
+                    </div>
+                  )}
 
                   {/* Button 6 */}
-                  <div onClick={() => setActivePane('mic-stars')} className="bg-gradient-to-l from-[#7e22ce] to-[#8b5cf6] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
-                    <span className="flex-1 text-center text-[12px] font-extrabold pr-10">نجوم المايك</span>
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><Mic2 size={18} /></div>
-                    <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">6</div>
-                  </div>
+                  {settings.showMicStars !== false && (
+                    <div onClick={() => setActivePane('mic-stars')} className="bg-gradient-to-l from-[#7e22ce] to-[#8b5cf6] rounded-full flex items-center justify-between p-1.5 shadow-md cursor-pointer hover:opacity-90 relative">
+                      <span className="flex-1 text-center text-[12px] font-extrabold pr-10">نجوم المايك</span>
+                      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"><Mic2 size={18} /></div>
+                      <div className="w-6 h-6 rounded-full bg-white/30 flex items-center justify-center text-white text-[10px] absolute left-2">6</div>
+                    </div>
+                  )}
 
                   <div className="text-center text-white/50 text-[10px] my-0.5">•••</div>
 
@@ -1318,54 +1329,56 @@ export default function ClassicChatPage() {
                 
                 <div className="flex-1 flex flex-col overflow-hidden bg-[#F5DEB3]">
                   {/* Stories Section */}
-                  <div className="h-[90px] bg-white px-3 py-2 border-b border-gray-300 flex gap-2.5 overflow-x-auto no-scrollbar items-center flex-shrink-0">
-                    
-                    {/* Add Story Button (Current User) */}
-                    <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
-                      <div className="w-[64px] h-[64px] rounded-full border-2 border-gray-200 p-0.5 relative flex items-center justify-center transition-transform group-hover:scale-105">
-                        <img src={currentUser?.profile?.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser?.username}`} className="w-full h-full rounded-full object-cover" />
-                        <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm">
-                          <Plus size={14} strokeWidth={4}/>
+                  {settings.showStory !== false && (
+                    <div className="h-[90px] bg-white px-3 py-2 border-b border-gray-300 flex gap-2.5 overflow-x-auto no-scrollbar items-center flex-shrink-0">
+                      
+                      {/* Add Story Button (Current User) */}
+                      <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
+                        <div className="w-[64px] h-[64px] rounded-full border-2 border-gray-200 p-0.5 relative flex items-center justify-center transition-transform group-hover:scale-105">
+                          <img src={currentUser?.profile?.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser?.username}`} className="w-full h-full rounded-full object-cover" />
+                          <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-0.5 border-2 border-white shadow-sm">
+                            <Plus size={14} strokeWidth={4}/>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Mock Story 1 (Unseen) */}
-                    <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
-                      <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 p-[2px] transition-transform group-hover:scale-105">
-                        <div className="w-full h-full bg-white rounded-full p-[2px]">
-                          <img src="https://api.dicebear.com/7.x/initials/svg?seed=J" className="w-full h-full rounded-full object-cover" />
+                      {/* Mock Story 1 (Unseen) */}
+                      <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
+                        <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 p-[2px] transition-transform group-hover:scale-105">
+                          <div className="w-full h-full bg-white rounded-full p-[2px]">
+                            <img src="https://api.dicebear.com/7.x/initials/svg?seed=J" className="w-full h-full rounded-full object-cover" />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Mock Story 2 (Unseen) */}
-                    <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
-                      <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 p-[2px] transition-transform group-hover:scale-105">
-                        <div className="w-full h-full bg-white rounded-full p-[2px]">
-                          <img src="https://api.dicebear.com/7.x/initials/svg?seed=F" className="w-full h-full rounded-full object-cover" />
+                      {/* Mock Story 2 (Unseen) */}
+                      <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
+                        <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 p-[2px] transition-transform group-hover:scale-105">
+                          <div className="w-full h-full bg-white rounded-full p-[2px]">
+                            <img src="https://api.dicebear.com/7.x/initials/svg?seed=F" className="w-full h-full rounded-full object-cover" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Mock Story 3 (Unseen) */}
-                    <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
-                      <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 p-[2px] transition-transform group-hover:scale-105">
-                        <div className="w-full h-full bg-white rounded-full p-[2px]">
-                          <img src="https://api.dicebear.com/7.x/initials/svg?seed=A" className="w-full h-full rounded-full object-cover" />
+                      
+                      {/* Mock Story 3 (Unseen) */}
+                      <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 group">
+                        <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 p-[2px] transition-transform group-hover:scale-105">
+                          <div className="w-full h-full bg-white rounded-full p-[2px]">
+                            <img src="https://api.dicebear.com/7.x/initials/svg?seed=A" className="w-full h-full rounded-full object-cover" />
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Mock Story 4 (Seen) */}
-                    <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 opacity-80 group">
-                      <div className="w-[64px] h-[64px] rounded-full bg-gray-300 p-[2px] transition-transform group-hover:scale-105">
-                        <div className="w-full h-full bg-white rounded-full p-[2px]">
-                          <img src="https://api.dicebear.com/7.x/initials/svg?seed=M" className="w-full h-full rounded-full object-cover opacity-90" />
+                      {/* Mock Story 4 (Seen) */}
+                      <div className="flex flex-col items-center gap-1 cursor-pointer flex-shrink-0 opacity-80 group">
+                        <div className="w-[64px] h-[64px] rounded-full bg-gray-300 p-[2px] transition-transform group-hover:scale-105">
+                          <div className="w-full h-full bg-white rounded-full p-[2px]">
+                            <img src="https://api.dicebear.com/7.x/initials/svg?seed=M" className="w-full h-full rounded-full object-cover opacity-90" />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Tabs */}
                   <div className="flex bg-chatbg border-b border-[#D2B48C] text-[12px] font-bold text-center h-[24px]">
