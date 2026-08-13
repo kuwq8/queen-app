@@ -1628,34 +1628,34 @@ export default function ClassicChatPage() {
         <div className="h-10 flex items-center justify-between px-2 text-white flex-shrink-0 border-t border-[#3e2b22] shadow-[0_-2px_10px_rgba(0,0,0,0.2)] text-[11px] font-bold z-20 relative overflow-hidden" style={{ backgroundColor: settings.primaryColor }} dir="ltr">
           
           {/* Buttons on the Left */}
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar relative z-10 w-full sm:w-auto h-full px-1 justify-between flex-1">
+          <div className="flex items-center justify-between w-full h-full px-1 gap-1 relative z-10">
             <button 
               onClick={() => togglePane('members')}
-              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'members' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-8 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'members' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
               <Users size={14} /> <span>{server.members?.length || 0}</span>
             </button>
             <button 
               onClick={() => togglePane('private')}
-              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'private' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-8 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'private' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                خاص <MessageCircle size={14} />
             </button>
             <button 
               onClick={() => togglePane('rooms')}
-              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'rooms' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-8 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'rooms' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                الغرف <Grid size={14} />
             </button>
             <button 
               onClick={() => togglePane('wall')}
-              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'wall' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-8 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'wall' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                الحائط <FileText size={14} />
             </button>
             <button 
               onClick={() => togglePane('settings')}
-              className={`flex-1 h-7 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1.5 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'settings' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
+              className={`flex-1 h-8 rounded-[3px] border border-[#3e2b22] flex items-center justify-center gap-1 shadow-sm whitespace-nowrap text-[11px] transition-colors ${activePane === 'settings' ? 'bg-[#c89228] text-white' : 'bg-[#5a4e4d] hover:bg-[#6b5f5e]'}`}
             >
                الضبط <Settings size={14} />
             </button>
@@ -2201,17 +2201,17 @@ export default function ClassicChatPage() {
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-[82%] sm:w-[350px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-full sm:w-[350px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
           
           {/* Header */}
-          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0 w-full relative">
+          <div className="shrink-0 bg-[#4a4641] flex items-center justify-between h-12 shadow-sm z-10 m-0 w-full p-0">
             <button 
               onClick={() => setActivePane(null)} 
-              className="absolute right-0 top-0 h-full w-12 bg-[#d32f2f] hover:bg-red-700 flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
+              className="w-12 h-12 bg-red-600 flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
             >
               <X size={20} strokeWidth={2} />
             </button>
-            <span className="text-white font-bold text-[14px] pr-14">المتواجدين</span>
+            <span className="text-white font-bold text-[14px] px-3">المتواجدين</span>
           </div>
 
           {/* Search Bar */}
