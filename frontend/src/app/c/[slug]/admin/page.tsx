@@ -10,7 +10,18 @@ export default function AdminDashboard() {
   const router = useRouter();
   const { slug } = useParams();
   
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tab = searchParams.get('tab');
+      if (tab) {
+        setActiveTab(tab as any);
+      }
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState<'settings' | 'requests' | 'members' | 'logs' | 'audit' | 'messages' | 'permissions' | 'shortcuts' | 'filters' | 'rooms' | 'bots' | 'gifts' | 'domains' | 'roles' | 'fake-users' | 'bans' | 'emojis' | 'google-index' | 'coming_soon'>('settings');
+
   const [indexingStatus, setIndexingStatus] = useState<'INDEXED' | 'PENDING' | 'FAILED'>('PENDING');
   const [indexingReason, setIndexingReason] = useState<string>('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -444,7 +455,12 @@ export default function AdminDashboard() {
 
               </div>
               <div className="mt-6 flex justify-between">
-                <button onClick={() => { if(confirm('هل أنت متأكد من حذف الشات بالكامل؟ لا يمكن التراجع عن هذا الإجراء.')) alert('تم حذف الشات.'); }} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-md font-bold flex items-center gap-2 shadow-md transition-colors">
+                <button onClick={() => { 
+                  if(confirm('هل أنت متأكد من حذف الشات بالكامل مع دوميناته؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                    alert('تم حذف الشات وتدمير جميع بياناته بنجاح.');
+                    window.location.href = '/home';
+                  } 
+                }} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-md font-bold flex items-center gap-2 shadow-md transition-colors">
                   إلغاء أو حذف الشات
                 </button>
                 <button onClick={handleSaveSettings} className="bg-[#5C4033] hover:bg-[#3e2b22] text-white px-6 py-2.5 rounded-md font-bold flex items-center gap-2 shadow-md transition-colors">

@@ -314,8 +314,9 @@ export default function ClassicChatPage() {
         }
       } as any;
 
-      if (!(window as any).hasSentJoinMessage) {
-        (window as any).hasSentJoinMessage = true;
+      const joinKey = `hasJoined_${activeRoom.id}`;
+      if (!sessionStorage.getItem(joinKey)) {
+        sessionStorage.setItem(joinKey, 'true');
         setTimeout(() => {
           socketRef.current?.emit('sendCommunityMessage', { roomId: activeRoom.id, content: `هذا المستخدم دخل الى [${activeRoom.name}]` });
         }, 1000);
@@ -1707,16 +1708,12 @@ export default function ClassicChatPage() {
         {/* Floating Notification Bell */}
         {!activePane && (
           <button 
-            onClick={() => togglePane('notifications')}
+            onClick={() => router.push(`/c/${slug}/admin?tab=filters`)}
             className="fixed z-[9999] w-[45px] h-[45px] rounded-full bg-[#ff5252] text-white flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.2)] hover:bg-[#ff3333] transition-colors"
             style={{ top: '50%', right: '20px', transform: 'translateY(-50%)' }}
+            title="فلترة الكلمات"
           >
             <Bell size={20} fill="currentColor" />
-            {unreadNotifs > 0 && (
-              <span className="absolute -top-1 -right-1 bg-white text-[#ff5252] text-[10px] w-[18px] h-[18px] flex items-center justify-center rounded-full font-bold shadow-sm border border-[#ff5252]">
-                {unreadNotifs}
-              </span>
-            )}
           </button>
         )}
 
@@ -2083,7 +2080,7 @@ export default function ClassicChatPage() {
                 عدد العضويات المسجلة: 4
               </div>
               
-              <div className="grid grid-cols-12 bg-[#428bca] text-white font-bold text-[11px] text-center divide-x divide-x-reverse divide-blue-400">
+              <div className="grid grid-cols-12 text-white font-bold text-[11px] text-center divide-x divide-x-reverse" style={{backgroundColor: settings.primaryColor, borderColor: settings.primaryColor}}>
                 <div className="col-span-1 py-1 flex items-center justify-center">🔍</div>
                 <div className="col-span-3 py-1">اخر دخول</div>
                 <div className="col-span-3 py-1">IP</div>
