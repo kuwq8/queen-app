@@ -1,4 +1,4 @@
-export const API_URL = ''; // Deprecated, migrating to Supabase
+export const API_URL = '/api';
 
 export function getToken() {
   try {

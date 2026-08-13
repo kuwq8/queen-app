@@ -249,8 +249,20 @@ export default function ClassicChatPage() {
           }));
         }
         setServer(channelData);
-        // By default, the main channel acts as the room
-        setActiveRoom(channelData);
+        // Fetch rooms from backend to get the real IDs
+        try {
+          const res = await fetch(`${API_URL}/community/${slug}/rooms`, {
+            headers: { Authorization: `Bearer ${getToken()}` }
+          });
+          const rooms = await res.json();
+          if (rooms && rooms.length > 0) {
+            setActiveRoom(rooms[0]);
+          } else {
+            setActiveRoom(channelData); // fallback
+          }
+        } catch(e) {
+           setActiveRoom(channelData); // fallback
+        }
       }
     };
     init();
@@ -260,67 +272,55 @@ export default function ClassicChatPage() {
     if (!activeRoom || !currentUser) return;
 
     const initMessages = async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('channel_id', activeRoom.id)
-        .order('created_at', { ascending: true })
-        .limit(50);
+      try {
+        const token = getToken();
+        // Fetch initial messages from backend
+        const res = await fetch(`${API_URL}/community/rooms/${activeRoom.id}/messages`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         
-      if (data) {
-        const senderIds = data.map((m: any) => m.user_id).filter(Boolean);
-        let profiles: any[] = [];
-        if (senderIds.length > 0) {
-          const { data: p } = await supabase.from('profiles').select('*').in('id', senderIds);
-          profiles = p || [];
-        }
-        
-        const messagesWithProfiles = data.map((m: any) => ({
-          ...m,
-          sender: profiles.find(p => p.id === m.user_id) || null
-        }));
-        
-        setMessages(messagesWithProfiles);
-        scrollToBottom();
-      }
-
-      const channel = supabase.channel(`room:${activeRoom.id}`);
-      
-      channel.on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${activeRoom.id}` },
-        async (payload: any) => {
-          const { data: senderData } = await supabase.from('profiles').select('*').eq('id', payload.new.user_id).single();
-          const newMsg = { ...payload.new, sender: senderData };
-          setMessages(prev => [...prev, newMsg].slice(-50));
+        if (res.ok) {
+          const data = await res.json();
+          // Transform if needed, but backend already includes sender details
+          setMessages(data.reverse()); // Because we order by desc on backend to get latest 50, we reverse for UI
           scrollToBottom();
         }
-      ).subscribe();
+      } catch (e) { console.error('Failed to load messages', e); }
 
-      socketRef.current = {
-        channel,
-        disconnect: () => {
-          channel.unsubscribe();
-        },
-        emit: async (event: string, payload: any) => {
-          if (event === 'sendCommunityMessage') {
-             await supabase.from('messages').insert({
-                channel_id: payload.roomId,
-                user_id: currentUser.id,
-                content: payload.content
-             });
+      import('socket.io-client').then(({ io }) => {
+        const token = getToken();
+        const wsUrl = API_URL.replace('/api', '');
+        const newSocket = io(wsUrl, {
+          auth: { token: `Bearer ${token}` }
+        });
+
+        newSocket.on('connect', () => {
+          newSocket.emit('joinCommunityRoom', { roomId: activeRoom.id, slug });
+        });
+
+        newSocket.on('newCommunityMessage', (message: any) => {
+          setMessages((prev: any) => [...prev, message].slice(-50));
+          scrollToBottom();
+        });
+
+        socketRef.current = {
+          disconnect: () => {
+            newSocket.emit('leaveCommunityRoom', { roomId: activeRoom.id });
+            newSocket.disconnect();
+          },
+          emit: (event: string, payload: any) => {
+            newSocket.emit(event, payload);
           }
-        }
-      } as any;
+        } as any;
 
-      const joinKey = `hasJoined_${activeRoom.id}`;
-      if (!sessionStorage.getItem(joinKey)) {
-        sessionStorage.setItem(joinKey, 'true');
-        setTimeout(() => {
-          socketRef.current?.emit('sendCommunityMessage', { roomId: activeRoom.id, content: `هذا المستخدم دخل الى [${activeRoom.name}]` });
-        }, 1000);
-      }
+        const joinKey = `hasJoined_${activeRoom.id}`;
+        if (!sessionStorage.getItem(joinKey)) {
+          sessionStorage.setItem(joinKey, 'true');
+          setTimeout(() => {
+            socketRef.current?.emit('sendCommunityMessage', { roomId: activeRoom.id, content: `هذا المستخدم دخل الى [${activeRoom.name || activeRoom.id}]` });
+          }, 1000);
+        }
+      });
     };
     initMessages();
 

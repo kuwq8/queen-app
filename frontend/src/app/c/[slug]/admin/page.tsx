@@ -217,6 +217,7 @@ export default function AdminDashboard() {
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الصفحات</button>
           <button onClick={() => setActiveTab('emojis')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'emojis' ? 'bg-gray-100' : ''}`}>الرموز</button>
           <button onClick={() => setActiveTab('domains')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'domains' ? 'bg-gray-100' : ''}`}>النطاقات</button>
+          <button onClick={() => setActiveTab('gifts')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'gifts' ? 'bg-gray-100' : ''}`}>الهدايا والبنرات</button>
           <button onClick={() => setActiveTab('google-index')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'google-index' ? 'bg-gray-100' : ''}`}>فهرسة قوقل</button>
           <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-3 md:px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإحصائيات</button>
         </div>
