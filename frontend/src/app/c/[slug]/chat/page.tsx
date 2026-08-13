@@ -2201,14 +2201,14 @@ export default function ClassicChatPage() {
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-[300px] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 border-none outline-none" dir="rtl">
+        <div className="fixed top-0 right-0 h-[calc(100vh-60px)] sm:h-full w-[300px] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 shadow-2xl overflow-hidden border-none" dir="rtl">
           
           {/* Header */}
-          <div className="flex flex-row items-center justify-between bg-[#4a4641] w-full h-12 px-0 m-0">
+          <div className="flex flex-row items-center justify-between bg-[#4a4641] w-full h-12 px-0 m-0 shrink-0">
             <span className="text-white px-4 font-medium">المتواجدين</span>
             <button 
               onClick={() => setActivePane(null)} 
-              className="bg-red-600 hover:bg-red-700 w-12 h-12 flex items-center justify-center text-white shrink-0 m-0 border-none rounded-none"
+              className="bg-red-600 hover:bg-red-700 w-12 h-12 flex items-center justify-center text-white shrink-0 m-0 rounded-none border-none"
             >
               <X size={20} strokeWidth={2} />
             </button>
