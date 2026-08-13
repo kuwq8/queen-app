@@ -147,107 +147,39 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 flex font-sans" dir="rtl">
       
       {/* Sidebar (Order 2 so it appears on the left in RTL) */}
-      <div className="w-64 bg-white text-gray-700 flex flex-col shadow-xl flex-shrink-0 order-2 border-r border-gray-200">
-        <div className="h-16 flex items-center justify-center border-b border-gray-200 gap-2 font-extrabold text-lg text-[#2b6cb0]">
-          <Settings size={20} />
-          لوحة الإدارة
+      <div className="w-36 bg-white flex flex-col flex-shrink-0 order-2 border-r border-gray-300 shadow-sm">
+        <div className="flex justify-end p-1 border-b border-gray-200">
+          <button onClick={() => window.location.reload()} className="bg-[#5cb85c] hover:bg-[#4cae4c] text-white p-1 rounded-sm shadow-sm transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          </button>
         </div>
         
-        <div className="p-2 flex flex-col gap-1 flex-1 font-bold text-sm">
-          <button 
-            onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'settings' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Settings size={18} /> إعدادات الشات
-          </button>
-          <button 
-            onClick={() => setActiveTab('requests')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'requests' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <UserPlus size={18} /> طلبات الانضمام 
-            {requests.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full mr-auto">{requests.length}</span>}
-          </button>
-          <button 
-            onClick={() => setActiveTab('members')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'members' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Users size={18} /> إدارة الأعضاء
-          </button>
-          <button 
-            onClick={() => setActiveTab('logs')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'logs' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Clock size={18} /> سجل الإدارة
-          </button>
-          <button 
-            onClick={() => setActiveTab('bans')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'bans' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Ban size={18} /> قائمة الحظر
-          </button>
-          <button 
-            onClick={() => setActiveTab('google-index')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'google-index' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Globe size={18} /> فهرسة قوقل
-          </button>
-          
-          <div className="my-1 border-t border-gray-200"></div>
-          
-          <button 
-            onClick={() => setActiveTab('roles')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'roles' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Lock size={18} /> الصلاحيات
-          </button>
-          
-          <div className="my-1 border-t border-gray-200"></div>
-          
-          <button 
-            onClick={() => setActiveTab('permissions')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'permissions' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Settings size={18} /> إعدادات اللايكات
-          </button>
-          <button 
-            onClick={() => setActiveTab('shortcuts')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'shortcuts' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Settings size={18} /> الاختصارات
-          </button>
-          <button 
-            onClick={() => setActiveTab('bots')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'bots' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Settings size={18} /> البوتات والترحيب
-          </button>
-          <button 
-            onClick={() => setActiveTab('gifts')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'gifts' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Settings size={18} /> الهدايا والبنرات
-          </button>
-          <button 
-            onClick={() => setActiveTab('domains')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'domains' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Globe size={18} /> النطاقات
-          </button>
-          <button 
-            onClick={() => setActiveTab('fake-users')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'fake-users' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Users size={18} /> عضويات وهمية
-          </button>
-          <button 
-            onClick={() => setActiveTab('emojis')}
-            className={`flex items-center gap-3 p-2.5 rounded transition-colors ${activeTab === 'emojis' ? 'bg-[#2b6cb0] text-white' : 'hover:bg-gray-100'}`}
-          >
-            <Smile size={18} /> الفيسات والملصقات
-          </button>
+        <div className="flex flex-col py-2 font-bold text-[13px] text-[#005599]">
+          <button onClick={() => setActiveTab('logs')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'logs' ? 'bg-gray-100' : ''}`}>السجل</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الحالات</button>
+          <button onClick={() => setActiveTab('bans')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>المحظورين</button>
+          <button onClick={() => setActiveTab('members')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'members' ? 'bg-gray-100' : ''}`}>الأعضاء</button>
+          <button onClick={() => setActiveTab('bans')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bans' ? 'bg-gray-100' : ''}`}>الحظر</button>
+          <button onClick={() => setActiveTab('roles')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'roles' ? 'bg-gray-100' : ''}`}>الصلاحيات</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>فلتر</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الغرف</button>
+          <button onClick={() => setActiveTab('shortcuts')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'shortcuts' ? 'bg-gray-100' : ''}`}>الإختصارات</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإشتراكات</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الرسائل</button>
+          <button onClick={() => setActiveTab('bots')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'bots' ? 'bg-gray-100' : ''}`}>Bots</button>
+          <button onClick={() => setActiveTab('requests')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'requests' ? 'bg-gray-100' : ''}`}>غرفة الانتظار</button>
+          <button onClick={() => setActiveTab('settings')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>الواجهة</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الصفحات</button>
+          <button onClick={() => setActiveTab('settings')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>ادارة الموقع</button>
+          <button onClick={() => setActiveTab('emojis')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'emojis' ? 'bg-gray-100' : ''}`}>الرموز</button>
+          <button onClick={() => setActiveTab('domains')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'domains' ? 'bg-gray-100' : ''}`}>النطاقات</button>
+          <button onClick={() => setActiveTab('settings')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'settings' ? 'bg-gray-100' : ''}`}>التحكم</button>
+          <button onClick={() => setActiveTab('coming_soon')} className={`text-right px-4 py-1.5 hover:bg-gray-100 ${activeTab === 'coming_soon' ? 'bg-gray-100' : ''}`}>الإحصائيات</button>
         </div>
+      </div>
 
-        <div className="p-4 border-t border-gray-200">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col order-1 overflow-x-hidden">
           <button onClick={() => router.push(`/c/${slug}/chat`)} className="w-full flex items-center justify-center gap-2 p-2 bg-[#d9534f] hover:bg-[#c9302c] text-white rounded transition-colors font-bold text-sm">
             العودة للشات <ArrowRight size={16} />
           </button>
@@ -273,11 +205,20 @@ export default function AdminDashboard() {
             {activeTab === 'fake-users' && 'العضويات الوهمية'}
             {activeTab === 'emojis' && 'إدارة الفيسات (Emojis)'}
             {activeTab === 'google-index' && 'فهرسة قوقل'}
+            {activeTab === 'coming_soon' && 'قريباً'}
           </h1>
         </div>
 
         {/* Content Area */}
-        <div className="p-8 max-w-5xl mx-auto">
+        <div className="p-8 max-w-5xl mx-auto flex-1">
+          
+          {/* Coming Soon Tab */}
+          {activeTab === 'coming_soon' && (
+            <div className="flex flex-col items-center justify-center h-64 bg-white rounded-lg shadow-sm border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-500 mb-2">هذه الخاصية قيد التطوير</h2>
+              <p className="text-gray-400">سيتم تفعيل هذه الميزة قريباً لتكون متاحة للاستخدام.</p>
+            </div>
+          )}
           
           {/* Settings Tab */}
           {activeTab === 'settings' && (
