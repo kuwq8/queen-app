@@ -146,8 +146,8 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans" dir="rtl">
       
-      {/* Sidebar (Order 2 so it appears on the left in RTL) */}
-      <div className="w-36 bg-white flex flex-col flex-shrink-0 order-2 border-r border-gray-300 shadow-sm">
+      {/* Sidebar (Fixed on the left) */}
+      <div className="w-40 h-full fixed top-0 left-0 bg-white flex flex-col z-50 border-r border-gray-300 shadow-sm overflow-y-auto">
         <div className="flex justify-end p-1 border-b border-gray-200">
           <button onClick={() => window.location.reload()} className="bg-[#5cb85c] hover:bg-[#4cae4c] text-white p-1 rounded-sm shadow-sm transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
@@ -178,10 +178,13 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content (Order 1 so it appears on the right in RTL, making sidebar on the left) */}
-      <div className="flex-1 flex flex-col overflow-y-auto order-1">
-        <button onClick={() => router.push(`/c/${slug}/chat`)} className="w-full shrink-0 flex items-center justify-center gap-2 p-3 bg-[#d9534f] hover:bg-[#c9302c] text-white transition-colors font-bold text-sm shadow-md">
-          العودة للشات <ArrowRight size={16} />
+      {/* Main Content Area (ml-40 to prevent overlap with fixed sidebar) */}
+      <div className="flex-1 flex flex-col overflow-y-auto ml-40 min-h-screen">
+        <button onClick={() => router.push(`/c/${slug}/chat`)} className="w-full shrink-0 flex flex-row-reverse items-center justify-between px-4 py-3 bg-[#d9534f] hover:bg-[#c9302c] text-white transition-colors font-bold text-sm shadow-md">
+          <div className="flex items-center gap-2" dir="ltr">
+            <span>العودة للشات</span> <ArrowRight size={16} />
+          </div>
+          <div></div>
         </button>
         {/* Header */}
         <div className="h-16 bg-white border-b border-gray-200 px-8 flex items-center shadow-sm">
@@ -859,7 +862,7 @@ export default function AdminDashboard() {
           {activeTab === 'bans' && (
              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
-                  <h3 className="font-bold text-gray-800 text-lg">إضافة حظر جديد (IP أو جهاز)</h3>
+                  <h3 className="font-bold text-gray-800 text-lg text-right" dir="rtl">إضافة حظر جديد (آي بي أو جهاز)</h3>
                   <div className="flex gap-2">
                     <input type="text" id="ban-ip" placeholder="عنوان IP" className="border border-gray-300 rounded p-2 outline-none flex-1" />
                     <input type="text" id="ban-device" placeholder="معرف الجهاز" className="border border-gray-300 rounded p-2 outline-none flex-1" />
