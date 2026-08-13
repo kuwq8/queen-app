@@ -927,10 +927,10 @@ export default function AdminDashboard() {
                 
                 {/* Header & Selector */}
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between border-b border-gray-200 pb-4">
-                  <div className="flex-1 w-full flex items-center gap-2">
+                  <div className="flex-1 w-full flex flex-col sm:flex-row sm:items-center gap-2">
                     <label className="font-bold text-gray-700 whitespace-nowrap">قائمة المجموعات:</label>
                     <select 
-                      className="flex-1 border border-gray-300 rounded-md p-2 font-bold text-[#5C4033] outline-none focus:border-[#2b6cb0]"
+                      className="w-full border border-gray-300 rounded-md p-2 font-bold text-[#5C4033] outline-none focus:border-[#2b6cb0]"
                       value={selectedRoleId}
                       onChange={(e) => {
                         const val = e.target.value;
