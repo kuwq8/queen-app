@@ -178,8 +178,8 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Main Content Area (ml-40 to prevent overlap with fixed sidebar) */}
-      <div className="flex-1 flex flex-col overflow-y-auto ml-40 min-h-screen">
+      {/* Main Content Area (width calc to prevent overlap with fixed left sidebar) */}
+      <div className="w-[calc(100%-10rem)] flex flex-col overflow-y-auto min-h-screen">
         <button onClick={() => router.push(`/c/${slug}/chat`)} className="w-full shrink-0 flex flex-row-reverse items-center justify-between px-4 py-3 bg-[#d9534f] hover:bg-[#c9302c] text-white transition-colors font-bold text-sm shadow-md">
           <div className="flex items-center gap-2" dir="ltr">
             <span>العودة للشات</span> <ArrowRight size={16} />
