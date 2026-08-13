@@ -964,15 +964,16 @@ export default function AdminDashboard() {
                   <Search size={16} className="absolute right-3 top-2.5 text-gray-400" />
                 </div>
               </div>
-              <table className="w-full text-right">
-                <thead className="bg-gray-100 border-b border-gray-200 text-gray-600 font-bold text-sm">
-                  <tr>
-                    <th className="p-4">العضو</th>
-                    <th className="p-4">الرتبة</th>
-                    <th className="p-4">الحالة</th>
-                    <th className="p-4 text-center">الإجراء</th>
-                  </tr>
-                </thead>
+              <div className="overflow-x-auto">
+                <table className="w-full text-right">
+                  <thead className="bg-gray-100 border-b border-gray-200 text-gray-600 font-bold text-sm whitespace-nowrap">
+                    <tr>
+                      <th className="p-4">العضو</th>
+                      <th className="p-4">الرتبة</th>
+                      <th className="p-4">الحالة</th>
+                      <th className="p-4 text-center">الإجراء</th>
+                    </tr>
+                  </thead>
                 <tbody>
                   {members.map(member => (
                     <tr key={member.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
@@ -1042,6 +1043,7 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+             </div>
             </div>
           )}
 
