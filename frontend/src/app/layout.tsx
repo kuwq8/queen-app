@@ -17,6 +17,14 @@ export const metadata: Metadata = {
   description: "شبكة تواصل اجتماعية متكاملة",
 };
 
+export const viewport = {
+  themeColor: '#ffffff',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -426,7 +426,7 @@ export default function ClassicChatPage() {
 
       {/* Top Marquee */}
       {settings.isMarqueeEnabled && settings.marqueeText && settings.marqueeText.trim().length > 0 && (
-        <div className="h-7 text-white flex items-center px-2 shrink-0 text-xs font-bold shadow-md relative z-10 border-b border-[#3e2b22]" style={{ backgroundColor: settings.primaryColor }}>
+        <div className="h-6 text-white flex items-center px-2 shrink-0 text-xs font-bold shadow-md relative z-10 border-b border-[#3e2b22]" style={{ backgroundColor: settings.primaryColor }}>
           <div dangerouslySetInnerHTML={{ __html: `<marquee scrollamount="4">${settings.marqueeText}</marquee>` }} className="w-full" />
         </div>
       )}
