@@ -2201,7 +2201,7 @@ export default function ClassicChatPage() {
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-[calc(100dvh-40px)] w-[75%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 shadow-2xl overflow-hidden border-none" dir="rtl">
+        <div className="fixed top-0 right-0 h-[calc(100dvh-40px)] w-[74%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col p-0 m-0 shadow-2xl overflow-hidden border-none" dir="rtl">
           
           {/* Header */}
           <div className="flex items-center justify-between bg-[#4a4641] w-full h-11 px-2 shrink-0 border-b border-[#3e2b22]">
