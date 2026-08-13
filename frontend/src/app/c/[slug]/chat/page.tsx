@@ -2204,14 +2204,14 @@ export default function ClassicChatPage() {
         <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[350px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-2xl m-0 p-0 border-none outline-none" dir="rtl">
           
           {/* Header */}
-          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-14 shadow-sm z-10 m-0 w-full p-0">
+          <div className="flex items-center justify-between bg-[#4a4641] w-full h-12 shrink-0 shadow-sm z-10 m-0 p-0">
             <button 
               onClick={() => setActivePane(null)} 
-              className="w-14 h-14 bg-red-600 shrink-0 flex items-center justify-center text-white text-lg font-bold border-none rounded-none m-0 p-0"
+              className="bg-red-600 hover:bg-red-700 w-12 h-12 flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
             >
-              <X size={24} strokeWidth={2.5} />
+              <X size={20} strokeWidth={2} />
             </button>
-            <span className="text-white font-bold text-[15px] px-3">المتواجدين</span>
+            <span className="text-white px-4 font-medium text-[15px]">المتواجدين</span>
           </div>
 
           {/* Search Bar */}
