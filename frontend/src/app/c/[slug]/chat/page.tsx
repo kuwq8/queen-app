@@ -2201,27 +2201,27 @@ export default function ClassicChatPage() {
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-full sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-[82%] sm:w-[350px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
           
           {/* Header */}
-          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0 w-full">
+          <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0 w-full relative">
             <button 
               onClick={() => setActivePane(null)} 
-              className="h-full w-12 bg-[#e74c3c] hover:bg-[#c0392b] flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
+              className="absolute right-0 top-0 h-full w-12 bg-[#d32f2f] hover:bg-red-700 flex items-center justify-center text-white shrink-0 m-0 p-0 border-none rounded-none"
             >
               <X size={20} strokeWidth={2} />
             </button>
-            <span className="text-white font-bold text-[14px] px-3">المتواجدين</span>
+            <span className="text-white font-bold text-[14px] pr-14">المتواجدين</span>
           </div>
 
           {/* Search Bar */}
-          <div className="shrink-0 bg-[#5c5751] p-1.5 z-10 w-full">
+          <div className="shrink-0 bg-[#5c5751] p-1.5 z-10 w-full flex items-center justify-center">
             <input 
               type="text" 
               placeholder="البحث .." 
               value={searchQuery} 
               onChange={(e) => setSearchQuery(e.target.value)} 
-              className="w-full bg-gray-600 text-white placeholder-gray-300 border-none rounded-sm text-[12px] p-2 font-bold outline-none focus:outline-none focus:ring-0 text-right" 
+              className="w-full bg-[#5c5751] text-white placeholder-gray-300 border-none rounded-none text-[12px] p-1 font-bold outline-none focus:outline-none focus:ring-0 text-right shadow-none" 
             />
           </div>
 
