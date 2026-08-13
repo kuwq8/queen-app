@@ -425,7 +425,7 @@ export default function ClassicChatPage() {
     <div className="fixed top-0 left-0 right-0 bottom-0 inset-0 h-[100dvh] w-full flex flex-col bg-white font-sans text-sm m-0 p-0 overflow-hidden select-none" dir="rtl" style={{ '--theme-primary': settings.primaryColor, '--theme-secondary': settings.secondaryColor, '--theme-bg': settings.backgroundColor } as any}>
       
       {/* Top Header */}
-      <div className="shrink-0 w-full text-white px-3 py-1 m-0 top-0 flex items-center justify-center z-[60] shadow-md border-b border-[#3e2b22] relative" style={{ backgroundColor: settings.primaryColor }}>
+      <div className="shrink-0 w-full text-white px-3 pt-0 pb-1 m-0 top-0 flex items-center justify-center z-[60] shadow-md border-b border-[#3e2b22] relative" style={{ backgroundColor: settings.primaryColor }}>
         <span className="font-bold text-[14px] leading-none m-0 p-0 text-center">شات {server?.name || 'العرب'}</span>
       </div>
 
@@ -470,7 +470,7 @@ export default function ClassicChatPage() {
 
                     {/* Mic Dropdown Menu */}
                     {activeMicMenu === mic && (
-                      <div className="absolute top-11 right-1/2 translate-x-1/2 w-24 bg-white border border-gray-300 rounded-sm shadow-xl flex flex-col overflow-hidden z-[999] text-[11px] font-bold text-white text-center">
+                      <div className="absolute top-11 left-0 w-24 bg-white border border-gray-300 rounded-sm shadow-xl flex flex-col overflow-hidden z-[999] text-[11px] font-bold text-white text-center">
                         <button onClick={() => { 
                           setActiveMicMenu(null); 
                           setMicsList(micsList.map(m => m.id === mic ? { ...m, user: null } : m));
@@ -488,7 +488,7 @@ export default function ClassicChatPage() {
 
         {/* Music Player Popup */}
         {isMusicPlayerOpen && (
-          <div className="absolute top-24 left-4 sm:left-32 w-80 bg-gray-600 rounded-xl shadow-2xl border-4 border-gray-500 p-3 z-40 flex flex-col font-sans" dir="rtl">
+          <div className="absolute top-24 left-4 sm:left-32 w-80 max-w-[calc(100vw-32px)] bg-gray-600 rounded-xl shadow-2xl border-4 border-gray-500 p-3 z-40 flex flex-col font-sans" dir="rtl">
             <div className="flex justify-between items-center mb-4 gap-2">
               <span className="text-white text-[12px] font-bold truncate flex-1 text-right">{selectedMusicFile ? selectedMusicFile.name : 'لم يتم اختيار ملف'}</span>
               <div className="flex gap-1 flex-shrink-0">
@@ -2071,8 +2071,8 @@ export default function ClassicChatPage() {
 
       {/* Private Chat Window Modal */}
       {activePrivateChat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-          <div className="bg-white w-full max-w-[400px] h-[350px] shadow-2xl border-2 border-primary flex flex-col pointer-events-auto absolute top-20 left-4 sm:left-1/3" dir="rtl">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20 pointer-events-none">
+          <div className="bg-white w-[calc(100%-32px)] max-w-[400px] max-h-[70dvh] shadow-2xl border-2 border-primary flex flex-col pointer-events-auto" dir="rtl">
             <div className="h-8 bg-[#5b4d42] text-white flex items-center justify-between px-1 border-b border-[#3e2b22]">
               <div className="flex items-center gap-1">
                 <div className="bg-gray-300 w-5 h-5 flex items-center justify-center rounded-sm"><Users size={12} className="text-black"/></div>
@@ -2201,7 +2201,7 @@ export default function ClassicChatPage() {
 
       {/* Members Drawer (Refactored) */}
       {activePane === 'members' && (
-        <div className="fixed top-0 right-0 h-full w-[85%] sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
+        <div className="fixed top-0 right-0 h-full w-full sm:w-[320px] z-[99999] bg-[#f0e2c8] flex flex-col shadow-sm m-0 p-0 border-none" dir="rtl">
           
           {/* Header */}
           <div className="shrink-0 bg-[#4a4641] flex items-center justify-start h-12 shadow-sm z-10 m-0 p-0 w-full">
