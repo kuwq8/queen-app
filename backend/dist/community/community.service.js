@@ -192,9 +192,19 @@ let CommunityService = class CommunityService {
         if (!member || (member.userId !== server.ownerId && !member.role?.canCreateRooms)) {
             throw new common_1.BadRequestException('Not allowed to create rooms');
         }
-        return this.prisma.communityRoom.create({
+        const room = await this.prisma.communityRoom.create({
             data: { name, serverId: server.id }
         });
+        return { success: true, room };
+    }
+    async deleteServer(userId, slug) {
+        const server = await this.prisma.communityServer.findUnique({ where: { slug } });
+        if (!server)
+            throw new common_1.NotFoundException('Server not found');
+        if (server.ownerId !== userId)
+            throw new common_1.BadRequestException('Only the owner can delete the server');
+        await this.prisma.communityServer.delete({ where: { id: server.id } });
+        return { success: true };
     }
     async getRoomMessages(userId, roomId) {
         const room = await this.prisma.communityRoom.findUnique({ where: { id: roomId }, include: { server: true } });

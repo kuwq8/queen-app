@@ -34,6 +34,12 @@ export class CommunityController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Delete(':slug')
+  async deleteServer(@Request() req: any, @Param('slug') slug: string) {
+    return this.communityService.deleteServer(req.user.sub, slug);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Post(':slug/join')
   async joinServer(@Request() req: any, @Param('slug') slug: string) {
     return this.communityService.joinServer(req.user.sub, slug);

@@ -92,26 +92,17 @@ export declare class CommunityController {
         createdAt: Date;
     })[]>;
     getServerBySlug(slug: string): Promise<{
-        _count: {
-            members: number;
-        };
-        rooms: {
-            id: string;
-            name: string;
-            serverId: string;
-            createdAt: Date;
-        }[];
         owner: {
             username: string;
         };
         members: ({
             user: {
+                id: string;
+                username: string;
                 profile: {
                     bio: string | null;
                     avatarUrl: string | null;
                 } | null;
-                id: string;
-                username: string;
             };
         } & {
             id: string;
@@ -131,6 +122,15 @@ export declare class CommunityController {
             lastIp: string | null;
             lastDevice: string | null;
         })[];
+        rooms: {
+            id: string;
+            name: string;
+            serverId: string;
+            createdAt: Date;
+        }[];
+        _count: {
+            members: number;
+        };
     } & {
         id: string;
         name: string;
@@ -140,6 +140,9 @@ export declare class CommunityController {
         ownerId: string;
         isPrivate: boolean;
         createdAt: Date;
+    }>;
+    deleteServer(req: any, slug: string): Promise<{
+        success: boolean;
     }>;
     joinServer(req: any, slug: string): Promise<{
         id: string;
@@ -160,18 +163,21 @@ export declare class CommunityController {
         lastDevice: string | null;
     }>;
     createRoom(req: any, slug: string, name: string): Promise<{
-        id: string;
-        name: string;
-        serverId: string;
-        createdAt: Date;
+        success: boolean;
+        room: {
+            id: string;
+            name: string;
+            serverId: string;
+            createdAt: Date;
+        };
     }>;
     getRoomMessages(req: any, roomId: string): Promise<({
         sender: {
+            id: string;
+            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
-            id: string;
-            username: string;
             communityMembers: {
                 nameColor: string | null;
                 textColor: string | null;

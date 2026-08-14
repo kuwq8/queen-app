@@ -36,6 +36,9 @@ let CommunityController = class CommunityController {
     async getServerBySlug(slug) {
         return this.communityService.getServerBySlug(slug);
     }
+    async deleteServer(req, slug) {
+        return this.communityService.deleteServer(req.user.sub, slug);
+    }
     async joinServer(req, slug) {
         return this.communityService.joinServer(req.user.sub, slug);
     }
@@ -175,6 +178,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], CommunityController.prototype, "getServerBySlug", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Delete)(':slug'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('slug')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], CommunityController.prototype, "deleteServer", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Post)(':slug/join'),

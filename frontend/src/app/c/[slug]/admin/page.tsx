@@ -456,10 +456,23 @@ export default function AdminDashboard() {
 
               </div>
               <div className="mt-6 flex justify-between">
-                <button onClick={() => { 
+                <button onClick={async () => { 
                   if(confirm('هل أنت متأكد من حذف الشات بالكامل مع دوميناته؟ لا يمكن التراجع عن هذا الإجراء.')) {
-                    alert('تم حذف الشات وتدمير جميع بياناته بنجاح.');
-                    window.location.href = '/home';
+                    try {
+                      const res = await fetch(`${API_URL}/community/${slug}`, {
+                        method: 'DELETE',
+                        headers: { Authorization: `Bearer ${getToken()}` }
+                      });
+                      if (res.ok) {
+                        alert('تم حذف الشات وتدمير جميع بياناته بنجاح.');
+                        window.location.href = '/';
+                      } else {
+                        const err = await res.json();
+                        alert('حدث خطأ أثناء الحذف: ' + (err.message || 'غير مصرح'));
+                      }
+                    } catch (e) {
+                      alert('خطأ في الاتصال بالخادم');
+                    }
                   } 
                 }} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-md font-bold flex items-center gap-2 shadow-md transition-colors">
                   إلغاء أو حذف الشات

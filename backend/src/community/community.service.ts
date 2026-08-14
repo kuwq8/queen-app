@@ -188,9 +188,19 @@ export class CommunityService {
       throw new BadRequestException('Not allowed to create rooms');
     }
 
-    return this.prisma.communityRoom.create({
+    const room = await this.prisma.communityRoom.create({
       data: { name, serverId: server.id }
     });
+    return { success: true, room };
+  }
+
+  async deleteServer(userId: string, slug: string) {
+    const server = await this.prisma.communityServer.findUnique({ where: { slug } });
+    if (!server) throw new NotFoundException('Server not found');
+    if (server.ownerId !== userId) throw new BadRequestException('Only the owner can delete the server');
+    
+    await this.prisma.communityServer.delete({ where: { id: server.id } });
+    return { success: true };
   }
 
   async getRoomMessages(userId: string, roomId: string) {
