@@ -1,8 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as fs from 'fs';
+import { join } from 'path';
 
 async function bootstrap() {
   try {
+    const uploadDir = join(__dirname, '..', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
     const app = await NestFactory.create(AppModule);
     
     app.enableCors({
