@@ -3,20 +3,14 @@ import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor() {
-    super({
-      log: ['query', 'info', 'warn', 'error'],
-      errorFormat: 'pretty',
-    });
-  }
-
   async onModuleInit() {
     try {
       await this.$connect();
       console.log('Successfully connected to the database.');
     } catch (error: any) {
-      console.error('FAILED TO CONNECT TO PRISMA. Error Message:', error.message);
-      console.error('Prisma Error Details:', error);
+      console.error('FAILED TO CONNECT TO PRISMA.');
+      console.error('Error Message:', error.message);
+      process.exit(1);
     }
   }
 
