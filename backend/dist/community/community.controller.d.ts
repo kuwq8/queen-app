@@ -106,12 +106,12 @@ export declare class CommunityController {
         };
         members: ({
             user: {
-                id: string;
-                username: string;
                 profile: {
                     bio: string | null;
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
             };
         } & {
             id: string;
@@ -173,11 +173,11 @@ export declare class CommunityController {
     }>;
     getRoomMessages(req: any, roomId: string): Promise<({
         sender: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
             communityMembers: {
                 nameColor: string | null;
                 textColor: string | null;

@@ -4,11 +4,11 @@ export declare class PostsController {
     constructor(postsService: PostsService);
     createPost(req: any, content: string, mediaUrl?: string, quotePostId?: string): Promise<{
         author: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
         };
     } & {
         id: string;
@@ -35,19 +35,19 @@ export declare class PostsController {
             quotedBy: number;
         };
         author: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
         };
         quotePost: ({
             author: {
-                id: string;
-                username: string;
                 profile: {
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
             };
         } & {
             id: string;
@@ -93,11 +93,11 @@ export declare class PostsController {
     }>;
     addComment(id: string, req: any, content?: string, mediaUrl?: string): Promise<{
         author: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
         };
     } & {
         id: string;
@@ -110,11 +110,11 @@ export declare class PostsController {
     }>;
     getComments(id: string): Promise<({
         author: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
         };
     } & {
         id: string;

@@ -3,8 +3,6 @@ export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
     searchUsers(q: string, followingOnly: string, req: any): Promise<{
-        id: string;
-        username: string;
         profile: {
             firstName: string | null;
             lastName: string | null;
@@ -12,6 +10,8 @@ export declare class UsersController {
             avatarUrl: string | null;
             allowDirectMessages: boolean;
         } | null;
+        id: string;
+        username: string;
     }[]>;
     updatePrivacy(req: any, allowDirectMessages: boolean): Promise<{
         id: string;
@@ -35,11 +35,11 @@ export declare class UsersController {
             likes: number;
         };
         author: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
         };
     } & {
         id: string;
@@ -95,10 +95,10 @@ export declare class UsersController {
             quotedBy: number;
         };
         author: {
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            username: string;
         };
     } & {
         id: string;

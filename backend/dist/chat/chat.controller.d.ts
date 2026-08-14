@@ -19,11 +19,11 @@ export declare class ChatController {
         })[];
         participants: ({
             user: {
-                id: string;
-                username: string;
                 profile: {
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
             };
         } & {
             id: string;
@@ -42,12 +42,12 @@ export declare class ChatController {
     getRoom(roomId: string, req: any): Promise<({
         participants: ({
             user: {
-                id: string;
-                username: string;
                 profile: {
                     bio: string | null;
                     avatarUrl: string | null;
                 } | null;
+                id: string;
+                username: string;
             };
         } & {
             id: string;
@@ -84,11 +84,11 @@ export declare class ChatController {
     }>;
     getMessages(req: any, roomId: string): Promise<({
         sender: {
-            id: string;
-            username: string;
             profile: {
                 avatarUrl: string | null;
             } | null;
+            id: string;
+            username: string;
         };
     } & {
         id: string;
