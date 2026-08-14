@@ -92,6 +92,15 @@ export declare class CommunityController {
         createdAt: Date;
     })[]>;
     getServerBySlug(slug: string): Promise<{
+        _count: {
+            members: number;
+        };
+        rooms: {
+            id: string;
+            name: string;
+            serverId: string;
+            createdAt: Date;
+        }[];
         owner: {
             username: string;
         };
@@ -122,15 +131,6 @@ export declare class CommunityController {
             lastIp: string | null;
             lastDevice: string | null;
         })[];
-        rooms: {
-            id: string;
-            name: string;
-            serverId: string;
-            createdAt: Date;
-        }[];
-        _count: {
-            members: number;
-        };
     } & {
         id: string;
         name: string;

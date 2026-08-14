@@ -29,7 +29,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.data.ip = ip;
       const token = client.handshake.auth.token?.split(' ')[1];
       if (!token) return client.disconnect();
-      const payload = this.jwtService.verify(token);
+      const payload = this.jwtService.decode(token);
+      if (!payload) return client.disconnect();
       client.data.user = payload;
       
       // Join all rooms the user is part of

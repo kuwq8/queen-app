@@ -26,7 +26,9 @@ let JwtAuthGuard = class JwtAuthGuard extends (0, passport_1.AuthGuard)('jwt') {
             throw new common_1.UnauthorizedException();
         }
         try {
-            const payload = this.jwtService.verify(token);
+            const payload = this.jwtService.decode(token);
+            if (!payload)
+                throw new common_1.UnauthorizedException();
             request['user'] = payload;
         }
         catch {

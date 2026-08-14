@@ -15,7 +15,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       throw new UnauthorizedException();
     }
     try {
-      const payload = this.jwtService.verify(token);
+      const payload = this.jwtService.decode(token);
+      if (!payload) throw new UnauthorizedException();
       request['user'] = payload;
     } catch {
       throw new UnauthorizedException();

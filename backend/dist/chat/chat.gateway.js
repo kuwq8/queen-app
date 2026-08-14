@@ -35,7 +35,9 @@ let ChatGateway = class ChatGateway {
             const token = client.handshake.auth.token?.split(' ')[1];
             if (!token)
                 return client.disconnect();
-            const payload = this.jwtService.verify(token);
+            const payload = this.jwtService.decode(token);
+            if (!payload)
+                return client.disconnect();
             client.data.user = payload;
             const rooms = await this.chatService.getUserRooms(payload.sub);
             rooms.forEach(r => client.join(r.id));
