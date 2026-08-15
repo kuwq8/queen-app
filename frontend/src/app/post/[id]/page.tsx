@@ -57,7 +57,18 @@ export default function PostDetailPage() {
         .single();
         
       if (postData) {
-        setPost(postData);
+        let finalPost = { ...postData };
+        if (session) {
+          const [likesRes, repostsRes, bookmarksRes] = await Promise.all([
+            supabase.from('likes').select('id').eq('user_id', session.user.id).eq('post_id', postId),
+            supabase.from('reposts').select('id').eq('user_id', session.user.id).eq('post_id', postId),
+            supabase.from('bookmarks').select('id').eq('user_id', session.user.id).eq('post_id', postId)
+          ]);
+          finalPost.isLiked = (likesRes.data && likesRes.data.length > 0) || false;
+          finalPost.isReposted = (repostsRes.data && repostsRes.data.length > 0) || false;
+          finalPost.isBookmarked = (bookmarksRes.data && bookmarksRes.data.length > 0) || false;
+        }
+        setPost(finalPost);
         supabase.rpc('increment_post_views', { post_id_val: postId }).catch(console.error);
       }
 
@@ -105,7 +116,7 @@ export default function PostDetailPage() {
         setCommentContent('');
         setPost((prev: any) => ({
           ...prev,
-          _count: { ...prev._count, comments: (prev._count?.comments || 0) + 1 }
+          comments_count: (prev.comments_count || 0) + 1
         }));
       }
     } catch (err) {
@@ -122,6 +133,8 @@ export default function PostDetailPage() {
   const handlePostEdited = (id: string, newContent: string) => {
     setPost((prev: any) => ({ ...prev, content: newContent }));
   };
+
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-black text-cyan-500">جاري التحميل...</div>;
@@ -140,6 +153,17 @@ export default function PostDetailPage() {
     <div className="min-h-screen flex justify-center bg-black">
       <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black pb-[60px]" dir="rtl">
         
+        {/* Expanded Image Modal */}
+        {expandedImage && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md cursor-pointer"
+            onClick={() => setExpandedImage(null)}
+          >
+            <button className="absolute top-4 left-4 text-white hover:text-red-500 p-2">✕ إغلاق</button>
+            <img src={expandedImage} className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" alt="Expanded media" />
+          </div>
+        )}
+
         {/* Header */}
         <header className="sticky top-0 z-20 bg-black/80 backdrop-blur-md flex items-center px-4 py-3 space-x-6 space-x-reverse border-b border-slate-800/50">
           <button onClick={() => router.back()} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors">
@@ -203,24 +227,29 @@ export default function PostDetailPage() {
         <div className="flex-1">
           {comments.map(comment => (
             <div key={comment.id} className="p-4 border-b border-slate-800/50 flex space-x-3 space-x-reverse">
-              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-slate-300 overflow-hidden">
+              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-slate-300 overflow-hidden shrink-0">
                 {comment.author?.avatar_url ? (
                   <img src={comment.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
                   comment.author?.username?.charAt(0).toUpperCase()
                 )}
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-1 space-x-reverse">
                   <span className="font-bold text-white text-[15px] hover:underline cursor-pointer" onClick={() => router.push(`/${comment.author?.username}`)}>
                     {comment.author?.username}
                   </span>
                   <span className="text-slate-500 text-sm">@{comment.author?.username}</span>
                 </div>
-                {comment.content && <p className="text-slate-200 text-[15px] mt-1">{comment.content}</p>}
-                {comment.mediaUrl && (
-                  <div className="mt-2">
-                    <audio src={comment.mediaUrl} controls className="h-8 max-w-full" />
+                {comment.content && <p className="text-slate-200 text-[15px] mt-1 break-words">{comment.content}</p>}
+                {comment.media_url && (
+                  <div className="mt-3 relative rounded-xl overflow-hidden border border-slate-800/50 inline-block">
+                    <img 
+                      src={comment.media_url} 
+                      alt="Comment media" 
+                      className="max-h-[250px] max-w-full object-contain cursor-pointer hover:opacity-90 transition-opacity" 
+                      onClick={() => setExpandedImage(comment.media_url)}
+                    />
                   </div>
                 )}
               </div>

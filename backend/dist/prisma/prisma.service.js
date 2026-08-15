@@ -8,16 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var PrismaService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaService = void 0;
 const common_1 = require("@nestjs/common");
 const client_1 = require("@prisma/client");
-let PrismaService = class PrismaService extends client_1.PrismaClient {
+let PrismaService = PrismaService_1 = class PrismaService extends client_1.PrismaClient {
+    logger = new common_1.Logger(PrismaService_1.name);
     constructor() {
         super({
             datasources: {
                 db: {
-                    url: 'postgresql://postgres.hamqmslzhlcnksdliipl:E3pcMy0bx2Ayupwq@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true',
+                    url: 'postgresql://postgres.hamqmslzhlcnksdliipl:E3pcMy0bx2Ayupwq@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres',
                 },
             },
         });
@@ -25,12 +27,10 @@ let PrismaService = class PrismaService extends client_1.PrismaClient {
     async onModuleInit() {
         try {
             await this.$connect();
-            console.log('Successfully connected to the database.');
+            this.logger.log(' Database connected successfully via Prisma');
         }
         catch (error) {
-            console.error('FAILED TO CONNECT TO PRISMA.');
-            console.error('Error Message:', error.message);
-            process.exit(1);
+            this.logger.error(' Database initial connection warning: ' + error.message);
         }
     }
     async onModuleDestroy() {
@@ -38,7 +38,7 @@ let PrismaService = class PrismaService extends client_1.PrismaClient {
     }
 };
 exports.PrismaService = PrismaService;
-exports.PrismaService = PrismaService = __decorate([
+exports.PrismaService = PrismaService = PrismaService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [])
 ], PrismaService);

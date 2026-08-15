@@ -68,6 +68,7 @@ export default function HomePage() {
       
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
       
       const { data, error } = await supabase
         .from('posts')
@@ -78,7 +79,32 @@ export default function HomePage() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPosts(data || []);
+      
+      let finalPosts = data || [];
+      
+      // Fetch current user's interactions
+      if (session && finalPosts.length > 0) {
+        const postIds = finalPosts.map(p => p.id);
+        
+        const [likesRes, repostsRes, bookmarksRes] = await Promise.all([
+          supabase.from('likes').select('post_id').eq('user_id', session.user.id).in('post_id', postIds),
+          supabase.from('reposts').select('post_id').eq('user_id', session.user.id).in('post_id', postIds),
+          supabase.from('bookmarks').select('post_id').eq('user_id', session.user.id).in('post_id', postIds)
+        ]);
+        
+        const likedIds = new Set(likesRes.data?.map(l => l.post_id) || []);
+        const repostedIds = new Set(repostsRes.data?.map(r => r.post_id) || []);
+        const bookmarkedIds = new Set(bookmarksRes.data?.map(b => b.post_id) || []);
+        
+        finalPosts = finalPosts.map(p => ({
+          ...p,
+          isLiked: likedIds.has(p.id),
+          isReposted: repostedIds.has(p.id),
+          isBookmarked: bookmarkedIds.has(p.id)
+        }));
+      }
+
+      setPosts(finalPosts);
     } catch (err) {
       console.error(err);
       setError('حدث خطأ أثناء الاتصال بالخادم.');

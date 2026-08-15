@@ -21,9 +21,9 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const [editContent, setEditContent] = useState(initialPost.content);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  const [isLiked, setIsLiked] = useState(false);
-  const [isReposted, setIsReposted] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLiked, setIsLiked] = useState(initialPost.isLiked || false);
+  const [isReposted, setIsReposted] = useState(initialPost.isReposted || false);
+  const [isBookmarked, setIsBookmarked] = useState(initialPost.isBookmarked || false);
   
   const isEdited = false; // TODO: Implement updated_at
 
