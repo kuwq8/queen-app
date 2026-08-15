@@ -9,6 +9,7 @@ import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link
 import { useRef } from 'react';
 import PostItem from '../../components/PostItem';
 import BottomNav from '../../components/BottomNav';
+import FollowButton from '../../components/FollowButton';
 import { createClient } from '@/utils/supabase/client';
 
 export default function ProfilePage() {
@@ -424,21 +425,17 @@ export default function ProfilePage() {
                     >
                       <Mail size={18} />
                     </button>
-                    <button 
-                      onClick={handleFollow}
-                      className={`px-4 py-1.5 rounded-full font-bold text-[15px] transition-colors border ${
-                        profile.isFollowing 
-                          ? 'bg-transparent border-slate-600 text-white hover:border-red-500 hover:text-red-500 group' 
-                          : 'bg-white border-white text-black hover:bg-slate-200'
-                      }`}
-                    >
-                      {profile.isFollowing ? (
-                        <span className="group-hover:hidden">متابَع</span>
-                      ) : 'متابعة'}
-                      {profile.isFollowing && (
-                        <span className="hidden group-hover:inline">إلغاء المتابعة</span>
-                      )}
-                    </button>
+                    <FollowButton 
+                      targetUserId={profile.id}
+                      initialIsFollowing={profile.isFollowing}
+                      onToggle={(isFollowing) => {
+                        setProfile((prev: any) => ({
+                          ...prev,
+                          isFollowing,
+                          _count: { ...prev._count, followers: Math.max(0, prev._count.followers + (isFollowing ? 1 : -1)) }
+                        }));
+                      }}
+                    />
                   </div>
                 )}
               </div>

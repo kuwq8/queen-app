@@ -70,13 +70,36 @@ export default function HomePage() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('posts')
         .select(`
           *,
           author:profiles!user_id(username, avatar_url)
         `)
         .order('created_at', { ascending: false });
+
+      if (feedType === 'following') {
+        if (!session) {
+          setPosts([]);
+          setIsLoading(false);
+          return;
+        }
+        const { data: followsData } = await supabase
+          .from('follows')
+          .select('following_id')
+          .eq('follower_id', session.user.id);
+          
+        const followingIds = followsData?.map(f => f.following_id) || [];
+        if (followingIds.length > 0) {
+          query = query.in('user_id', followingIds);
+        } else {
+          setPosts([]);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       
