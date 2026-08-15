@@ -52,7 +52,7 @@ export default function PostDetailPage() {
       // Fetch the post
       const { data: postData, error: postError } = await supabase
         .from('posts')
-        .select('*, author:profiles!posts_user_id_fkey(id, username, avatar_url)')
+        .select('*, author:profiles!user_id(id, username, avatar_url)')
         .eq('id', postId)
         .single();
         
@@ -73,11 +73,15 @@ export default function PostDetailPage() {
       }
 
       // Fetch comments (if table exists)
-      const { data: commentsData } = await supabase
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select('*, author:profiles!comments_user_id_fkey(id, username, avatar_url)')
+        .select('*, author:profiles!user_id(id, username, avatar_url)')
         .eq('post_id', postId)
         .order('created_at', { ascending: false });
+        
+      if (commentsError) {
+        console.error("Comments error:", commentsError);
+      }
         
       if (commentsData) {
         setComments(commentsData);
@@ -108,7 +112,7 @@ export default function PostDetailPage() {
           user_id: session.user.id,
           content: commentContent
         })
-        .select('*, author:profiles!comments_user_id_fkey(id, username, avatar_url)')
+        .select('*, author:profiles!user_id(id, username, avatar_url)')
         .single();
         
       if (newComment) {
