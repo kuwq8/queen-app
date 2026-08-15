@@ -492,7 +492,7 @@ export default function ProfilePage() {
               onClick={() => { setActiveTab('bookmarks'); fetchBookmarksList(); }}
               className={`flex-1 py-4 font-bold text-center border-b-2 transition-colors ${activeTab === 'bookmarks' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-400 hover:bg-slate-900'}`}
             >
-              المحفوظات
+              السجل
             </button>
           )}
           {isOwnProfile && (

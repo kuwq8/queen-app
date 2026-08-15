@@ -389,7 +389,7 @@ export default function HomePage() {
                       <button onClick={() => mediaInputRef.current?.click()} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="إرفاق صورة أو فيديو">
                         <ImageIcon size={20} />
                       </button>
-                      <button onClick={fetchBookmarksAndOpenModal} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="اقتباس من المحفوظات">
+                      <button onClick={fetchBookmarksAndOpenModal} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="اقتباس من السجل">
                         <Quote size={20} />
                       </button>
                     </div>
@@ -417,7 +417,7 @@ export default function HomePage() {
                 <button onClick={() => setIsBookmarksModalOpen(false)} className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800">
                   ✕
                 </button>
-                <h3 className="text-lg font-bold text-white">اختر تغريدة مقتبسة</h3>
+                <h3 className="text-white font-bold mb-4">اختر تغريدة من السجل</h3>
               </div>
               <div className="overflow-y-auto flex-1 space-y-2">
                 {bookmarksList.length === 0 ? (
