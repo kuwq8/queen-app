@@ -32,6 +32,32 @@ export default function ProfilePage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [debugMsg, setDebugMsg] = useState('Init');
+  const [bookmarkedPosts, setBookmarkedPosts] = useState<any[]>([]);
+
+  const fetchBookmarksList = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const { data } = await supabase
+        .from('bookmarks')
+        .select(`
+          post:posts (
+            *,
+            author:profiles!user_id(username, avatar_url)
+          )
+        `)
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+        
+      if (data) {
+        const posts = data.map(b => b.post);
+        setBookmarkedPosts(posts);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -448,7 +474,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-800">
+        <div className="flex border-b border-slate-800 text-[14px]">
           <button 
             onClick={() => setActiveTab('posts')}
             className={`flex-1 py-4 font-bold text-center border-b-2 transition-colors ${activeTab === 'posts' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-400 hover:bg-slate-900'}`}
@@ -461,6 +487,14 @@ export default function ProfilePage() {
           >
             الإعجابات
           </button>
+          {isOwnProfile && (
+            <button 
+              onClick={() => { setActiveTab('bookmarks'); fetchBookmarksList(); }}
+              className={`flex-1 py-4 font-bold text-center border-b-2 transition-colors ${activeTab === 'bookmarks' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-400 hover:bg-slate-900'}`}
+            >
+              المحفوظات
+            </button>
+          )}
           {isOwnProfile && (
             <button 
               onClick={() => setActiveTab('settings')}
@@ -493,7 +527,26 @@ export default function ProfilePage() {
           )}
           {activeTab === 'likes' && (
             <div className="text-center text-slate-500 py-10 font-bold">
-              ستظهر المنشورات المعجب بها هنا.
+              ستظهر المنشورات المعجب بها هنا قريباً.
+            </div>
+          )}
+          {activeTab === 'bookmarks' && isOwnProfile && (
+            <div className="pb-[60px]">
+              {bookmarkedPosts.length > 0 ? (
+                bookmarkedPosts.map((post) => (
+                  <PostItem 
+                    key={post.id} 
+                    post={post} 
+                    currentUsername={currentUsername} 
+                    onPostDeleted={() => {}}
+                    onPostEdited={() => {}}
+                  />
+                ))
+              ) : (
+                <div className="text-center text-slate-500 py-10 font-bold">
+                  لم تقم بحفظ أي منشورات بعد.
+                </div>
+              )}
             </div>
           )}
           {activeTab === 'settings' && isOwnProfile && (
