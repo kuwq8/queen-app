@@ -113,6 +113,32 @@ export default function PostDetailPage() {
     }
   };
 
+  useEffect(() => {
+    let channel: any;
+    const setupRealtime = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      channel = supabase.channel(`comments-${postId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments', filter: `post_id=eq.${postId}` }, async (payload) => {
+          // Fetch the new comment with author details
+          const { data } = await supabase.from('comments').select('*, author:profiles(id, username, avatar_url)').eq('id', payload.new.id).single();
+          if (data) {
+            setComments(prev => {
+              if (prev.some(c => c.id === data.id)) return prev;
+              return [data, ...prev].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            });
+          }
+        })
+        .subscribe();
+    };
+    
+    setupRealtime();
+    return () => {
+      if (channel) channel.unsubscribe();
+    };
+  }, [postId]);
+
   const handleAddComment = async () => {
     if (!commentContent.trim() && !mediaFile && !mediaPreview) return;
     setIsSubmitting(true);
@@ -170,17 +196,17 @@ export default function PostDetailPage() {
           }
         };
         setComments(prev => [fakeComment as any, ...prev]);
-        if (error) console.error("Error inserting comment:", error);
+        if (error) {
+          console.error("🔥 ERROR INSERTING COMMENT:", error);
+          alert(`فشل الحفظ: ${error.message || JSON.stringify(error)}`);
+        }
       }
       
       setCommentContent('');
       setMediaFile(null);
       setMediaPreview(null);
       setShowGifPicker(false);
-      setPost((prev: any) => ({
-        ...prev,
-        comments_count: (prev.comments_count || 0) + 1
-      }));
+      // No need to manually increment, comments.length will do it
     } catch (err) {
       console.error(err);
     } finally {
@@ -265,7 +291,7 @@ export default function PostDetailPage() {
         {/* The Post */}
         <div className="border-b border-slate-800/50">
           <PostItem 
-            post={post} 
+            post={{...post, comments_count: comments?.length || post.comments_count || 0}} 
             currentUsername={currentUsername} 
             onPostDeleted={handlePostDeleted} 
             onPostEdited={handlePostEdited} 
