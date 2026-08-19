@@ -69,13 +69,13 @@ export default function PostDetailPage() {
           finalPost.isBookmarked = (bookmarksRes.data && bookmarksRes.data.length > 0) || false;
         }
         setPost(finalPost);
-        supabase.rpc('increment_post_views', { post_id_val: postId }).catch(console.error);
+        supabase.rpc('increment_post_views', { post_id_val: postId }).then(({error}) => { if (error) console.error(error) });
       }
 
       // Fetch comments (if table exists)
       const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select('*, author:profiles!user_id(id, username, avatar_url)')
+        .select('*, author:profiles(id, username, avatar_url)')
         .eq('post_id', postId)
         .order('created_at', { ascending: false });
         
@@ -112,7 +112,7 @@ export default function PostDetailPage() {
           user_id: session.user.id,
           content: commentContent
         })
-        .select('*, author:profiles!user_id(id, username, avatar_url)')
+        .select('*, author:profiles(id, username, avatar_url)')
         .single();
         
       if (newComment) {

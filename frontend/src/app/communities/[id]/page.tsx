@@ -1,310 +1,338 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ChevronRight, Users, Feather, Search, MoreHorizontal } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight, Image as ImageIcon, Users, User, Feather } from 'lucide-react';
+import Link from 'next/link';
 import PostItem from '../../../components/PostItem';
+import BottomNav from '../../../components/BottomNav';
 
-export default function CommunityPage() {
-  const params = useParams();
+export default function CommunityPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [isJoined, setIsJoined] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'members' | 'rules'>('posts');
-  const [showSearch, setShowSearch] = useState(false);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  
-  // Settings Modal State
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editDesc, setEditDesc] = useState('');
-  const [editPrivacy, setEditPrivacy] = useState('public');
-
-  const communityId = params.id as string;
   const [community, setCommunity] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMember, setIsMember] = useState(false);
+  const [currentUsername, setCurrentUsername] = useState('');
+  const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(null);
+  const [newPost, setNewPost] = useState('');
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   useEffect(() => {
-    // Load community
-    const local = JSON.parse(localStorage.getItem('local_communities') || '[]');
-    const found = local.find((c: any) => c.id === communityId);
-    if (found) {
-      setCommunity(found);
-      setEditName(found.name);
-      setEditDesc(found.desc || '');
-    } else {
-      // fallback to mock
-      const mock = {
-        id: communityId,
-        name: communityId === '1' ? 'عشاق القهوة' : communityId === '2' ? 'مبرمجي كويت' : 'مجتمع مخصص',
-        desc: 'مجتمع يجمع المحبين لتبادل الخبرات والنقاشات الهادفة يومياً.',
-        members: '12K',
-        cover: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=1000&q=80',
-        img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80'
-      };
-      setCommunity(mock);
-      setEditName(mock.name);
-      setEditDesc(mock.desc);
+    fetchCommunityData();
+  }, [params.id]);
+
+  const fetchCommunityData = async () => {
+    try {
+      setIsLoading(true);
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/');
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, avatar_url')
+        .eq('id', session.user.id)
+        .single();
+      
+      if (profile) {
+        setCurrentUsername(profile.username);
+        setCurrentUserAvatar(profile.avatar_url);
+      }
+
+      // Fetch Community
+      const { data: comm, error: commError } = await supabase
+        .from('communities')
+        .select('*')
+        .eq('id', params.id)
+        .single();
+
+      if (commError || !comm) {
+        setCommunity(null);
+        return;
+      }
+      setCommunity(comm);
+
+      // Check membership
+      const { data: member } = await supabase
+        .from('community_members')
+        .select('*')
+        .eq('community_id', params.id)
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      setIsMember(!!member);
+
+      // Fetch Posts
+      const { data: postsData } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          author:profiles!user_id(username, avatar_url),
+          community:communities!community_id(name)
+        `)
+        .eq('community_id', params.id)
+        .order('created_at', { ascending: false });
+
+      if (postsData) {
+        // Mock likes/reposts for now or fetch actual
+        const enhancedPosts = postsData.map(p => ({
+          ...p,
+          isLiked: false,
+          isReposted: false,
+          isBookmarked: false
+        }));
+        setPosts(enhancedPosts);
+      }
+
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Load posts
-    const storedPosts = JSON.parse(localStorage.getItem(`community_posts_${communityId}`) || '[]');
-    setPosts(storedPosts);
-  }, [communityId]);
-
-  const handleSearchClick = () => {
-    setShowSearch(!showSearch);
-    setShowMoreMenu(false);
   };
 
-  const handleMoreClick = () => {
-    setShowMoreMenu(!showMoreMenu);
-    setShowSearch(false);
-  };
+  const toggleMembership = async () => {
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-  const handleInvite = () => {
-    setShowMoreMenu(false);
-    navigator.clipboard.writeText(window.location.href);
-    setToastMessage('تم نسخ رابط الدعوة بنجاح!');
-    setTimeout(() => setToastMessage(''), 3000);
-  };
-
-  const handleSettings = () => {
-    setShowMoreMenu(false);
-    setShowSettingsModal(true);
-  };
-
-  const handleSaveSettings = () => {
-    const local = JSON.parse(localStorage.getItem('local_communities') || '[]');
-    const index = local.findIndex((c: any) => c.id === communityId);
-    if (index !== -1) {
-      local[index].name = editName;
-      local[index].desc = editDesc;
-      localStorage.setItem('local_communities', JSON.stringify(local));
-      setCommunity({ ...community, name: editName, desc: editDesc });
-    } else {
-      // If mock, just update local state
-      setCommunity({ ...community, name: editName, desc: editDesc });
+      if (isMember) {
+        // Leave
+        await supabase
+          .from('community_members')
+          .delete()
+          .eq('community_id', community.id)
+          .eq('user_id', session.user.id);
+        
+        setIsMember(false);
+        setCommunity((prev: any) => ({ ...prev, members_count: Math.max(0, prev.members_count - 1) }));
+      } else {
+        // Join
+        await supabase
+          .from('community_members')
+          .insert({
+            community_id: community.id,
+            user_id: session.user.id
+          });
+        
+        setIsMember(true);
+        setCommunity((prev: any) => ({ ...prev, members_count: prev.members_count + 1 }));
+      }
+    } catch (e) {
+      console.error(e);
     }
-    setShowSettingsModal(false);
-    setToastMessage('تم تحديث الإعدادات!');
-    setTimeout(() => setToastMessage(''), 3000);
   };
 
-  const handleLeave = () => {
-    setShowMoreMenu(false);
-    setIsJoined(false);
-    setToastMessage('تمت مغادرة المجتمع');
-    setTimeout(() => setToastMessage(''), 3000);
+  const handlePostSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newPost.trim()) return;
+
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          content: newPost,
+          user_id: session.user.id,
+          community_id: community.id
+        });
+
+      if (!error) {
+        setNewPost('');
+        setIsComposeOpen(false);
+        fetchCommunityData(); // Refresh posts
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  if (!community) return <div className="min-h-screen bg-black" />;
+  const handlePostDeleted = (postId: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  };
+
+  const handlePostEdited = (postId: string, newContent: string) => {
+    setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, content: newContent } : p));
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex justify-center bg-black font-sans text-right">
+        <div className="w-full max-w-[600px] border-x border-slate-800 animate-pulse bg-[#0a0a0f]">
+          <div className="h-32 bg-slate-900"></div>
+          <div className="p-4">
+             <div className="w-24 h-24 rounded-full bg-slate-800 -mt-12 mb-4 border-4 border-black"></div>
+             <div className="w-48 h-6 bg-slate-800 rounded mb-2"></div>
+             <div className="w-full h-4 bg-slate-800 rounded mb-1"></div>
+             <div className="w-3/4 h-4 bg-slate-800 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!community) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white font-sans text-right">
+        <h1 className="text-2xl font-bold mb-4">المجتمع غير موجود</h1>
+        <button onClick={() => router.push('/home')} className="text-cyan-500 hover:underline">العودة للرئيسية</button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex flex-col relative pb-[60px] min-h-screen bg-black font-sans text-right">
-      
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-cyan-600 text-white px-6 py-3 rounded-full shadow-lg z-[60] animate-fade-in-up font-bold text-sm whitespace-nowrap">
-          {toastMessage}
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md flex items-center px-4 py-2 gap-6 border-b border-slate-800/50">
+        <button onClick={() => router.push('/home')} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors">
+          <ArrowRight className="text-white" size={20} />
+        </button>
+        <div>
+          <h2 className="text-xl font-bold text-white leading-tight">{community.name}</h2>
+          <p className="text-xs text-slate-500">{community.members_count || 0} عضو</p>
         </div>
-      )}
-
-      {/* Settings Modal */}
-      {showSettingsModal && (
-        <div className="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-[#1a1a26] border border-slate-700 rounded-2xl w-full max-w-md p-5 flex flex-col gap-4 animate-fade-in-up shadow-2xl shadow-cyan-500/10">
-            <h2 className="text-xl font-bold text-white text-right mb-2">إعدادات المجتمع</h2>
-            
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-slate-300 text-right font-bold">اسم المجتمع</label>
-              <input 
-                value={editName} 
-                onChange={e => setEditName(e.target.value)} 
-                className="w-full bg-black border border-slate-700 rounded-xl p-3 text-white text-right focus:border-cyan-500 outline-none transition-colors" 
-              />
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-slate-300 text-right font-bold">النبذة</label>
-              <textarea 
-                value={editDesc} 
-                onChange={e => setEditDesc(e.target.value)} 
-                className="w-full bg-black border border-slate-700 rounded-xl p-3 text-white text-right focus:border-cyan-500 outline-none resize-none transition-colors" 
-                rows={3} 
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-slate-300 text-right font-bold">الخصوصية</label>
-              <select 
-                value={editPrivacy} 
-                onChange={e => setEditPrivacy(e.target.value)} 
-                className="w-full bg-black border border-slate-700 rounded-xl p-3 text-white text-right focus:border-cyan-500 outline-none transition-colors appearance-none"
-                style={{ direction: 'rtl' }}
-              >
-                <option value="public">عام (يمكن لأي شخص الانضمام)</option>
-                <option value="private">مغلق (يتطلب موافقة المشرفين)</option>
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-4">
-              <button onClick={() => setShowSettingsModal(false)} className="px-5 py-2 text-slate-400 hover:text-white font-bold transition-colors bg-slate-800 rounded-full">إلغاء</button>
-              <button onClick={handleSaveSettings} className="px-8 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full font-bold transition-colors">حفظ</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cover Image and Header */}
-      <div className="relative w-full h-48 bg-slate-900 border-b border-slate-800">
-        <img src={community.cover} className="w-full h-full object-cover opacity-60" />
-        
-        {/* Top Navbar overlapping cover */}
-        <header className="absolute top-0 left-0 right-0 p-3 px-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/home')} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
-              <ChevronRight size={20} />
-            </button>
-            {showSearch && (
-              <input 
-                type="text" 
-                placeholder="ابحث في المجتمع..." 
-                className="bg-black/50 backdrop-blur-md border border-white/20 text-white rounded-full px-4 py-1.5 text-sm focus:outline-none focus:border-cyan-500 w-[140px] sm:w-48 animate-fade-in-up"
-                autoFocus
-              />
-            )}
-          </div>
-          <div className="flex items-center gap-3 relative">
-            <button onClick={handleSearchClick} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
-              <Search size={18} />
-            </button>
-            <button onClick={handleMoreClick} className="w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors">
-              <MoreHorizontal size={18} />
-            </button>
-            
-            {/* Dropdown Menu */}
-            {showMoreMenu && (
-              <div className="absolute top-10 left-0 bg-[#1a1a26] border border-slate-700 rounded-xl shadow-2xl overflow-hidden w-44 flex flex-col z-50 animate-fade-in-up text-right">
-                <button onClick={handleInvite} className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">دعوة أصدقاء</button>
-                <button onClick={handleSettings} className="px-4 py-3 text-sm font-bold text-white hover:bg-slate-800 text-right transition-colors">إعدادات المجتمع</button>
-                {isJoined && (
-                  <button onClick={handleLeave} className="px-4 py-3 text-sm font-bold text-red-400 hover:bg-slate-800 text-right border-t border-slate-700 transition-colors">مغادرة المجتمع</button>
-                )}
-              </div>
-            )}
-          </div>
-        </header>
-      </div>
+      </header>
 
       {/* Community Info */}
-      <div className="px-4 relative pb-4 border-b border-slate-800">
-        <div className="flex justify-between items-end">
-          <div className="w-20 h-20 rounded-full border-4 border-black bg-slate-900 overflow-hidden relative -mt-10 shadow-lg">
-            <img src={community.img} className="w-full h-full object-cover" />
-          </div>
-          <button 
-            onClick={() => setIsJoined(!isJoined)}
-            className={`font-bold px-6 py-2 rounded-full transition-colors shadow-lg ${isJoined ? 'bg-slate-800 text-white border border-slate-700' : 'bg-white text-black hover:bg-slate-200'}`}
-          >
-            {isJoined ? 'تم الانضمام' : 'انضمام'}
-          </button>
+      <div className="relative border-b border-slate-800 pb-4">
+        <div className="h-32 sm:h-48 bg-gradient-to-r from-sky-900 via-slate-900 to-slate-900 relative">
+          {community.cover_url && (
+            <img src={community.cover_url} alt="Cover" className="w-full h-full object-cover opacity-80" />
+          )}
         </div>
         
-        <div className="mt-3">
-          <h1 className="text-2xl font-bold text-white leading-tight">{community.name}</h1>
-          <p className="text-slate-400 text-[14px] mt-1.5 leading-snug">{community.desc}</p>
-          
-          <div className="flex items-center gap-4 mt-3 text-[14px]">
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <Users size={16} />
-              <span className="font-bold text-white">{community.members}</span> <span>عضو</span>
+        <div className="px-4">
+          <div className="flex justify-between items-start">
+            <div className="-mt-12 sm:-mt-16 relative">
+              <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-black border-4 border-black flex items-center justify-center overflow-hidden">
+                {community.avatar_url ? (
+                  <img src={community.avatar_url} alt={community.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center font-bold text-4xl text-slate-300">
+                    {community.name.charAt(0)}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-green-500"></span>
-              <span className="font-bold text-white">450</span> <span>متصل</span>
+            
+            <div className="mt-4">
+              <button 
+                onClick={toggleMembership}
+                className={`px-5 py-1.5 rounded-full font-bold text-[15px] border transition-colors ${
+                  isMember 
+                    ? 'border-slate-600 text-white hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50 group' 
+                    : 'bg-white text-black hover:bg-slate-200 border-transparent'
+                }`}
+              >
+                {isMember ? <span className="group-hover:hidden">عضو</span> : 'انضمام'}
+                {isMember && <span className="hidden group-hover:inline">مغادرة</span>}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-2">
+            <h1 className="text-xl font-bold text-white">{community.name}</h1>
+            <p className="text-[15px] text-slate-300 mt-2 leading-relaxed">
+              {community.description || 'لا يوجد وصف لهذا المجتمع.'}
+            </p>
+            <div className="flex items-center text-slate-500 text-[14px] mt-3 gap-2">
+              <Users size={16} />
+              <span className="font-bold text-white">{community.members_count || 0}</span> عضواً
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center overflow-x-auto border-b border-slate-800 bg-black sticky top-0 z-40 [&::-webkit-scrollbar]:hidden">
-        <button 
-          onClick={() => setActiveTab('posts')} 
-          className={`px-6 py-3 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${activeTab === 'posts' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
-        >
-          المنشورات
-        </button>
-        <button 
-          onClick={() => setActiveTab('members')} 
-          className={`px-6 py-3 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${activeTab === 'members' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
-        >
-          الأعضاء
-        </button>
-        <button 
-          onClick={() => setActiveTab('rules')} 
-          className={`px-6 py-3 text-sm font-bold whitespace-nowrap transition-colors border-b-2 ${activeTab === 'rules' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
-        >
-          القواعد
-        </button>
-      </div>
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col pb-16">
-        {activeTab === 'posts' && (
-          <div className="flex flex-col w-full">
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <PostItem 
-                  key={post.id} 
-                  post={post} 
-                  currentUsername="أنت" 
-                  onPostDeleted={() => {}} 
-                  onPostEdited={() => {}} 
-                />
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in-up">
-                <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
-                  <Feather className="text-slate-500" size={24} />
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">لا توجد منشورات بعد</h3>
-                <p className="text-slate-400 text-sm max-w-[250px]">كن أول من يشارك فكرة أو ينشر صورة في هذا المجتمع!</p>
+      {/* Main Feed */}
+      <main className="flex-1">
+        {!isMember ? (
+          <div className="text-center p-12 text-slate-500 flex flex-col items-center">
+            <Users size={48} className="text-slate-800 mb-4" />
+            <h3 className="text-white text-lg font-bold mb-2">انضم للمجتمع للمشاركة</h3>
+            <p className="text-sm">يجب أن تكون عضواً لتتمكن من رؤية المنشورات والمشاركة فيها.</p>
+          </div>
+        ) : (
+          <div>
+            {posts.map((post) => (
+              <PostItem 
+                key={post.id} 
+                post={post} 
+                currentUsername={currentUsername} 
+                onPostDeleted={handlePostDeleted}
+                onPostEdited={handlePostEdited}
+              />
+            ))}
+            {posts.length === 0 && (
+              <div className="text-center p-12 text-slate-500 text-sm font-bold">
+                لا توجد منشورات بعد في هذا المجتمع. كن أول من يشارك!
               </div>
             )}
-          </div>
-        )}
-        {activeTab === 'members' && (
-          <div className="flex flex-col gap-4 px-4 py-6 animate-fade-in-up">
-            <h3 className="text-white font-bold mb-2">الأعضاء ({community.members})</h3>
-            <div className="text-slate-500 text-sm text-center py-10">قائمة الأعضاء ستظهر هنا</div>
-          </div>
-        )}
-        {activeTab === 'rules' && (
-          <div className="flex flex-col gap-4 px-4 py-6 animate-fade-in-up">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-              <h4 className="text-white font-bold mb-2">1. الاحترام المتبادل</h4>
-              <p className="text-slate-400 text-sm">يرجى احترام جميع الأعضاء وعدم استخدام لغة مسيئة.</p>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-              <h4 className="text-white font-bold mb-2">2. لا للإعلانات المزعجة</h4>
-              <p className="text-slate-400 text-sm">يمنع نشر الإعلانات التجارية بدون إذن مسبق.</p>
-            </div>
           </div>
         )}
       </main>
 
-      {/* Floating Action Button (FAB) for posting in this community - Only for members */}
-      {isJoined && activeTab === 'posts' && (
+      {/* FAB */}
+      {isMember && (
         <button 
-          onClick={() => router.push(`/communities/${communityId}/post`)}
-          className="fixed bottom-6 left-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-cyan-500/30 z-40 transition-transform hover:scale-105 animate-fade-in-up"
+          onClick={() => setIsComposeOpen(true)}
+          className="absolute bottom-20 left-4 bg-sky-600 hover:bg-sky-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-sky-500/30 z-40 transition-colors"
         >
           <Feather size={24} />
         </button>
       )}
 
+      {/* Compose Post Modal Overlay */}
+      {isComposeOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-center items-start pt-16 px-4">
+          <div className="bg-[#111] w-full max-w-[600px] rounded-2xl border border-slate-800 p-4 shadow-2xl animate-fade-in-up">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+              <button 
+                onClick={() => handlePostSubmit()}
+                disabled={!newPost.trim()}
+                className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-1.5 text-sm rounded-full disabled:opacity-50 transition-colors"
+              >
+                نشر في المجتمع
+              </button>
+              <button onClick={() => setIsComposeOpen(false)} className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-colors">
+                ✕
+              </button>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 border border-slate-700 overflow-hidden">
+                {currentUserAvatar ? (
+                  <img src={currentUserAvatar} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={20} />
+                )}
+              </div>
+              <div className="flex-1">
+                <textarea 
+                  className="w-full bg-transparent text-lg text-white placeholder-slate-500 focus:outline-none resize-none pt-1"
+                  placeholder={`شارك أفكارك في ${community.name}...`}
+                  rows={4}
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BottomNav activeTab={'' as any} />
     </div>
   );
 }

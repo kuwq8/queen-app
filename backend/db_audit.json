@@ -1,0 +1,1466 @@
+{
+  "tables": [
+    {
+      "tablename": "CommunityBanner",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "UserIgnore",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityEmoji",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityBan",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "Profile",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityDomain",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityFakeUser",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityLog",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "likes",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "reposts",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "comments",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "conversations",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "conversation_participants",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "messages",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "notifications",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "user_mutes",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "communities",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "community_members",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "subscriptions",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "profiles",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "follows",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "calls",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "bookmarks",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "posts",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "user_blocks",
+      "rowsecurity": true
+    },
+    {
+      "tablename": "Post",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "Comment",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "Like",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "Follows",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "Bookmark",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "Notification",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "ChatRoom",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "User",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityRoom",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "ChatMessage",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityServer",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunitySettings",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityRole",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityMember",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityMessage",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityShortcut",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityBot",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "CommunityGift",
+      "rowsecurity": false
+    },
+    {
+      "tablename": "ChatParticipant",
+      "rowsecurity": false
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "conversations",
+      "policyname": "Users can view their conversations",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM conversation_participants\n  WHERE ((conversation_participants.conversation_id = conversations.id) AND (conversation_participants.user_id = auth.uid()))))"
+    },
+    {
+      "tablename": "conversations",
+      "policyname": "Users can insert conversations",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "conversation_participants",
+      "policyname": "Users can view conversation participants",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM conversation_participants cp\n  WHERE ((cp.conversation_id = conversation_participants.conversation_id) AND (cp.user_id = auth.uid()))))"
+    },
+    {
+      "tablename": "conversation_participants",
+      "policyname": "Users can insert participants",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "messages",
+      "policyname": "Users can view messages in their conversations",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(EXISTS ( SELECT 1\n   FROM conversation_participants\n  WHERE ((conversation_participants.conversation_id = messages.conversation_id) AND (conversation_participants.user_id = auth.uid()))))"
+    },
+    {
+      "tablename": "messages",
+      "policyname": "Users can insert messages in their conversations",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "communities",
+      "policyname": "Communities are viewable by everyone.",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true"
+    },
+    {
+      "tablename": "communities",
+      "policyname": "Users can create communities.",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "communities",
+      "policyname": "Creators can update their communities.",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = creator_id)"
+    },
+    {
+      "tablename": "community_members",
+      "policyname": "Community members are viewable by everyone.",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true"
+    },
+    {
+      "tablename": "community_members",
+      "policyname": "Users can join communities.",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "community_members",
+      "policyname": "Users can leave communities.",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "likes",
+      "policyname": "Public likes",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true"
+    },
+    {
+      "tablename": "likes",
+      "policyname": "Auth likes",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "likes",
+      "policyname": "Auth delete likes",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "reposts",
+      "policyname": "Public reposts",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true"
+    },
+    {
+      "tablename": "reposts",
+      "policyname": "Auth reposts",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "reposts",
+      "policyname": "Auth delete reposts",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "comments",
+      "policyname": "Public comments",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "true"
+    },
+    {
+      "tablename": "comments",
+      "policyname": "Auth comments",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "comments",
+      "policyname": "Auth update comments",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "comments",
+      "policyname": "Auth delete comments",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "bookmarks",
+      "policyname": "Owner bookmarks",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "bookmarks",
+      "policyname": "Auth bookmarks",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "bookmarks",
+      "policyname": "Auth delete bookmarks",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "calls",
+      "policyname": "Users can view their own calls",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = caller_id) OR (auth.uid() = receiver_id))"
+    },
+    {
+      "tablename": "calls",
+      "policyname": "Users can create calls",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "calls",
+      "policyname": "Users can update their calls",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "((auth.uid() = caller_id) OR (auth.uid() = receiver_id))"
+    },
+    {
+      "tablename": "notifications",
+      "policyname": "Users can view their own notifications",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "notifications",
+      "policyname": "Users can update their own notifications",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "posts",
+      "policyname": "Users can insert posts",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "posts",
+      "policyname": "Users can update posts",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "UPDATE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "posts",
+      "policyname": "Users can delete posts",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "subscriptions",
+      "policyname": "Users can read own subscriptions",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = user_id)"
+    },
+    {
+      "tablename": "user_blocks",
+      "policyname": "Users can read own blocks",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = blocker_id)"
+    },
+    {
+      "tablename": "user_blocks",
+      "policyname": "Users can block",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "user_blocks",
+      "policyname": "Users can unblock",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = blocker_id)"
+    },
+    {
+      "tablename": "user_mutes",
+      "policyname": "Users can read own mutes",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "(auth.uid() = muter_id)"
+    },
+    {
+      "tablename": "user_mutes",
+      "policyname": "Users can mute",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "INSERT",
+      "qual": null
+    },
+    {
+      "tablename": "user_mutes",
+      "policyname": "Users can unmute",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "DELETE",
+      "qual": "(auth.uid() = muter_id)"
+    },
+    {
+      "tablename": "posts",
+      "policyname": "Users can view posts",
+      "permissive": "PERMISSIVE",
+      "roles": "{public}",
+      "cmd": "SELECT",
+      "qual": "((auth.uid() = user_id) OR (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = posts.user_id) AND (profiles.is_private = false)))) OR (EXISTS ( SELECT 1\n   FROM follows\n  WHERE ((follows.follower_id = auth.uid()) AND (follows.following_id = posts.user_id) AND (follows.status = 'accepted'::text)))))"
+    }
+  ],
+  "triggers": [
+    {
+      "table_name": "likes",
+      "trigger_name": "update_post_likes_count",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_likes_count()"
+    },
+    {
+      "table_name": "likes",
+      "trigger_name": "update_post_likes_count",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_likes_count()"
+    },
+    {
+      "table_name": "reposts",
+      "trigger_name": "update_post_reposts_count",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_reposts_count()"
+    },
+    {
+      "table_name": "reposts",
+      "trigger_name": "update_post_reposts_count",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_reposts_count()"
+    },
+    {
+      "table_name": "comments",
+      "trigger_name": "update_post_comments_count",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_comments_count()"
+    },
+    {
+      "table_name": "comments",
+      "trigger_name": "update_post_comments_count",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_comments_count()"
+    },
+    {
+      "table_name": "follows",
+      "trigger_name": "update_profile_follow_counts",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_follow_counts()"
+    },
+    {
+      "table_name": "follows",
+      "trigger_name": "update_profile_follow_counts",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_follow_counts()"
+    },
+    {
+      "table_name": "messages",
+      "trigger_name": "on_new_message",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_conversation_timestamp()"
+    },
+    {
+      "table_name": "community_members",
+      "trigger_name": "community_members_count_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_community_members_count()"
+    },
+    {
+      "table_name": "community_members",
+      "trigger_name": "community_members_count_trigger",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_community_members_count()"
+    },
+    {
+      "table_name": "likes",
+      "trigger_name": "likes_count_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_likes_count()"
+    },
+    {
+      "table_name": "likes",
+      "trigger_name": "likes_count_trigger",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_likes_count()"
+    },
+    {
+      "table_name": "reposts",
+      "trigger_name": "reposts_count_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_reposts_count()"
+    },
+    {
+      "table_name": "reposts",
+      "trigger_name": "reposts_count_trigger",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_reposts_count()"
+    },
+    {
+      "table_name": "comments",
+      "trigger_name": "comments_count_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION update_comments_count()"
+    },
+    {
+      "table_name": "comments",
+      "trigger_name": "comments_count_trigger",
+      "event": "DELETE",
+      "action_statement": "EXECUTE FUNCTION update_comments_count()"
+    },
+    {
+      "table_name": "likes",
+      "trigger_name": "trigger_notify_like",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION notify_like()"
+    },
+    {
+      "table_name": "comments",
+      "trigger_name": "trigger_notify_comment",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION notify_comment()"
+    },
+    {
+      "table_name": "follows",
+      "trigger_name": "trigger_notify_follow",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION notify_follow()"
+    },
+    {
+      "table_name": "reposts",
+      "trigger_name": "trigger_notify_repost",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION notify_repost()"
+    },
+    {
+      "table_name": "messages",
+      "trigger_name": "trigger_notify_message",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION notify_message()"
+    },
+    {
+      "table_name": "follows",
+      "trigger_name": "follow_privacy_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION enforce_follow_privacy()"
+    },
+    {
+      "table_name": "calls",
+      "trigger_name": "call_privacy_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION enforce_call_privacy()"
+    },
+    {
+      "table_name": "comments",
+      "trigger_name": "comment_privacy_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION enforce_comment_privacy()"
+    },
+    {
+      "table_name": "likes",
+      "trigger_name": "like_privacy_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION enforce_like_privacy()"
+    },
+    {
+      "table_name": "conversation_participants",
+      "trigger_name": "message_privacy_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION enforce_message_privacy()"
+    },
+    {
+      "table_name": "messages",
+      "trigger_name": "message_send_privacy_trigger",
+      "event": "INSERT",
+      "action_statement": "EXECUTE FUNCTION enforce_message_send_privacy()"
+    }
+  ],
+  "foreignKeys": [
+    {
+      "table_name": "Profile",
+      "column_name": "userId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Post",
+      "column_name": "authorId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Post",
+      "column_name": "quotePostId",
+      "foreign_table_name": "Post",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Comment",
+      "column_name": "authorId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Comment",
+      "column_name": "postId",
+      "foreign_table_name": "Post",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Like",
+      "column_name": "userId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Like",
+      "column_name": "postId",
+      "foreign_table_name": "Post",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Follows",
+      "column_name": "followerId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Follows",
+      "column_name": "followingId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Bookmark",
+      "column_name": "userId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Bookmark",
+      "column_name": "postId",
+      "foreign_table_name": "Post",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Notification",
+      "column_name": "userId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Notification",
+      "column_name": "actorId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "Notification",
+      "column_name": "postId",
+      "foreign_table_name": "Post",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "ChatParticipant",
+      "column_name": "userId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "ChatParticipant",
+      "column_name": "roomId",
+      "foreign_table_name": "ChatRoom",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "ChatMessage",
+      "column_name": "senderId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "ChatMessage",
+      "column_name": "roomId",
+      "foreign_table_name": "ChatRoom",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityServer",
+      "column_name": "ownerId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunitySettings",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityRole",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityMember",
+      "column_name": "userId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityMember",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityMember",
+      "column_name": "roleId",
+      "foreign_table_name": "CommunityRole",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityRoom",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityMessage",
+      "column_name": "senderId",
+      "foreign_table_name": "User",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityMessage",
+      "column_name": "roomId",
+      "foreign_table_name": "CommunityRoom",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityShortcut",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityBot",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityGift",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityBanner",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityDomain",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "UserIgnore",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityFakeUser",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityFakeUser",
+      "column_name": "roleId",
+      "foreign_table_name": "CommunityRole",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityLog",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityBan",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "CommunityEmoji",
+      "column_name": "serverId",
+      "foreign_table_name": "CommunityServer",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "community_members",
+      "column_name": "community_id",
+      "foreign_table_name": "communities",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "community_members",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "posts",
+      "column_name": "community_id",
+      "foreign_table_name": "communities",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "calls",
+      "column_name": "caller_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "posts",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "bookmarks",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "bookmarks",
+      "column_name": "post_id",
+      "foreign_table_name": "posts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "comments",
+      "column_name": "post_id",
+      "foreign_table_name": "posts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "comments",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "likes",
+      "column_name": "post_id",
+      "foreign_table_name": "posts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "likes",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "reposts",
+      "column_name": "post_id",
+      "foreign_table_name": "posts",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "reposts",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "follows",
+      "column_name": "follower_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "follows",
+      "column_name": "following_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "conversation_participants",
+      "column_name": "conversation_id",
+      "foreign_table_name": "conversations",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "conversation_participants",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "messages",
+      "column_name": "conversation_id",
+      "foreign_table_name": "conversations",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "messages",
+      "column_name": "sender_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "communities",
+      "column_name": "creator_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "calls",
+      "column_name": "receiver_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "notifications",
+      "column_name": "actor_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "user_blocks",
+      "column_name": "blocker_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "user_blocks",
+      "column_name": "blocked_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "user_mutes",
+      "column_name": "muter_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "user_mutes",
+      "column_name": "muted_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    },
+    {
+      "table_name": "subscriptions",
+      "column_name": "user_id",
+      "foreign_table_name": "profiles",
+      "foreign_column_name": "id"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "CommunityBanner",
+      "indexname": "CommunityBanner_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityBanner_pkey\" ON public.\"CommunityBanner\" USING btree (id)"
+    },
+    {
+      "tablename": "UserIgnore",
+      "indexname": "UserIgnore_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"UserIgnore_pkey\" ON public.\"UserIgnore\" USING btree (id)"
+    },
+    {
+      "tablename": "UserIgnore",
+      "indexname": "UserIgnore_userId_targetUserId_serverId_key",
+      "indexdef": "CREATE UNIQUE INDEX \"UserIgnore_userId_targetUserId_serverId_key\" ON public.\"UserIgnore\" USING btree (\"userId\", \"targetUserId\", \"serverId\")"
+    },
+    {
+      "tablename": "CommunityEmoji",
+      "indexname": "CommunityEmoji_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityEmoji_pkey\" ON public.\"CommunityEmoji\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityBan",
+      "indexname": "CommunityBan_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityBan_pkey\" ON public.\"CommunityBan\" USING btree (id)"
+    },
+    {
+      "tablename": "Profile",
+      "indexname": "Profile_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"Profile_pkey\" ON public.\"Profile\" USING btree (id)"
+    },
+    {
+      "tablename": "Profile",
+      "indexname": "Profile_userId_key",
+      "indexdef": "CREATE UNIQUE INDEX \"Profile_userId_key\" ON public.\"Profile\" USING btree (\"userId\")"
+    },
+    {
+      "tablename": "CommunityDomain",
+      "indexname": "CommunityDomain_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityDomain_pkey\" ON public.\"CommunityDomain\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityDomain",
+      "indexname": "CommunityDomain_domain_key",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityDomain_domain_key\" ON public.\"CommunityDomain\" USING btree (domain)"
+    },
+    {
+      "tablename": "CommunityFakeUser",
+      "indexname": "CommunityFakeUser_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityFakeUser_pkey\" ON public.\"CommunityFakeUser\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityLog",
+      "indexname": "CommunityLog_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityLog_pkey\" ON public.\"CommunityLog\" USING btree (id)"
+    },
+    {
+      "tablename": "likes",
+      "indexname": "likes_pkey",
+      "indexdef": "CREATE UNIQUE INDEX likes_pkey ON public.likes USING btree (id)"
+    },
+    {
+      "tablename": "likes",
+      "indexname": "likes_post_id_user_id_key",
+      "indexdef": "CREATE UNIQUE INDEX likes_post_id_user_id_key ON public.likes USING btree (post_id, user_id)"
+    },
+    {
+      "tablename": "reposts",
+      "indexname": "reposts_pkey",
+      "indexdef": "CREATE UNIQUE INDEX reposts_pkey ON public.reposts USING btree (id)"
+    },
+    {
+      "tablename": "reposts",
+      "indexname": "reposts_post_id_user_id_key",
+      "indexdef": "CREATE UNIQUE INDEX reposts_post_id_user_id_key ON public.reposts USING btree (post_id, user_id)"
+    },
+    {
+      "tablename": "comments",
+      "indexname": "comments_pkey",
+      "indexdef": "CREATE UNIQUE INDEX comments_pkey ON public.comments USING btree (id)"
+    },
+    {
+      "tablename": "conversations",
+      "indexname": "conversations_pkey",
+      "indexdef": "CREATE UNIQUE INDEX conversations_pkey ON public.conversations USING btree (id)"
+    },
+    {
+      "tablename": "conversation_participants",
+      "indexname": "conversation_participants_pkey",
+      "indexdef": "CREATE UNIQUE INDEX conversation_participants_pkey ON public.conversation_participants USING btree (conversation_id, user_id)"
+    },
+    {
+      "tablename": "messages",
+      "indexname": "messages_pkey",
+      "indexdef": "CREATE UNIQUE INDEX messages_pkey ON public.messages USING btree (id)"
+    },
+    {
+      "tablename": "notifications",
+      "indexname": "notifications_pkey",
+      "indexdef": "CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)"
+    },
+    {
+      "tablename": "user_mutes",
+      "indexname": "user_mutes_pkey",
+      "indexdef": "CREATE UNIQUE INDEX user_mutes_pkey ON public.user_mutes USING btree (muter_id, muted_id)"
+    },
+    {
+      "tablename": "communities",
+      "indexname": "communities_pkey",
+      "indexdef": "CREATE UNIQUE INDEX communities_pkey ON public.communities USING btree (id)"
+    },
+    {
+      "tablename": "communities",
+      "indexname": "communities_name_key",
+      "indexdef": "CREATE UNIQUE INDEX communities_name_key ON public.communities USING btree (name)"
+    },
+    {
+      "tablename": "community_members",
+      "indexname": "community_members_pkey",
+      "indexdef": "CREATE UNIQUE INDEX community_members_pkey ON public.community_members USING btree (community_id, user_id)"
+    },
+    {
+      "tablename": "subscriptions",
+      "indexname": "subscriptions_pkey",
+      "indexdef": "CREATE UNIQUE INDEX subscriptions_pkey ON public.subscriptions USING btree (id)"
+    },
+    {
+      "tablename": "subscriptions",
+      "indexname": "subscriptions_user_id_key",
+      "indexdef": "CREATE UNIQUE INDEX subscriptions_user_id_key ON public.subscriptions USING btree (user_id)"
+    },
+    {
+      "tablename": "profiles",
+      "indexname": "profiles_pkey",
+      "indexdef": "CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)"
+    },
+    {
+      "tablename": "profiles",
+      "indexname": "profiles_username_key",
+      "indexdef": "CREATE UNIQUE INDEX profiles_username_key ON public.profiles USING btree (username)"
+    },
+    {
+      "tablename": "follows",
+      "indexname": "follows_pkey",
+      "indexdef": "CREATE UNIQUE INDEX follows_pkey ON public.follows USING btree (follower_id, following_id)"
+    },
+    {
+      "tablename": "calls",
+      "indexname": "calls_pkey",
+      "indexdef": "CREATE UNIQUE INDEX calls_pkey ON public.calls USING btree (id)"
+    },
+    {
+      "tablename": "bookmarks",
+      "indexname": "bookmarks_pkey",
+      "indexdef": "CREATE UNIQUE INDEX bookmarks_pkey ON public.bookmarks USING btree (id)"
+    },
+    {
+      "tablename": "bookmarks",
+      "indexname": "bookmarks_user_id_post_id_key",
+      "indexdef": "CREATE UNIQUE INDEX bookmarks_user_id_post_id_key ON public.bookmarks USING btree (user_id, post_id)"
+    },
+    {
+      "tablename": "posts",
+      "indexname": "posts_pkey",
+      "indexdef": "CREATE UNIQUE INDEX posts_pkey ON public.posts USING btree (id)"
+    },
+    {
+      "tablename": "user_blocks",
+      "indexname": "user_blocks_pkey",
+      "indexdef": "CREATE UNIQUE INDEX user_blocks_pkey ON public.user_blocks USING btree (blocker_id, blocked_id)"
+    },
+    {
+      "tablename": "Post",
+      "indexname": "Post_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"Post_pkey\" ON public.\"Post\" USING btree (id)"
+    },
+    {
+      "tablename": "Comment",
+      "indexname": "Comment_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"Comment_pkey\" ON public.\"Comment\" USING btree (id)"
+    },
+    {
+      "tablename": "Like",
+      "indexname": "Like_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"Like_pkey\" ON public.\"Like\" USING btree (id)"
+    },
+    {
+      "tablename": "Like",
+      "indexname": "Like_userId_postId_key",
+      "indexdef": "CREATE UNIQUE INDEX \"Like_userId_postId_key\" ON public.\"Like\" USING btree (\"userId\", \"postId\")"
+    },
+    {
+      "tablename": "Follows",
+      "indexname": "Follows_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"Follows_pkey\" ON public.\"Follows\" USING btree (\"followerId\", \"followingId\")"
+    },
+    {
+      "tablename": "Bookmark",
+      "indexname": "Bookmark_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"Bookmark_pkey\" ON public.\"Bookmark\" USING btree (id)"
+    },
+    {
+      "tablename": "Bookmark",
+      "indexname": "Bookmark_userId_postId_key",
+      "indexdef": "CREATE UNIQUE INDEX \"Bookmark_userId_postId_key\" ON public.\"Bookmark\" USING btree (\"userId\", \"postId\")"
+    },
+    {
+      "tablename": "Notification",
+      "indexname": "Notification_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"Notification_pkey\" ON public.\"Notification\" USING btree (id)"
+    },
+    {
+      "tablename": "ChatRoom",
+      "indexname": "ChatRoom_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"ChatRoom_pkey\" ON public.\"ChatRoom\" USING btree (id)"
+    },
+    {
+      "tablename": "User",
+      "indexname": "User_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"User_pkey\" ON public.\"User\" USING btree (id)"
+    },
+    {
+      "tablename": "User",
+      "indexname": "User_email_key",
+      "indexdef": "CREATE UNIQUE INDEX \"User_email_key\" ON public.\"User\" USING btree (email)"
+    },
+    {
+      "tablename": "User",
+      "indexname": "User_username_key",
+      "indexdef": "CREATE UNIQUE INDEX \"User_username_key\" ON public.\"User\" USING btree (username)"
+    },
+    {
+      "tablename": "CommunityRoom",
+      "indexname": "CommunityRoom_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityRoom_pkey\" ON public.\"CommunityRoom\" USING btree (id)"
+    },
+    {
+      "tablename": "ChatMessage",
+      "indexname": "ChatMessage_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"ChatMessage_pkey\" ON public.\"ChatMessage\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityServer",
+      "indexname": "CommunityServer_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityServer_pkey\" ON public.\"CommunityServer\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityServer",
+      "indexname": "CommunityServer_slug_key",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityServer_slug_key\" ON public.\"CommunityServer\" USING btree (slug)"
+    },
+    {
+      "tablename": "CommunitySettings",
+      "indexname": "CommunitySettings_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunitySettings_pkey\" ON public.\"CommunitySettings\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunitySettings",
+      "indexname": "CommunitySettings_serverId_key",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunitySettings_serverId_key\" ON public.\"CommunitySettings\" USING btree (\"serverId\")"
+    },
+    {
+      "tablename": "CommunityRole",
+      "indexname": "CommunityRole_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityRole_pkey\" ON public.\"CommunityRole\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityRole",
+      "indexname": "CommunityRole_serverId_name_key",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityRole_serverId_name_key\" ON public.\"CommunityRole\" USING btree (\"serverId\", name)"
+    },
+    {
+      "tablename": "CommunityMember",
+      "indexname": "CommunityMember_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityMember_pkey\" ON public.\"CommunityMember\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityMember",
+      "indexname": "CommunityMember_userId_serverId_key",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityMember_userId_serverId_key\" ON public.\"CommunityMember\" USING btree (\"userId\", \"serverId\")"
+    },
+    {
+      "tablename": "CommunityMessage",
+      "indexname": "CommunityMessage_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityMessage_pkey\" ON public.\"CommunityMessage\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityShortcut",
+      "indexname": "CommunityShortcut_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityShortcut_pkey\" ON public.\"CommunityShortcut\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityShortcut",
+      "indexname": "CommunityShortcut_serverId_shortcut_key",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityShortcut_serverId_shortcut_key\" ON public.\"CommunityShortcut\" USING btree (\"serverId\", shortcut)"
+    },
+    {
+      "tablename": "CommunityBot",
+      "indexname": "CommunityBot_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityBot_pkey\" ON public.\"CommunityBot\" USING btree (id)"
+    },
+    {
+      "tablename": "CommunityGift",
+      "indexname": "CommunityGift_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"CommunityGift_pkey\" ON public.\"CommunityGift\" USING btree (id)"
+    },
+    {
+      "tablename": "ChatParticipant",
+      "indexname": "ChatParticipant_pkey",
+      "indexdef": "CREATE UNIQUE INDEX \"ChatParticipant_pkey\" ON public.\"ChatParticipant\" USING btree (id)"
+    },
+    {
+      "tablename": "ChatParticipant",
+      "indexname": "ChatParticipant_userId_roomId_key",
+      "indexdef": "CREATE UNIQUE INDEX \"ChatParticipant_userId_roomId_key\" ON public.\"ChatParticipant\" USING btree (\"userId\", \"roomId\")"
+    }
+  ],
+  "functions": [
+    {
+      "routine_name": "handle_new_user"
+    },
+    {
+      "routine_name": "is_blocked"
+    },
+    {
+      "routine_name": "enforce_call_privacy"
+    },
+    {
+      "routine_name": "enforce_comment_privacy"
+    },
+    {
+      "routine_name": "enforce_like_privacy"
+    },
+    {
+      "routine_name": "is_accepted_follower"
+    },
+    {
+      "routine_name": "notify_like"
+    },
+    {
+      "routine_name": "notify_comment"
+    },
+    {
+      "routine_name": "increment_post_view"
+    },
+    {
+      "routine_name": "increment_post_views"
+    },
+    {
+      "routine_name": "update_follow_counts"
+    },
+    {
+      "routine_name": "update_conversation_timestamp"
+    },
+    {
+      "routine_name": "update_community_members_count"
+    },
+    {
+      "routine_name": "update_likes_count"
+    },
+    {
+      "routine_name": "update_reposts_count"
+    },
+    {
+      "routine_name": "update_comments_count"
+    },
+    {
+      "routine_name": "update_bookmarks_count"
+    },
+    {
+      "routine_name": "notify_follow"
+    },
+    {
+      "routine_name": "notify_repost"
+    },
+    {
+      "routine_name": "notify_message"
+    },
+    {
+      "routine_name": "enforce_message_privacy"
+    },
+    {
+      "routine_name": "enforce_message_send_privacy"
+    },
+    {
+      "routine_name": "enforce_follow_privacy"
+    }
+  ]
+}

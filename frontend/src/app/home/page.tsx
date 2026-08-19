@@ -25,43 +25,73 @@ export default function HomePage() {
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [localCommunities, setLocalCommunities] = useState<any[]>([]);
   const [disableComments, setDisableComments] = useState(false);
+  const fetchIdRef = useRef(0);
 
   const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState(false);
   const [bookmarksList, setBookmarksList] = useState<any[]>([]);
   const [selectedQuotePost, setSelectedQuotePost] = useState<any>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const checkAuth = async () => {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        router.push('/');
-        return;
-      }
-      
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
         
-      if (profile) {
-        setCurrentUsername(profile.username);
-        setCurrentUserAvatar(profile.avatar_url);
+        if (!isMounted) return;
+
+        if (!session) {
+          router.push('/');
+          return;
+        }
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profile && isMounted) {
+          setCurrentUsername(profile.username);
+          setCurrentUserAvatar(profile.avatar_url);
+        }
+        if (isMounted) fetchPosts();
+      } catch (err) {
+        console.error(err);
       }
-      fetchPosts();
     };
     checkAuth();
     
-    if (typeof window !== 'undefined') {
-      const stored = JSON.parse(localStorage.getItem('local_communities') || '[]');
-      setLocalCommunities(stored);
+    if (feedType === 'communities') {
+      fetchCommunities();
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [router, feedType]);
 
+  const fetchCommunities = async () => {
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('communities')
+        .select('*')
+        .order('members_count', { ascending: false })
+        .limit(20);
+      
+      if (!error && data) {
+        setLocalCommunities(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const fetchPosts = async () => {
+    const fetchId = ++fetchIdRef.current;
     try {
       setIsLoading(true);
       setError(null);
@@ -80,8 +110,10 @@ export default function HomePage() {
 
       if (feedType === 'following') {
         if (!session) {
-          setPosts([]);
-          setIsLoading(false);
+          if (fetchId === fetchIdRef.current) {
+            setPosts([]);
+            setIsLoading(false);
+          }
           return;
         }
         const { data: followsData } = await supabase
@@ -93,8 +125,10 @@ export default function HomePage() {
         if (followingIds.length > 0) {
           query = query.in('user_id', followingIds);
         } else {
-          setPosts([]);
-          setIsLoading(false);
+          if (fetchId === fetchIdRef.current) {
+            setPosts([]);
+            setIsLoading(false);
+          }
           return;
         }
       }
@@ -127,12 +161,18 @@ export default function HomePage() {
         }));
       }
 
-      setPosts(finalPosts);
+      if (fetchId === fetchIdRef.current) {
+        setPosts(finalPosts);
+      }
     } catch (err) {
       console.error(err);
-      setError('حدث خطأ أثناء الاتصال بالخادم.');
+      if (fetchId === fetchIdRef.current) {
+        setError('حدث خطأ أثناء الاتصال بالخادم.');
+      }
     } finally {
-      setIsLoading(false);
+      if (fetchId === fetchIdRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -232,7 +272,12 @@ export default function HomePage() {
         
         {/* Top Header */}
         <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800 p-3 px-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-cyan-500">Gemini Social</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-cyan-500">Gemini Social</h2>
+            <Link href="/settings" className="text-slate-400 hover:text-white transition-colors p-1.5 rounded-full hover:bg-white/10">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             <button onClick={handleLogout} className="text-red-400 text-xs font-bold hover:underline">تسجيل الخروج</button>
             <Link href={`/${currentUsername}`} className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 cursor-pointer hover:bg-slate-700 transition-colors border border-slate-700 overflow-hidden">
@@ -280,29 +325,33 @@ export default function HomePage() {
                     <Plus size={16} />أنشئ مجتمعاً
                   </Link>
                 </div>
-                {[
-                  ...localCommunities,
-                  { id: '1', name: 'عشاق القهوة', desc: 'مجتمع يجمع محبي القهوة لتبادل الوصفات والتجارب اليومية.', members: '12K', img: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=100&q=80' },
-                  { id: '2', name: 'مبرمجي كويت', desc: 'نادي المطورين والمبرمجين في الكويت لتبادل الخبرات والبرمجيات.', members: '3.4K', img: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=100&q=80' },
-                  { id: '3', name: 'تصوير فوتوغرافي', desc: 'شارك أفضل لقطاتك، وتعلم أساسيات التصوير وتعديل الصور.', members: '8.1K', img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=100&q=80' },
-                  { id: '4', name: 'جيمرز العرب', desc: 'أخبار الألعاب، تقييمات، وبطولات إلكترونية.', members: '25K', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=100&q=80' },
-                ].map((community) => (
+                {localCommunities.length > 0 ? localCommunities.map((community) => (
                   <Link href={`/communities/${community.id}`} key={community.id} className="block group">
                     <div className="flex items-center justify-between p-4 bg-[#111] border border-slate-800 rounded-2xl hover:border-sky-500/20 hover:bg-slate-900/50 transition-all cursor-pointer">
                       <div className="flex items-center gap-3 overflow-hidden">
-                        <img src={community.img} className="w-[56px] h-[56px] rounded-full object-cover border border-slate-700 shrink-0" />
+                        {community.avatar_url ? (
+                           <img src={community.avatar_url} className="w-[56px] h-[56px] rounded-full object-cover border border-slate-700 shrink-0" />
+                        ) : (
+                           <div className="w-[56px] h-[56px] rounded-full bg-slate-800 flex items-center justify-center font-bold text-2xl text-slate-500 shrink-0 border border-slate-700">
+                             {community.name.charAt(0)}
+                           </div>
+                        )}
                         <div className="flex flex-col min-w-0 text-right">
                           <h4 className="font-bold text-white text-[15px] truncate">{community.name}</h4>
-                          <p className="text-slate-400 text-[13px] truncate">{community.desc}</p>
-                          <span className="text-cyan-500 text-[11px] font-bold mt-0.5">{community.members} عضو</span>
+                          <p className="text-slate-400 text-[13px] truncate">{community.description}</p>
+                          <span className="text-cyan-500 text-[11px] font-bold mt-0.5">{community.members_count || 0} عضو</span>
                         </div>
                       </div>
                       <button className="ml-2 shrink-0 bg-white/5 hover:bg-white/10 text-white font-bold text-xs px-4 py-2 rounded-full transition-colors border border-white/10 group-hover:border-sky-500/30 group-hover:text-sky-400">
-                        انضمام
+                        استكشاف
                       </button>
                     </div>
                   </Link>
-                ))}
+                )) : (
+                  <div className="text-center p-12 text-slate-500 text-sm font-bold">
+                    لا توجد مجتمعات بعد. كن أول من ينشئ مجتمعاً!
+                  </div>
+                )}
              </div>
           ) : isLoading ? (
             <div className="flex justify-center p-8">

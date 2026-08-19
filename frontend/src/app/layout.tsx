@@ -25,6 +25,9 @@ export const viewport = {
   userScalable: false,
 };
 
+import CallManager from '../components/CallManager';
+import NotificationToast from '../components/NotificationToast';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -37,6 +40,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased bg-[#0a0a0f]`}
     >
       <body className="min-h-screen flex justify-center text-white">
+        <CallManager />
+        <NotificationToast />
         <div className="w-full max-w-md sm:max-w-lg min-h-screen bg-black border-x border-white/10 flex flex-col relative shadow-2xl">
           {children}
         </div>

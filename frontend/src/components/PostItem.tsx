@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, MessageSquareOff, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2 } from 'lucide-react';
+import { MessageCircle, MessageSquareOff, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2, Users } from 'lucide-react';
 
 interface PostItemProps {
   post: any;
@@ -31,6 +31,8 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const viewLogged = useRef(false);
 
   useEffect(() => {
+    viewLogged.current = false;
+    
     if (!postRef.current || viewLogged.current) return;
     
     const observer = new IntersectionObserver((entries) => {
@@ -45,7 +47,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           const supabase = createClient();
           supabase.auth.getSession().then(({ data: { session } }) => {
              if (session && session.user.id !== post.user_id) {
-               supabase.rpc('increment_post_view', { post_id: post.id }).catch(console.error);
+               supabase.rpc('increment_post_view', { post_id: post.id }).then(({error}) => { if (error) console.error(error) });
              }
           });
         });
@@ -154,11 +156,19 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       if (isLiked) {
         setIsLiked(false);
         setPost((prev: any) => ({ ...prev, likes_count: Math.max(0, (prev.likes_count || 0) - 1) }));
-        await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+        const { error } = await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+        if (error) {
+          setIsLiked(true);
+          setPost((prev: any) => ({ ...prev, likes_count: (prev.likes_count || 0) + 1 }));
+        }
       } else {
         setIsLiked(true);
         setPost((prev: any) => ({ ...prev, likes_count: (prev.likes_count || 0) + 1 }));
-        await supabase.from('likes').insert({ post_id: post.id, user_id: session.user.id });
+        const { error } = await supabase.from('likes').insert({ post_id: post.id, user_id: session.user.id });
+        if (error) {
+          setIsLiked(false);
+          setPost((prev: any) => ({ ...prev, likes_count: Math.max(0, (prev.likes_count || 0) - 1) }));
+        }
       }
     } catch (err) {
       console.error(err);
@@ -176,11 +186,19 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       if (isBookmarked) {
         setIsBookmarked(false);
         setPost((prev: any) => ({ ...prev, bookmarks_count: Math.max(0, (prev.bookmarks_count || 0) - 1) }));
-        await supabase.from('bookmarks').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+        const { error } = await supabase.from('bookmarks').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+        if (error) {
+          setIsBookmarked(true);
+          setPost((prev: any) => ({ ...prev, bookmarks_count: (prev.bookmarks_count || 0) + 1 }));
+        }
       } else {
         setIsBookmarked(true);
         setPost((prev: any) => ({ ...prev, bookmarks_count: (prev.bookmarks_count || 0) + 1 }));
-        await supabase.from('bookmarks').insert({ post_id: post.id, user_id: session.user.id });
+        const { error } = await supabase.from('bookmarks').insert({ post_id: post.id, user_id: session.user.id });
+        if (error) {
+          setIsBookmarked(false);
+          setPost((prev: any) => ({ ...prev, bookmarks_count: Math.max(0, (prev.bookmarks_count || 0) - 1) }));
+        }
       }
     } catch (err) {
       console.error(err);
@@ -224,11 +242,19 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       if (isReposted) {
         setIsReposted(false);
         setPost((prev: any) => ({ ...prev, reposts_count: Math.max(0, (prev.reposts_count || 0) - 1) }));
-        await supabase.from('reposts').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+        const { error } = await supabase.from('reposts').delete().eq('post_id', post.id).eq('user_id', session.user.id);
+        if (error) {
+          setIsReposted(true);
+          setPost((prev: any) => ({ ...prev, reposts_count: (prev.reposts_count || 0) + 1 }));
+        }
       } else {
         setIsReposted(true);
         setPost((prev: any) => ({ ...prev, reposts_count: (prev.reposts_count || 0) + 1 }));
-        await supabase.from('reposts').insert({ post_id: post.id, user_id: session.user.id });
+        const { error } = await supabase.from('reposts').insert({ post_id: post.id, user_id: session.user.id });
+        if (error) {
+          setIsReposted(false);
+          setPost((prev: any) => ({ ...prev, reposts_count: Math.max(0, (prev.reposts_count || 0) - 1) }));
+        }
       }
     } catch (err) {
       console.error(err);
@@ -253,18 +279,29 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       
       <div className="flex-1 min-w-0 z-10 relative">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span 
-              onClick={(e) => { e.stopPropagation(); router.push(`/${post.author?.username || 'unknown'}`); }}
-              className="font-bold text-white text-[15px] hover:underline cursor-pointer"
-              dir="ltr"
-            >
-              {post.author?.username || 'مستخدم غير معروف'}
-            </span>
-            <span className="text-slate-500 text-[15px]" dir="ltr">@{post.author?.username || 'unknown'}</span>
-            <span className="text-slate-500 text-[15px]">·</span>
-            <span className="text-slate-500 text-[14px]">{formatTime(post.created_at || post.createdAt)}</span>
-            {isEdited && <span className="text-slate-500 text-[11px] italic bg-slate-800/50 px-1.5 py-0.5 rounded-full mr-1">معدلة</span>}
+          <div className="flex flex-col">
+            {post.community && (
+              <div 
+                className="flex items-center gap-1.5 text-[12px] font-bold text-slate-500 mb-1 hover:text-sky-400 cursor-pointer transition-colors"
+                onClick={(e) => { e.stopPropagation(); router.push(`/communities/${post.community_id}`); }}
+              >
+                <Users size={12} />
+                <span>{post.community.name}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span 
+                onClick={(e) => { e.stopPropagation(); router.push(`/${post.author?.username || 'unknown'}`); }}
+                className="font-bold text-white text-[15px] hover:underline cursor-pointer"
+                dir="ltr"
+              >
+                {post.author?.username || 'مستخدم غير معروف'}
+              </span>
+              <span className="text-slate-500 text-[15px]" dir="ltr">@{post.author?.username || 'unknown'}</span>
+              <span className="text-slate-500 text-[15px]">·</span>
+              <span className="text-slate-500 text-[14px]">{formatTime(post.created_at || post.createdAt)}</span>
+              {isEdited && <span className="text-slate-500 text-[11px] italic bg-slate-800/50 px-1.5 py-0.5 rounded-full mr-1">معدلة</span>}
+            </div>
           </div>
           
           {isOwner && (
@@ -377,6 +414,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           
           <button 
             onClick={handleRepost}
+            aria-label="إعادة نشر"
             className={`flex items-center gap-1.5 hover:text-green-500 transition-colors group ${isReposted ? 'text-green-500' : ''}`}
           >
             <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
@@ -387,6 +425,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
           <button 
             onClick={handleLike}
+            aria-label="إعجاب"
             className={`flex items-center gap-1.5 hover:text-red-500 transition-colors group ${isLiked ? 'text-red-500' : ''}`}
           >
             <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
@@ -397,6 +436,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
           <button 
             onClick={(e) => { e.stopPropagation(); router.push(`/post/${post.id}`); }}
+            aria-label="مشاهدات"
             className="flex items-center gap-1.5 hover:text-cyan-500 transition-colors group"
           >
             <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors">
@@ -408,6 +448,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           <div className="flex items-center">
             <button 
               onClick={handleBookmark}
+              aria-label="حفظ"
               className={`flex items-center gap-1.5 hover:text-cyan-500 transition-colors group ${isBookmarked ? 'text-cyan-500' : ''}`}
             >
               <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors">
@@ -418,6 +459,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             <div>
               <button 
                 onClick={toggleShareDropdown}
+                aria-label="مشاركة"
                 className="flex items-center gap-1.5 hover:text-cyan-500 transition-colors group"
               >
                 <div className="p-2 rounded-full group-hover:bg-cyan-500/10 transition-colors"><Share size={18} /></div>

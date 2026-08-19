@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     // but we can enforce it here by checking if the user is a channel member
     const { data: message, error: msgError } = await supabase
       .from('messages')
-      .select('*, channels!inner(*)')
+      .select('*')
       .eq('id', messageId)
       .single();
 

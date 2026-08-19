@@ -5,7 +5,7 @@ import { API_URL } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link as LinkIcon, User, Camera, Mail } from 'lucide-react';
+import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link as LinkIcon, User, Camera, Mail, Phone, Video, Lock } from 'lucide-react';
 import { useRef } from 'react';
 import PostItem from '../../components/PostItem';
 import BottomNav from '../../components/BottomNav';
@@ -30,6 +30,8 @@ export default function ProfilePage() {
   
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editBio, setEditBio] = useState('');
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [debugMsg, setDebugMsg] = useState('Init');
@@ -122,6 +124,8 @@ export default function ProfilePage() {
         createdAt: targetProfile.created_at
       });
       setEditBio(targetProfile.bio || '');
+      setEditFirstName(targetProfile.first_name || '');
+      setEditLastName(targetProfile.last_name || '');
       setIsLoading(false);
 
       try {
@@ -134,9 +138,13 @@ export default function ProfilePage() {
         ]);
 
         let isFollowing = false;
+        let followStatus = 'none';
         if (sessionRes.data.session) {
           const { data: followData } = await supabase.from('follows').select('*').eq('follower_id', sessionRes.data.session.user.id).eq('following_id', targetProfile.id).maybeSingle();
-          isFollowing = !!followData;
+          if (followData) {
+            isFollowing = followData.status === 'accepted';
+            followStatus = followData.status;
+          }
         }
 
         setProfile((prev: any) => {
@@ -148,7 +156,11 @@ export default function ProfilePage() {
               following: followingRes.count || 0,
               posts: postsRes.count || 0
             },
-            isFollowing
+            isFollowing,
+            followStatus,
+            is_private: targetProfile.is_private,
+            allow_messages: targetProfile.allow_messages,
+            allow_calls: targetProfile.allow_calls
           };
         });
         setDebugMsg('Step 7: done');
@@ -166,11 +178,30 @@ export default function ProfilePage() {
       
       const { data: targetProfile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, is_private')
         .eq('username', username)
         .single();
         
       if (!targetProfile) return;
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      const isOwner = session?.user?.id === targetProfile.id;
+      
+      // If private and not owner and we don't have accepted follow, don't even try to fetch
+      // because RLS will block it anyway, but we can save a network request
+      if (targetProfile.is_private && !isOwner) {
+        if (!session) {
+           setPosts([]);
+           setIsLoading(false);
+           return;
+        }
+        const { data: followData } = await supabase.from('follows').select('status').eq('follower_id', session.user.id).eq('following_id', targetProfile.id).maybeSingle();
+        if (!followData || followData.status !== 'accepted') {
+           setPosts([]);
+           setIsLoading(false);
+           return;
+        }
+      }
 
       const { data, error } = await supabase
         .from('posts')
@@ -183,6 +214,8 @@ export default function ProfilePage() {
 
       if (!error && data) {
         setPosts(data);
+      } else {
+        setPosts([]);
       }
     } catch (err) {
       console.error(err);
@@ -204,20 +237,24 @@ export default function ProfilePage() {
         
       if (!targetProfile) return;
 
-      if (profile.isFollowing) {
+      if (profile.followStatus === 'accepted' || profile.followStatus === 'pending') {
         await supabase.from('follows').delete().eq('follower_id', session.user.id).eq('following_id', targetProfile.id);
         setProfile((prev: any) => ({
           ...prev,
           isFollowing: false,
-          _count: { ...prev._count, followers: prev._count.followers - 1 }
+          followStatus: 'none',
+          _count: { ...prev._count, followers: prev.followStatus === 'accepted' ? prev._count.followers - 1 : prev._count.followers }
         }));
       } else {
-        await supabase.from('follows').insert({ follower_id: session.user.id, following_id: targetProfile.id });
-        setProfile((prev: any) => ({
-          ...prev,
-          isFollowing: true,
-          _count: { ...prev._count, followers: prev._count.followers + 1 }
-        }));
+        const { data, error } = await supabase.from('follows').insert({ follower_id: session.user.id, following_id: targetProfile.id }).select().single();
+        if (!error && data) {
+          setProfile((prev: any) => ({
+            ...prev,
+            isFollowing: data.status === 'accepted',
+            followStatus: data.status,
+            _count: { ...prev._count, followers: data.status === 'accepted' ? prev._count.followers + 1 : prev._count.followers }
+          }));
+        }
       }
     } catch (err) {
       console.error(err);
@@ -239,17 +276,21 @@ export default function ProfilePage() {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       
       const { error } = await supabase
         .from('profiles')
-        .update({ bio: editBio })
+        .update({ bio: editBio, first_name: editFirstName, last_name: editLastName })
         .eq('id', session.user.id);
         
       if (!error) {
         setProfile((prev: any) => ({
           ...prev,
+          first_name: editFirstName,
+          last_name: editLastName,
           profile: { ...prev.profile, bio: editBio }
         }));
         setIsEditProfileOpen(false);
@@ -261,14 +302,75 @@ export default function ProfilePage() {
     }
   };
 
+  const handleCall = async (type: 'audio' | 'video') => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      if (!profile) return;
+
+      const { data: myProfile } = await supabase.from('profiles').select('username, avatar_url').eq('id', session.user.id).single();
+
+      const { data: call } = await supabase.from('calls').insert({
+        caller_id: session.user.id,
+        receiver_id: profile.id,
+        call_type: type,
+        status: 'ringing'
+      }).select().single();
+
+      if (call) {
+        router.push(`/call/${call.id}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('فشل بدء المكالمة');
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Supabase Storage implementation would go here
     setIsUploading(true);
-    alert('ميزة رفع الصور جاري تحديثها لاستخدام الخوادم الجديدة!');
-    setIsUploading(false);
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${session.user.id}-${Math.random()}.${fileExt}`;
+      const bucket = type === 'avatar' ? 'avatars' : 'covers';
+
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
+      const publicUrl = data.publicUrl;
+
+      // Update Profile DB
+      const updateData = type === 'avatar' ? { avatar_url: publicUrl } : { cover_url: publicUrl };
+      const { error: dbError } = await supabase.from('profiles').update(updateData).eq('id', session.user.id);
+      
+      if (dbError) throw dbError;
+
+      // Update Local State
+      setProfile((prev: any) => ({
+        ...prev,
+        profile: { ...prev.profile, [type === 'avatar' ? 'avatarUrl' : 'coverUrl']: publicUrl }
+      }));
+
+    } catch (e: any) {
+      console.error(e);
+      alert('فشل رفع الصورة: ' + e.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const toggleDMs = async () => {
@@ -377,61 +479,95 @@ export default function ProfilePage() {
                   </button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={async () => {
-                        try {
-                          const { createClient } = await import('@/utils/supabase/client');
-                          const supabase = createClient();
-                          const { data: { session } } = await supabase.auth.getSession();
-                          if (!session) return;
-                          
-                          // Check if private chat exists or create one
-                          const { data: existingChat, error: rpcError } = await supabase.rpc('get_or_create_private_chat', { other_user_id: profile.id });
-                          
-                          if (existingChat) {
-                            router.push(`/messages/${existingChat}`);
-                          } else {
-                            if (rpcError) {
-                              console.error("RPC Error:", rpcError);
-                            }
+                    {/* Message Button logic */}
+                    {(!profile.allow_messages || profile.allow_messages === 'everyone' || (profile.allow_messages === 'followers' && profile.isFollowing)) && (
+                      <button 
+                        onClick={async () => {
+                          try {
+                            const { createClient } = await import('@/utils/supabase/client');
+                            const supabase = createClient();
+                            const { data: { session } } = await supabase.auth.getSession();
+                            if (!session) return;
                             
-                            // Fallback to manual creation if RPC is missing
-                            const { data: channel, error: channelError } = await supabase.from('channels').insert({ is_group: false, name: '' }).select().single();
-                            if (channelError) {
-                              alert('فشل إنشاء المحادثة: ' + JSON.stringify(channelError));
-                              return;
-                            }
-                            
-                            if (channel) {
-                              const { error: membersError } = await supabase.from('channel_members').insert([
-                                { channel_id: channel.id, user_id: session.user.id },
-                                { channel_id: channel.id, user_id: profile.id }
-                              ]);
-                              
-                              if (membersError) {
-                                alert('فشل إضافة الأعضاء: ' + JSON.stringify(membersError));
+                            const { data: existingParticipant } = await supabase
+                              .from('conversation_participants')
+                              .select('conversation_id')
+                              .eq('user_id', session.user.id)
+                              .in('conversation_id', (
+                                await supabase
+                                  .from('conversation_participants')
+                                  .select('conversation_id')
+                                  .eq('user_id', profile.id)
+                              ).data?.map(p => p.conversation_id) || [])
+                              .maybeSingle();
+
+                            if (existingParticipant) {
+                              router.push(`/messages/${existingParticipant.conversation_id}`);
+                            } else {
+                              const { data: newConv, error: convError } = await supabase
+                                .from('conversations')
+                                .insert({})
+                                .select()
+                                .single();
+
+                              if (convError || !newConv) {
+                                alert('فشل إنشاء المحادثة: ' + JSON.stringify(convError));
                                 return;
                               }
-                              
-                              router.push(`/messages/${channel.id}`);
+
+                              const { error: membersError } = await supabase
+                                .from('conversation_participants')
+                                .insert([
+                                  { conversation_id: newConv.id, user_id: session.user.id },
+                                  { conversation_id: newConv.id, user_id: profile.id }
+                                ]);
+
+                              if (membersError) {
+                                alert('فشل إضافة الأعضاء (قد يكون بسبب الخصوصية): ' + JSON.stringify(membersError));
+                                return;
+                              }
+
+                              router.push(`/messages/${newConv.id}`);
                             }
+                          } catch (err: any) {
+                            alert('حدث خطأ غير متوقع: ' + err.message);
                           }
-                        } catch (err: any) {
-                          alert('حدث خطأ غير متوقع: ' + err.message);
-                        }
-                      }}
-                      className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
-                      title="مراسلة"
-                    >
-                      <Mail size={18} />
-                    </button>
+                        }}
+                        className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
+                        title="مراسلة"
+                      >
+                        <Mail size={18} />
+                      </button>
+                    )}
+
+                    {/* Call Buttons logic */}
+                    {(!profile.allow_calls || profile.allow_calls === 'everyone' || (profile.allow_calls === 'followers' && profile.isFollowing)) && (
+                      <>
+                        <button 
+                          onClick={() => handleCall('audio')}
+                          className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
+                          title="اتصال صوتي"
+                        >
+                          <Phone size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleCall('video')}
+                          className="w-9 h-9 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
+                          title="اتصال فيديو"
+                        >
+                          <Video size={18} />
+                        </button>
+                      </>
+                    )}
                     <FollowButton 
                       targetUserId={profile.id}
                       initialIsFollowing={profile.isFollowing}
-                      onToggle={(isFollowing) => {
+                      initialFollowStatus={profile.followStatus}
+                      onToggle={(isFollowing, status) => {
                         setProfile((prev: any) => ({
                           ...prev,
                           isFollowing,
+                          followStatus: status,
                           _count: { ...prev._count, followers: Math.max(0, prev._count.followers + (isFollowing ? 1 : -1)) }
                         }));
                       }}
@@ -471,23 +607,23 @@ export default function ProfilePage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-slate-800 text-[14px]">
+        <div className="flex border-b border-slate-800 mb-4 mt-6">
           <button 
             onClick={() => setActiveTab('posts')}
-            className={`flex-1 py-4 font-bold text-center border-b-2 transition-colors ${activeTab === 'posts' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-400 hover:bg-slate-900'}`}
+            className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'posts' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
           >
             المنشورات
           </button>
           <button 
             onClick={() => setActiveTab('likes')}
-            className={`flex-1 py-4 font-bold text-center border-b-2 transition-colors ${activeTab === 'likes' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-400 hover:bg-slate-900'}`}
+            className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'likes' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
           >
             الإعجابات
           </button>
           {isOwnProfile && (
             <button 
               onClick={() => { setActiveTab('bookmarks'); fetchBookmarksList(); }}
-              className={`flex-1 py-4 font-bold text-center border-b-2 transition-colors ${activeTab === 'bookmarks' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-400 hover:bg-slate-900'}`}
+              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'bookmarks' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
             >
               السجل
             </button>
@@ -495,7 +631,7 @@ export default function ProfilePage() {
           {isOwnProfile && (
             <button 
               onClick={() => setActiveTab('settings')}
-              className={`flex-1 py-4 font-bold text-center border-b-2 transition-colors ${activeTab === 'settings' ? 'border-cyan-500 text-cyan-500' : 'border-transparent text-slate-400 hover:bg-slate-900'}`}
+              className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'settings' ? 'border-cyan-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
             >
               الإعدادات
             </button>
@@ -504,24 +640,36 @@ export default function ProfilePage() {
 
         {/* Tab Content */}
         <div className="p-4">
-          {activeTab === 'posts' && (
-            <div className="pb-[60px]">
-              {posts.map((post) => (
-                <PostItem 
-                  key={post.id} 
-                  post={post} 
-                  currentUsername={currentUsername} 
-                  onPostDeleted={handlePostDeleted}
-                  onPostEdited={handlePostEdited}
-                />
-              ))}
-              {posts.length === 0 && (
-                <div className="text-center p-12 text-slate-500 font-bold">
-                  لم يقم بنشر أي شيء بعد.
+          {profile.is_private && !isOwnProfile && profile.followStatus !== 'accepted' ? (
+            <div className="py-20 px-8 text-center flex flex-col items-center justify-center border border-slate-800 rounded-2xl bg-[#0a0a0a] mt-4 shadow-lg shadow-black/50">
+              <div className="w-20 h-20 rounded-full bg-slate-900 flex items-center justify-center mb-6">
+                <Lock size={32} className="text-slate-500" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-3">هذا الحساب خاص</h3>
+              <p className="text-slate-400 text-[15px] max-w-sm mb-6 leading-relaxed">
+                منشورات وصور @{profile.username} تظهر فقط للمتابعين المقبولين. أرسل طلب متابعة لرؤية المحتوى.
+              </p>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'posts' && (
+                <div className="pb-[60px]">
+                  {posts.map((post) => (
+                    <PostItem 
+                      key={post.id} 
+                      post={post} 
+                      currentUsername={currentUsername} 
+                      onPostDeleted={handlePostDeleted}
+                      onPostEdited={handlePostEdited}
+                    />
+                  ))}
+                  {posts.length === 0 && (
+                    <div className="text-center p-12 text-slate-500 font-bold">
+                      لم يقم بنشر أي شيء بعد.
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
           {activeTab === 'likes' && (
             <div className="text-center text-slate-500 py-10 font-bold">
               ستظهر المنشورات المعجب بها هنا قريباً.
@@ -563,7 +711,9 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-        </div>
+        </>
+      )}
+    </div>
 
         {/* Edit Profile Modal */}
         {isEditProfileOpen && (
@@ -604,6 +754,29 @@ export default function ProfilePage() {
                   >
                     <Camera size={16} /> <span>تغيير الغلاف</span>
                   </button>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="relative border border-slate-700 rounded-md px-3 pt-6 pb-2 focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500 transition-all text-right flex-1">
+                    <label className="absolute top-2 right-3 text-xs text-slate-500 font-bold">الاسم الأول</label>
+                    <input 
+                      type="text"
+                      className="w-full bg-transparent text-white focus:outline-none text-[15px]"
+                      value={editFirstName}
+                      onChange={(e) => setEditFirstName(e.target.value)}
+                      maxLength={50}
+                    />
+                  </div>
+                  <div className="relative border border-slate-700 rounded-md px-3 pt-6 pb-2 focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500 transition-all text-right flex-1">
+                    <label className="absolute top-2 right-3 text-xs text-slate-500 font-bold">اسم العائلة</label>
+                    <input 
+                      type="text"
+                      className="w-full bg-transparent text-white focus:outline-none text-[15px]"
+                      value={editLastName}
+                      onChange={(e) => setEditLastName(e.target.value)}
+                      maxLength={50}
+                    />
+                  </div>
                 </div>
 
                 <div className="relative border border-slate-700 rounded-md px-3 pt-6 pb-2 focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500 transition-all text-right">

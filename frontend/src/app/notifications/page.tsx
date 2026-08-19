@@ -1,9 +1,8 @@
 'use client';
 
-
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, MessageCircle, UserPlus, ArrowRight } from 'lucide-react';
+import { Heart, MessageCircle, Repeat, UserPlus, Mail, PhoneOff, ArrowRight, Bell } from 'lucide-react';
 import BottomNav from '../../components/BottomNav';
 
 export default function NotificationsPage() {
@@ -12,131 +11,159 @@ export default function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        router.push('/');
-        return;
-      }
-      
-      // Fetch Supabase notifications
-      const { data } = await supabase
-        .from('social_notifications')
-        .select(`
-          *,
-          actor:profiles!actor_id(username, avatar_url)
-        `)
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-
-      if (data) {
-        setNotifications(data);
+    let isMounted = true;
+    
+    const fetchNotifications = async () => {
+      try {
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
         
-        // Mark as read
-        const unreadIds = data.filter(n => !n.is_read).map(n => n.id);
-        if (unreadIds.length > 0) {
-          supabase.from('social_notifications').update({ is_read: true }).in('id', unreadIds).then();
+        if (!session) {
+          router.push('/');
+          return;
         }
+
+        // 1. Fetch notifications with actor info
+        const { data: notifs } = await supabase
+          .from('notifications')
+          .select('*, actor:profiles!actor_id(username, avatar_url)')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+
+        if (!isMounted) return;
+
+        if (notifs) {
+          setNotifications(notifs);
+        }
+        setIsLoading(false);
+
+        // 2. Mark all as read
+        const unreadIds = notifs?.filter(n => !n.is_read).map(n => n.id);
+        if (unreadIds && unreadIds.length > 0) {
+          await supabase
+            .from('notifications')
+            .update({ is_read: true })
+            .in('id', unreadIds);
+            
+          // Dispatch event to update BottomNav badge
+          window.dispatchEvent(new CustomEvent('new-notification'));
+        }
+      } catch (err) {
+        console.error(err);
       }
-      setIsLoading(false);
     };
-    checkAuth();
+    
+    fetchNotifications();
+    
+    return () => { isMounted = false; };
   }, [router]);
 
+
+
   const getIcon = (type: string) => {
-    switch (type.toLowerCase()) {
+    switch(type) {
       case 'like': return <Heart size={20} className="text-pink-500 fill-pink-500" />;
-      case 'comment': return <MessageCircle size={20} className="text-cyan-500 fill-cyan-500" />;
-      case 'follow': return <UserPlus size={20} className="text-purple-500" />;
-      default: return null;
+      case 'comment': return <MessageCircle size={20} className="text-sky-500 fill-sky-500" />;
+      case 'repost': return <Repeat size={20} className="text-emerald-500" />;
+      case 'follow': return <UserPlus size={20} className="text-blue-500" />;
+      case 'message': return <Mail size={20} className="text-purple-500" />;
+      case 'missed_call': return <PhoneOff size={20} className="text-red-500" />;
+      default: return <Bell size={20} className="text-slate-500" />;
     }
   };
 
-  const getMessage = (notification: any) => {
-    if (!notification.actor) return <span>مستخدم مجهول</span>;
-    switch (notification.type.toLowerCase()) {
-      case 'like': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> أعجبه منشورك</span>;
-      case 'comment': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> علق على منشورك</span>;
-      case 'follow': return <span><b className="text-white" dir="ltr">@{notification.actor.username}</b> بدأ بمتابعتك</span>;
-      default: return <span>إشعار جديد</span>;
+  const getMessage = (type: string) => {
+    switch(type) {
+      case 'like': return 'أعجب بمنشورك';
+      case 'comment': return 'رد على منشورك';
+      case 'repost': return 'أعاد نشر منشورك';
+      case 'follow': return 'بدأ بمتابعتك';
+      case 'message': return 'أرسل لك رسالة جديدة';
+      case 'missed_call': return 'مكالمة فائتة';
+      default: return 'إشعار جديد';
     }
   };
 
-  const handleNotificationClick = async (notification: any) => {
-    if (notification.type === 'FOLLOW') {
-      router.push(`/${notification.actor?.username}`);
-    } else if (notification.postId) {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        const { data: profile } = await supabase.from('profiles').select('username').eq('id', session.user.id).single();
-        if (profile) {
-          router.push(`/${profile.username}`);
-        }
-      }
+  const handleNotificationClick = (notif: any) => {
+    switch(notif.type) {
+      case 'like':
+      case 'comment':
+      case 'repost':
+        router.push(`/post/${notif.reference_id}`);
+        break;
+      case 'follow':
+        router.push(`/${notif.actor?.username}`);
+        break;
+      case 'message':
+        router.push(`/messages/${notif.reference_id}`);
+        break;
+      case 'missed_call':
+        router.push(`/messages`);
+        break;
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center bg-black text-right font-sans">
-      <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black">
-        <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800 p-4">
+    <div className="min-h-screen flex justify-center bg-black font-sans text-right relative pb-20">
+      <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black" dir="rtl">
+        
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md flex items-center px-4 py-3 gap-6 border-b border-slate-800/50">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.back()} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors sm:hidden">
-              <ArrowRight size={20} className="text-white" />
-            </button>
-            <h1 className="font-bold text-xl text-white">الإشعارات</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">الإشعارات</h1>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto pb-20">
+        {/* Notifications List */}
+        <div className="flex-1">
           {isLoading ? (
-            <div className="flex justify-center p-8">
-              <div className="animate-pulse text-cyan-500 font-bold">جاري تحميل الإشعارات...</div>
-            </div>
+            Array(5).fill(0).map((_, i) => (
+              <div key={i} className="p-4 border-b border-slate-800/50 flex gap-4 animate-pulse">
+                <div className="w-10 h-10 rounded-full bg-slate-800"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-slate-800 rounded w-1/3"></div>
+                  <div className="h-3 bg-slate-800 rounded w-1/2"></div>
+                </div>
+              </div>
+            ))
           ) : notifications.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-slate-500 font-bold">
-              <span className="text-4xl mb-4">🔔</span>
-              <p>لا توجد إشعارات بعد</p>
+            <div className="text-center p-12">
+              <h2 className="text-xl font-bold text-slate-300 mb-2">لا توجد إشعارات بعد</h2>
+              <p className="text-slate-500">عندما يتفاعل الآخرون معك، ستجد إشعاراتك هنا.</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-800/50">
-              {notifications.map((notification) => (
-                <div 
-                  key={notification.id} 
-                  onClick={() => handleNotificationClick(notification)}
-                  className={`flex items-start gap-3 p-4 cursor-pointer hover:bg-slate-900 transition-colors ${!notification.is_read ? 'bg-cyan-950/20' : ''}`}
-                >
-                  <div className="w-10 flex justify-start pl-2 pt-1">
-                    {getIcon(notification.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden mb-2 border border-slate-700">
-                      {notification.actor?.avatar_url ? (
-                        <img src={notification.actor.avatar_url} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-slate-300" dir="ltr">
-                          {notification.actor?.username?.charAt(0).toUpperCase() || 'U'}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-[15px] text-slate-300">
-                      {getMessage(notification)}
-                    </div>
-                    {notification.post && (
-                      <div className="mt-2 text-slate-500 text-sm line-clamp-2 italic">
-                        "{notification.post.content}"
+            notifications.map((notif) => (
+              <div 
+                key={notif.id} 
+                onClick={() => handleNotificationClick(notif)}
+                className={`p-4 border-b border-slate-800/50 flex gap-4 cursor-pointer hover:bg-slate-900 transition-colors ${!notif.is_read ? 'bg-[#0f172a]/50' : ''}`}
+              >
+                <div className="w-10 flex flex-col items-center">
+                  {getIcon(notif.type)}
+                </div>
+                <div className="flex-1">
+                  <div className="w-10 h-10 rounded-full bg-slate-800 mb-2 overflow-hidden border border-slate-700">
+                    {notif.actor?.avatar_url ? (
+                      <img src={notif.actor.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">
+                        {notif.actor?.username?.charAt(0).toUpperCase() || 'U'}
                       </div>
                     )}
                   </div>
+                  <p className="text-white text-[15px] leading-relaxed">
+                    <span className="font-bold hover:underline" onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/${notif.actor?.username}`);
+                    }}>
+                      {notif.actor?.username}
+                    </span>{' '}
+                    <span className="text-slate-300">{getMessage(notif.type)}</span>
+                  </p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))
           )}
         </div>
 
