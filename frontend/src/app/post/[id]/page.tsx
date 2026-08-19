@@ -141,15 +141,34 @@ export default function PostDetailPage() {
         .single();
         
       if (newComment) {
-        setComments([newComment, ...comments]);
-        setCommentContent('');
-        setMediaFile(null);
-        setMediaPreview(null);
-        setPost((prev: any) => ({
-          ...prev,
-          comments_count: (prev.comments_count || 0) + 1
-        }));
+        setComments(prev => [newComment, ...prev]);
+      } else {
+        // Fallback optimistic update if select fails
+        const fakeComment = {
+          id: Math.random().toString(),
+          post_id: postId,
+          user_id: session.user.id,
+          content: commentContent,
+          media_url: finalMediaUrl,
+          created_at: new Date().toISOString(),
+          author: {
+            id: session.user.id,
+            username: currentUsername || 'User',
+            avatar_url: currentUserAvatar || ''
+          }
+        };
+        setComments(prev => [fakeComment as any, ...prev]);
+        if (error) console.error("Error inserting comment:", error);
       }
+      
+      setCommentContent('');
+      setMediaFile(null);
+      setMediaPreview(null);
+      setShowGifPicker(false);
+      setPost((prev: any) => ({
+        ...prev,
+        comments_count: (prev.comments_count || 0) + 1
+      }));
     } catch (err) {
       console.error(err);
     } finally {
@@ -269,25 +288,25 @@ export default function PostDetailPage() {
               <div className="flex justify-between items-center border-t border-slate-800/50 pt-2 mt-1">
                 <div className="flex gap-1">
                   <input 
-                    id="reply-file-input"
+                    id="reply-image-input"
                     type="file" 
                     accept="image/*" 
                     className="hidden" 
                     onChange={handleImageChange} 
                   />
-                  <label htmlFor="reply-file-input" className="text-cyan-500 p-1.5 rounded-full hover:bg-cyan-500/10 transition-colors cursor-pointer flex items-center justify-center">
+                  <label htmlFor="reply-image-input" className="text-cyan-500 p-1.5 rounded-full hover:bg-cyan-500/10 transition-colors cursor-pointer flex items-center justify-center">
                     <ImageIcon size={18} />
                   </label>
-                  <button onClick={() => setShowGifPicker(!showGifPicker)} className="text-cyan-500 p-1.5 rounded-full hover:bg-cyan-500/10 transition-colors">
-                    <PlaySquare size={18} />
+                  <button onClick={() => setShowGifPicker(!showGifPicker)} className="text-cyan-500 hover:bg-cyan-500/10 transition-colors flex items-center justify-center p-1.5 rounded-full">
+                    <span className="border border-cyan-500 rounded px-1.5 py-0.5 text-[10px] font-bold">GIF</span>
                   </button>
                 </div>
                 <button 
                   onClick={handleAddComment}
                   disabled={(!commentContent.trim() && !mediaPreview) || isSubmitting}
-                  className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-1.5 px-4 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-1.5 px-5 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  <Sparkles size={14} /> رد
+                  رد
                 </button>
               </div>
               

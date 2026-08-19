@@ -497,8 +497,8 @@ export default function HomePage() {
                       <label htmlFor="home-file-input" className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors cursor-pointer flex items-center justify-center" title="إرفاق صورة أو فيديو">
                         <ImageIcon size={20} />
                       </label>
-                      <button onClick={() => setShowGifPicker(!showGifPicker)} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="إرفاق GIF">
-                        <PlaySquare size={20} />
+                      <button onClick={() => setShowGifPicker(!showGifPicker)} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors flex items-center justify-center" title="إرفاق GIF">
+                        <span className="border border-cyan-500 rounded px-1.5 py-0.5 text-[10px] font-bold">GIF</span>
                       </button>
                       <button onClick={fetchBookmarksAndOpenModal} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="اقتباس من السجل">
                         <Quote size={20} />
