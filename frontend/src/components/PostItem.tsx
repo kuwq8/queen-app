@@ -263,11 +263,11 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   };
 
   return (
-    <div ref={postRef} className="p-4 border-b border-slate-800 hover:bg-[#111] transition-colors relative flex gap-3 text-right">
+    <div ref={postRef} className={`p-4 border-b border-slate-800 hover:bg-[#111] transition-colors relative flex gap-3 text-right ${showDropdown ? 'z-50' : 'z-0'}`}>
       {/* Clickable Area for routing (excludes dropdown/buttons) */}
       <div 
         className="absolute inset-0 cursor-pointer z-0" 
-        onClick={() => router.push(`/${post.author?.username || 'unknown'}`)}
+        onClick={() => router.push(`/post/${post.id}`)}
       />
 
       <Link href={`/${post.author?.username || 'unknown'}`} className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-base border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors z-10 relative overflow-hidden">
@@ -306,34 +306,34 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           </div>
           
           {isOwner && (
-            <div className="relative">
+            <div className="relative z-50">
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowDropdown(!showDropdown); }} 
-                className="text-slate-500 hover:text-cyan-500 p-1 rounded-full hover:bg-cyan-500/10 transition-colors"
+                className="text-slate-500 hover:text-cyan-500 p-1 rounded-full hover:bg-cyan-500/10 transition-colors relative z-50"
               >
                 <MoreHorizontal size={18} />
               </button>
               
               {showDropdown && (
-                <div className="absolute left-0 top-8 w-40 bg-black border border-slate-800 rounded-xl shadow-2xl py-1 z-50 text-right">
+                <div className="absolute left-0 top-full mt-1 min-w-[140px] bg-black border border-slate-800 rounded-xl shadow-2xl p-1.5 z-[100] text-right flex flex-col gap-1">
                   <button 
                     onClick={(e) => { e.stopPropagation(); setIsEditing(true); setShowDropdown(false); }}
-                    className="w-full text-right px-4 py-2 text-white hover:bg-slate-800 flex items-center gap-2"
+                    className="w-full text-right px-3 py-2 text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 transition-colors text-sm"
                   >
-                    <Edit size={16} className="text-slate-400" /> تعديل
+                    <Edit size={16} className="text-slate-400 shrink-0" /> تعديل
                   </button>
                   <button 
                     onClick={(e) => { e.stopPropagation(); handleToggleComments(); }}
-                    className="w-full text-right px-4 py-2 text-white hover:bg-slate-800 flex items-center gap-2 border-b border-slate-800 pb-2 mb-1"
+                    className="w-full text-right px-3 py-2 text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 transition-colors border-b border-slate-800/50 pb-2 mb-1 text-sm"
                   >
-                    <MessageSquareOff size={16} className="text-slate-400" /> {post.is_comments_disabled ? 'تفعيل التعليقات' : 'إيقاف التعليقات'}
+                    <MessageSquareOff size={16} className="text-slate-400 shrink-0" /> {post.is_comments_disabled ? 'تفعيل التعليقات' : 'إيقاف التعليقات'}
                   </button>
                   <button 
                     onClick={(e) => { e.stopPropagation(); handleDelete(); setShowDropdown(false); }}
                     disabled={isDeleting}
-                    className="w-full text-right px-4 py-2 text-red-500 hover:bg-slate-800 flex items-center gap-2 disabled:opacity-50"
+                    className="w-full text-right px-3 py-2 text-red-500 hover:bg-red-500/10 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 text-sm"
                   >
-                    <Trash2 size={16} className="text-red-500" /> {isDeleting ? 'جاري الحذف...' : 'حذف'}
+                    <Trash2 size={16} className="text-red-500 shrink-0" /> {isDeleting ? 'جاري الحذف...' : 'حذف المنشور'}
                   </button>
                 </div>
               )}
