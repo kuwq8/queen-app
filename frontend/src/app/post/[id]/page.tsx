@@ -277,12 +277,12 @@ export default function PostDetailPage() {
                 </div>
               )}
             </div>
-            <div className="flex-1 flex flex-col gap-2">
+            <div className="flex-1 min-w-0 flex flex-col gap-2 pt-1">
               <textarea 
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
                 placeholder="أضف ردك الخاص..."
-                className="w-full bg-transparent text-white text-[15px] resize-none focus:outline-none min-h-[40px] pt-2"
+                className="w-full bg-transparent text-white text-[15px] resize-none focus:outline-none min-h-[40px]"
                 rows={1}
               />
               <div className="flex justify-between items-center border-t border-slate-800/50 pt-2 mt-1">
@@ -358,20 +358,22 @@ export default function PostDetailPage() {
         {/* Comments List */}
         <div className="flex-1">
           {comments.map(comment => (
-            <div key={comment.id} className="p-4 border-b border-slate-800/50 flex space-x-3 space-x-reverse">
-              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-slate-300 overflow-hidden shrink-0">
+            <div key={comment.id} className="p-4 border-b border-slate-800/50 flex gap-3 text-right hover:bg-[#111] transition-colors">
+              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-slate-300 overflow-hidden shrink-0 border border-slate-700">
                 {comment.author?.avatar_url ? (
                   <img src={comment.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  comment.author?.username?.charAt(0).toUpperCase()
+                  <span dir="ltr">{comment.author?.username?.charAt(0).toUpperCase()}</span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-start gap-1.5 flex-wrap flex-row-reverse">
+                <div className="flex items-center justify-end gap-1.5 flex-wrap flex-row-reverse mb-1">
                   <span className="font-bold text-white text-[15px] hover:underline cursor-pointer break-all" dir="ltr" onClick={() => router.push(`/${comment.author?.username}`)}>
                     {comment.author?.username}
                   </span>
                   <span className="text-slate-500 text-sm break-all" dir="ltr">@{comment.author?.username}</span>
+                  <span className="text-slate-500 text-sm">·</span>
+                  <span className="text-slate-500 text-sm">{formatTime(comment.created_at)}</span>
                 </div>
                 {comment.content && <p className="text-slate-200 text-[15px] mt-1 break-words">{comment.content}</p>}
                 {comment.media_url && (
@@ -388,7 +390,7 @@ export default function PostDetailPage() {
             </div>
           ))}
           {comments.length === 0 && (
-            <div className="text-center p-8 text-slate-500">
+            <div className="text-center p-8 text-slate-500 text-sm font-bold">
               لا توجد ردود حتى الآن. كن أول من يرد!
             </div>
           )}

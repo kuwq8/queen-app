@@ -1,24 +1,10 @@
-const { Client } = require('pg');
-
-const client = new Client({
-  connectionString: 'postgresql://postgres.hamqmslzhlcnksdliipl:E3pcMy0bx2Ayupwq@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres'
-});
-
-async function run() {
-  await client.connect();
-
-  try {
-    const res = await client.query(`
-      SELECT relname, relrowsecurity 
-      FROM pg_class 
-      WHERE relname = 'comments';
-    `);
+const {Client} = require('pg');
+const client = new Client('postgresql://postgres.pntvsvntrftzowfdbjca:9iQ7p5N6x3Z2w1V0@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres');
+client.connect()
+  .then(() => client.query("SELECT polname, polcmd FROM pg_policy JOIN pg_class ON pg_class.oid = pg_policy.polrelid WHERE relname = 'comments'"))
+  .then(res => {
+    console.log("POLICIES:");
     console.log(res.rows);
-  } catch (e) {
-    console.error('Error:', e);
-  } finally {
-    await client.end();
-  }
-}
-
-run().catch(console.error);
+    client.end();
+  })
+  .catch(console.error);
