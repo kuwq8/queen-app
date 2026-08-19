@@ -91,7 +91,7 @@ export default function PostDetailPage() {
       }
         
       if (commentsData) {
-        setComments(commentsData);
+        setComments(commentsData || []);
       }
       
     } catch (err) {
@@ -335,7 +335,7 @@ export default function PostDetailPage() {
                     />
                   </div>
                   <div className="h-[200px] overflow-y-auto p-1 grid grid-cols-2 gap-1 custom-scrollbar">
-                    {gifs.map(gif => (
+                    {gifs?.map(gif => (
                       <img 
                         key={gif.id} 
                         src={gif.media_formats?.tinygif?.url} 
@@ -357,21 +357,21 @@ export default function PostDetailPage() {
 
         {/* Comments List */}
         <div className="flex-1">
-          {comments.map(comment => (
+          {comments?.map(comment => (
             <div key={comment.id} className="p-4 border-b border-slate-800/50 flex gap-3 text-right hover:bg-[#111] transition-colors">
               <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center font-bold text-sm text-slate-300 overflow-hidden shrink-0 border border-slate-700">
                 {comment.author?.avatar_url ? (
                   <img src={comment.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <span dir="ltr">{comment.author?.username?.charAt(0).toUpperCase()}</span>
+                  <span dir="ltr">{(comment.author?.username || 'U').charAt(0).toUpperCase()}</span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-end gap-1.5 flex-wrap flex-row-reverse mb-1">
-                  <span className="font-bold text-white text-[15px] hover:underline cursor-pointer break-all" dir="ltr" onClick={() => router.push(`/${comment.author?.username}`)}>
-                    {comment.author?.username}
+                  <span className="font-bold text-white text-[15px] hover:underline cursor-pointer break-all" dir="ltr" onClick={() => router.push(`/${comment.author?.username || ''}`)}>
+                    {comment.author?.username || 'مستخدم غير معروف'}
                   </span>
-                  <span className="text-slate-500 text-sm break-all" dir="ltr">@{comment.author?.username}</span>
+                  <span className="text-slate-500 text-sm break-all" dir="ltr">@{comment.author?.username || 'unknown'}</span>
                   <span className="text-slate-500 text-sm">·</span>
                   <span className="text-slate-500 text-sm">{formatTime(comment.created_at)}</span>
                 </div>

@@ -274,7 +274,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         {post.author?.avatar_url ? (
           <img src={post.author.avatar_url} alt={post.author?.username || 'User'} className="w-full h-full object-cover" />
         ) : (
-          <span dir="ltr">{post.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
+          <span dir="ltr">{(post.author?.username || 'U').charAt(0).toUpperCase()}</span>
         )}
       </Link>
       
