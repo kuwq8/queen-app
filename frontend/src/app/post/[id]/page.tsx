@@ -28,6 +28,18 @@ export default function PostDetailPage() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const formatTime = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diff < 60) return `منذ ${diff} ثانية`;
+    if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+    if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+    return `منذ ${Math.floor(diff / 86400)} يوم`;
+  };
+
   useEffect(() => {
     fetchPostAndComments();
   }, [postId, router]);
