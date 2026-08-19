@@ -78,14 +78,35 @@ export default function ExplorePage() {
       
       const { data, error } = await supabase
         .from('posts')
-        .select('*, author:profiles!user_id(id, username, avatar_url)')
+        .select('*, author:profiles(id, username, avatar_url)')
         .ilike('content', `%${searchQuery}%`)
         .order('created_at', { ascending: false })
         .limit(20);
         
       if (!error && data) {
-        // Just quick mock for likes, reposts (in real prod, you might query them)
-        setPostResults(data.map(p => ({ ...p, isLiked: false, isReposted: false, isBookmarked: false })));
+        let enhancedPosts = data;
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          const postIds = data.map(p => p.id);
+          const [likesRes, repostsRes, bookmarksRes] = await Promise.all([
+            supabase.from('likes').select('post_id').eq('user_id', session.user.id).in('post_id', postIds),
+            supabase.from('reposts').select('post_id').eq('user_id', session.user.id).in('post_id', postIds),
+            supabase.from('bookmarks').select('post_id').eq('user_id', session.user.id).in('post_id', postIds)
+          ]);
+          
+          const likedIds = new Set(likesRes.data?.map(l => l.post_id) || []);
+          const repostedIds = new Set(repostsRes.data?.map(r => r.post_id) || []);
+          const bookmarkedIds = new Set(bookmarksRes.data?.map(b => b.post_id) || []);
+          
+          enhancedPosts = data.map(p => ({
+            ...p,
+            isLiked: likedIds.has(p.id),
+            isReposted: repostedIds.has(p.id),
+            isBookmarked: bookmarkedIds.has(p.id)
+          }));
+        }
+        setPostResults(enhancedPosts);
       }
     } catch (e) {
       console.error(e);

@@ -73,21 +73,34 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
         .from('posts')
         .select(`
           *,
-          author:profiles!user_id(username, avatar_url),
+          author:profiles(username, avatar_url),
           community:communities!community_id(name)
         `)
         .eq('community_id', params.id)
         .order('created_at', { ascending: false });
 
-      if (postsData) {
-        // Mock likes/reposts for now or fetch actual
+      if (postsData && session) {
+        const postIds = postsData.map(p => p.id);
+        
+        const [likesRes, repostsRes, bookmarksRes] = await Promise.all([
+          supabase.from('likes').select('post_id').eq('user_id', session.user.id).in('post_id', postIds),
+          supabase.from('reposts').select('post_id').eq('user_id', session.user.id).in('post_id', postIds),
+          supabase.from('bookmarks').select('post_id').eq('user_id', session.user.id).in('post_id', postIds)
+        ]);
+
+        const likedIds = new Set(likesRes.data?.map(l => l.post_id) || []);
+        const repostedIds = new Set(repostsRes.data?.map(r => r.post_id) || []);
+        const bookmarkedIds = new Set(bookmarksRes.data?.map(b => b.post_id) || []);
+
         const enhancedPosts = postsData.map(p => ({
           ...p,
-          isLiked: false,
-          isReposted: false,
-          isBookmarked: false
+          isLiked: likedIds.has(p.id),
+          isReposted: repostedIds.has(p.id),
+          isBookmarked: bookmarkedIds.has(p.id)
         }));
         setPosts(enhancedPosts);
+      } else if (postsData) {
+        setPosts(postsData);
       }
 
     } catch (e) {

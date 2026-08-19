@@ -5,7 +5,7 @@ import { API_URL, getToken } from '@/lib/api';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bookmark, Compass, Bell, Mail, Home, Search, Feather, MoreHorizontal, MessageCircle, Repeat, Heart, Share, Play, Eye, X, Image as ImageIcon, Sparkles, LogOut, Coffee, Hash, ImagePlus, UserPlus, Users, MessageSquareOff, User, Quote, Plus } from 'lucide-react';
+import { Bookmark, Compass, Bell, Mail, Home, Search, Feather, MoreHorizontal, MessageCircle, Repeat, Heart, Share, Play, PlaySquare, Eye, X, Image as ImageIcon, Sparkles, LogOut, Coffee, Hash, ImagePlus, UserPlus, Users, MessageSquareOff, User, Quote, Plus } from 'lucide-react';
 import CoffeeButton from '../../components/CoffeeButton';
 import PostItem from '../../components/PostItem';
 import BottomNav from '../../components/BottomNav';
@@ -30,6 +30,9 @@ export default function HomePage() {
   const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState(false);
   const [bookmarksList, setBookmarksList] = useState<any[]>([]);
   const [selectedQuotePost, setSelectedQuotePost] = useState<any>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [gifSearch, setGifSearch] = useState('');
+  const [gifs, setGifs] = useState<any[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -104,7 +107,7 @@ export default function HomePage() {
         .from('posts')
         .select(`
           *,
-          author:profiles!user_id(username, avatar_url)
+          author:profiles(username, avatar_url)
         `)
         .order('created_at', { ascending: false });
 
@@ -176,11 +179,31 @@ export default function HomePage() {
     }
   };
 
+  const searchGifs = async (query: string) => {
+    try {
+      const url = query.trim() 
+        ? `https://tenor.googleapis.com/v2/search?q=${query}&key=${process.env.NEXT_PUBLIC_TENOR_API_KEY || 'LIVDSRZULELA'}&client_key=gemini_social&limit=20`
+        : `https://tenor.googleapis.com/v2/featured?key=${process.env.NEXT_PUBLIC_TENOR_API_KEY || 'LIVDSRZULELA'}&client_key=gemini_social&limit=20`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.results) {
+        setGifs(data.results);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    if (showGifPicker) searchGifs(gifSearch);
+  }, [gifSearch, showGifPicker]);
+
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setMediaFile(file);
       setMediaPreview(URL.createObjectURL(file));
+      setShowGifPicker(false);
     }
   };
 
@@ -197,7 +220,7 @@ export default function HomePage() {
           post:posts (
             id,
             content,
-            author:profiles!user_id(username)
+            author:profiles(username)
           )
         `)
         .eq('user_id', session.user.id)
@@ -214,7 +237,7 @@ export default function HomePage() {
 
   const handlePostSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!newPost.trim() && !mediaFile && !selectedQuotePost) return;
+    if (!newPost.trim() && !mediaFile && !mediaPreview && !selectedQuotePost) return;
     
     try {
       const { createClient } = await import('@/utils/supabase/client');
@@ -223,10 +246,23 @@ export default function HomePage() {
       
       if (!session) return;
 
-      let mediaUrl = null;
+      let mediaUrl = mediaPreview && mediaPreview.startsWith('http') ? mediaPreview : null;
+      
       if (mediaFile) {
-        // TODO: Implement Supabase Storage upload
-        // For now, no media upload
+        const fileExt = mediaFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `${session.user.id}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('post_media')
+          .upload(filePath, mediaFile);
+          
+        if (uploadError) {
+          console.error('Error uploading media:', uploadError);
+        } else {
+          const { data } = supabase.storage.from('post_media').getPublicUrl(filePath);
+          mediaUrl = data.publicUrl;
+        }
       }
 
       const { error } = await supabase
@@ -456,14 +492,47 @@ export default function HomePage() {
                   )}
 
                   <div className="flex justify-between items-center border-t border-slate-800 pt-3 mt-2">
-                    <div className="flex items-center gap-4">
-                      <input type="file" ref={mediaInputRef} accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
-                      <button onClick={() => mediaInputRef.current?.click()} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="إرفاق صورة أو فيديو">
+                    <div className="flex items-center gap-4 relative">
+                      <input id="home-file-input" type="file" accept="image/*,video/*" className="hidden" onChange={handleMediaChange} />
+                      <label htmlFor="home-file-input" className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors cursor-pointer flex items-center justify-center" title="إرفاق صورة أو فيديو">
                         <ImageIcon size={20} />
+                      </label>
+                      <button onClick={() => setShowGifPicker(!showGifPicker)} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="إرفاق GIF">
+                        <PlaySquare size={20} />
                       </button>
                       <button onClick={fetchBookmarksAndOpenModal} className="text-cyan-500 hover:bg-cyan-500/10 p-2 rounded-full transition-colors" title="اقتباس من السجل">
                         <Quote size={20} />
                       </button>
+                      
+                      {showGifPicker && (
+                        <div className="absolute bottom-12 right-0 w-[300px] bg-[#111] border border-slate-700 rounded-xl shadow-2xl z-50">
+                          <div className="p-2 border-b border-slate-700 flex gap-2 items-center">
+                            <Search size={16} className="text-slate-400" />
+                            <input 
+                              type="text" 
+                              placeholder="ابحث عن GIF..."
+                              className="bg-transparent text-white outline-none text-sm w-full"
+                              value={gifSearch}
+                              onChange={e => setGifSearch(e.target.value)}
+                            />
+                          </div>
+                          <div className="h-[250px] overflow-y-auto p-1 grid grid-cols-2 gap-1 custom-scrollbar">
+                            {gifs.map(gif => (
+                              <img 
+                                key={gif.id} 
+                                src={gif.media_formats?.tinygif?.url} 
+                                alt="GIF"
+                                className="w-full h-28 object-cover cursor-pointer rounded hover:opacity-80 transition-opacity"
+                                onClick={() => {
+                                  setMediaPreview(gif.media_formats?.gif?.url);
+                                  setMediaFile(null);
+                                  setShowGifPicker(false);
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
                     <button 

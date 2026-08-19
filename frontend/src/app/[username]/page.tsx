@@ -47,7 +47,7 @@ export default function ProfilePage() {
         .select(`
           post:posts (
             *,
-            author:profiles!user_id(username, avatar_url)
+            author:profiles(username, avatar_url)
           )
         `)
         .eq('user_id', session.user.id)
@@ -207,7 +207,7 @@ export default function ProfilePage() {
         .from('posts')
         .select(`
           *,
-          author:profiles!user_id(username, avatar_url)
+          author:profiles(username, avatar_url)
         `)
         .eq('user_id', targetProfile.id)
         .order('created_at', { ascending: false });

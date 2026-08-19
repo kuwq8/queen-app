@@ -25,7 +25,8 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   const [isReposted, setIsReposted] = useState(initialPost.isReposted || false);
   const [isBookmarked, setIsBookmarked] = useState(initialPost.isBookmarked || false);
   
-  const isEdited = false; // TODO: Implement updated_at
+  // A post is considered edited if updated_at is significantly later than created_at (e.g. > 10 seconds difference)
+  const isEdited = post.updated_at && post.created_at && (new Date(post.updated_at).getTime() - new Date(post.created_at).getTime() > 10000);
 
   const postRef = useRef<HTMLDivElement>(null);
   const viewLogged = useRef(false);
@@ -289,15 +290,15 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
                 <span>{post.community.name}</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center justify-start gap-1.5 flex-wrap flex-row-reverse">
               <span 
                 onClick={(e) => { e.stopPropagation(); router.push(`/${post.author?.username || 'unknown'}`); }}
-                className="font-bold text-white text-[15px] hover:underline cursor-pointer"
+                className="font-bold text-white text-[15px] hover:underline cursor-pointer break-all"
                 dir="ltr"
               >
                 {post.author?.username || 'مستخدم غير معروف'}
               </span>
-              <span className="text-slate-500 text-[15px]" dir="ltr">@{post.author?.username || 'unknown'}</span>
+              <span className="text-slate-500 text-[15px] break-all" dir="ltr">@{post.author?.username || 'unknown'}</span>
               <span className="text-slate-500 text-[15px]">·</span>
               <span className="text-slate-500 text-[14px]">{formatTime(post.created_at || post.createdAt)}</span>
               {isEdited && <span className="text-slate-500 text-[11px] italic bg-slate-800/50 px-1.5 py-0.5 rounded-full mr-1">معدلة</span>}

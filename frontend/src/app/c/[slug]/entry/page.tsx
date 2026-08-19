@@ -38,7 +38,7 @@ export default function RetroEntryPage() {
           id, name,
           members:channel_members(
             id, role,
-            user:profiles!user_id(id, username, avatar_url, bio)
+            user:profiles(id, username, avatar_url, bio)
           )
         `)
         .eq('id', slug as string)

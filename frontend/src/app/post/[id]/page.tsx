@@ -2,9 +2,9 @@
 
 
 import { API_URL, getToken } from '@/lib/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Send, MessageSquareOff, ImageIcon, Sparkles } from 'lucide-react';
+import { ArrowLeft, Send, MessageSquareOff, ImageIcon, Sparkles, X, Search, PlaySquare } from 'lucide-react';
 import PostItem from '../../../components/PostItem';
 import BottomNav from '../../../components/BottomNav';
 
@@ -20,6 +20,13 @@ export default function PostDetailPage() {
   const [currentUserAvatar, setCurrentUserAvatar] = useState('');
   const [commentContent, setCommentContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const [gifSearch, setGifSearch] = useState('');
+  const [gifs, setGifs] = useState<any[]>([]);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchPostAndComments();
@@ -52,7 +59,7 @@ export default function PostDetailPage() {
       // Fetch the post
       const { data: postData, error: postError } = await supabase
         .from('posts')
-        .select('*, author:profiles!user_id(id, username, avatar_url)')
+        .select('*, author:profiles(id, username, avatar_url)')
         .eq('id', postId)
         .single();
         
@@ -95,7 +102,7 @@ export default function PostDetailPage() {
   };
 
   const handleAddComment = async () => {
-    if (!commentContent.trim()) return;
+    if (!commentContent.trim() && !mediaFile && !mediaPreview) return;
     setIsSubmitting(true);
     
     try {
@@ -105,12 +112,30 @@ export default function PostDetailPage() {
       
       if (!session) return;
       
+      let finalMediaUrl = mediaPreview && mediaPreview.startsWith('http') ? mediaPreview : null;
+      
+      if (mediaFile) {
+        const fileExt = mediaFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `${session.user.id}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('post_media')
+          .upload(filePath, mediaFile);
+          
+        if (!uploadError) {
+          const { data } = supabase.storage.from('post_media').getPublicUrl(filePath);
+          finalMediaUrl = data.publicUrl;
+        }
+      }
+
       const { data: newComment, error } = await supabase
         .from('comments')
         .insert({
           post_id: postId,
           user_id: session.user.id,
-          content: commentContent
+          content: commentContent,
+          media_url: finalMediaUrl
         })
         .select('*, author:profiles(id, username, avatar_url)')
         .single();
@@ -118,6 +143,8 @@ export default function PostDetailPage() {
       if (newComment) {
         setComments([newComment, ...comments]);
         setCommentContent('');
+        setMediaFile(null);
+        setMediaPreview(null);
         setPost((prev: any) => ({
           ...prev,
           comments_count: (prev.comments_count || 0) + 1
@@ -137,6 +164,34 @@ export default function PostDetailPage() {
   const handlePostEdited = (id: string, newContent: string) => {
     setPost((prev: any) => ({ ...prev, content: newContent }));
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setMediaFile(file);
+      setMediaPreview(URL.createObjectURL(file));
+      setShowGifPicker(false);
+    }
+  };
+
+  const searchGifs = async (query: string) => {
+    try {
+      const url = query.trim() 
+        ? `https://tenor.googleapis.com/v2/search?q=${query}&key=${process.env.NEXT_PUBLIC_TENOR_API_KEY || 'LIVDSRZULELA'}&client_key=gemini_social&limit=20`
+        : `https://tenor.googleapis.com/v2/featured?key=${process.env.NEXT_PUBLIC_TENOR_API_KEY || 'LIVDSRZULELA'}&client_key=gemini_social&limit=20`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.results) {
+        setGifs(data.results);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    if (showGifPicker) searchGifs(gifSearch);
+  }, [gifSearch, showGifPicker]);
 
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
@@ -212,17 +267,71 @@ export default function PostDetailPage() {
                 rows={1}
               />
               <div className="flex justify-between items-center border-t border-slate-800/50 pt-2 mt-1">
-                <button className="text-cyan-500 p-1.5 rounded-full hover:bg-cyan-500/10 transition-colors">
-                  <ImageIcon size={18} />
-                </button>
+                <div className="flex gap-1">
+                  <input 
+                    id="reply-file-input"
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleImageChange} 
+                  />
+                  <label htmlFor="reply-file-input" className="text-cyan-500 p-1.5 rounded-full hover:bg-cyan-500/10 transition-colors cursor-pointer flex items-center justify-center">
+                    <ImageIcon size={18} />
+                  </label>
+                  <button onClick={() => setShowGifPicker(!showGifPicker)} className="text-cyan-500 p-1.5 rounded-full hover:bg-cyan-500/10 transition-colors">
+                    <PlaySquare size={18} />
+                  </button>
+                </div>
                 <button 
                   onClick={handleAddComment}
-                  disabled={!commentContent.trim() || isSubmitting}
+                  disabled={(!commentContent.trim() && !mediaPreview) || isSubmitting}
                   className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-1.5 px-4 rounded-full text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                 >
                   <Sparkles size={14} /> رد
                 </button>
               </div>
+              
+              {mediaPreview && (
+                <div className="relative mt-2 max-w-xs rounded-xl overflow-hidden border border-slate-700">
+                  <img src={mediaPreview} alt="Preview" className="w-full object-cover" />
+                  <button 
+                    onClick={() => { setMediaPreview(null); setMediaFile(null); }}
+                    className="absolute top-1 right-1 bg-black/60 hover:bg-black p-1 rounded-full text-white transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+
+              {showGifPicker && (
+                <div className="mt-2 border border-slate-700 rounded-xl overflow-hidden bg-[#111]">
+                  <div className="p-2 border-b border-slate-700 flex gap-2 items-center">
+                    <Search size={16} className="text-slate-400" />
+                    <input 
+                      type="text" 
+                      placeholder="ابحث عن GIF..."
+                      className="bg-transparent text-white outline-none text-sm w-full"
+                      value={gifSearch}
+                      onChange={e => setGifSearch(e.target.value)}
+                    />
+                  </div>
+                  <div className="h-[200px] overflow-y-auto p-1 grid grid-cols-2 gap-1 custom-scrollbar">
+                    {gifs.map(gif => (
+                      <img 
+                        key={gif.id} 
+                        src={gif.media_formats?.tinygif?.url} 
+                        alt="GIF"
+                        className="w-full h-24 object-cover cursor-pointer rounded hover:opacity-80 transition-opacity"
+                        onClick={() => {
+                          setMediaPreview(gif.media_formats?.gif?.url);
+                          setMediaFile(null);
+                          setShowGifPicker(false);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -239,11 +348,11 @@ export default function PostDetailPage() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-1 space-x-reverse">
-                  <span className="font-bold text-white text-[15px] hover:underline cursor-pointer" onClick={() => router.push(`/${comment.author?.username}`)}>
+                <div className="flex items-center justify-start gap-1.5 flex-wrap flex-row-reverse">
+                  <span className="font-bold text-white text-[15px] hover:underline cursor-pointer break-all" dir="ltr" onClick={() => router.push(`/${comment.author?.username}`)}>
                     {comment.author?.username}
                   </span>
-                  <span className="text-slate-500 text-sm">@{comment.author?.username}</span>
+                  <span className="text-slate-500 text-sm break-all" dir="ltr">@{comment.author?.username}</span>
                 </div>
                 {comment.content && <p className="text-slate-200 text-[15px] mt-1 break-words">{comment.content}</p>}
                 {comment.media_url && (
