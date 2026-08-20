@@ -326,7 +326,7 @@ export default function HomePage() {
           is_comments_disabled: disableComments
         });
 
-      if (!error) {
+      if (error) { alert("فشل النشر: " + error.message); console.error(error); } else {
         setNewPost('');
         setMediaFile(null);
         setMediaPreview(null);
