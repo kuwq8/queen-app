@@ -160,6 +160,13 @@ export default function PostDetailPage() {
     };
 
     setComments(prev => [optimisticComment, ...prev]);
+    setPost((prev: any) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        comments_count: (prev.comments_count || 0) + 1
+      };
+    });
     
     const previousCommentContent = commentContent;
     const previousMediaFile = mediaFile;
@@ -214,6 +221,7 @@ export default function PostDetailPage() {
         alert(`فشل الحفظ: ${error.message || JSON.stringify(error)}`);
         // Revert optimistic update
         setComments(prev => prev.filter(c => c.id !== optimisticId));
+        setPost((prev: any) => prev ? { ...prev, comments_count: Math.max(0, (prev.comments_count || 1) - 1) } : prev);
         setCommentContent(previousCommentContent);
         setMediaFile(previousMediaFile);
         setMediaPreview(previousMediaPreview);
@@ -225,6 +233,7 @@ export default function PostDetailPage() {
       console.error(err);
       // Revert optimistic update
       setComments(prev => prev.filter(c => c.id !== optimisticId));
+      setPost((prev: any) => prev ? { ...prev, comments_count: Math.max(0, (prev.comments_count || 1) - 1) } : prev);
       setCommentContent(previousCommentContent);
       setMediaFile(previousMediaFile);
       setMediaPreview(previousMediaPreview);
@@ -311,7 +320,7 @@ export default function PostDetailPage() {
         {/* The Post */}
         <div className="border-b border-slate-800/50">
           <PostItem 
-            post={{...post, comments_count: comments?.length || post.comments_count || 0}} 
+            post={post} 
             currentUsername={currentUsername} 
             onPostDeleted={handlePostDeleted} 
             onPostEdited={handlePostEdited} 
@@ -335,13 +344,13 @@ export default function PostDetailPage() {
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-2 pt-1">
-              <textarea 
+            <div className="flex-1 w-full min-w-0 flex flex-col gap-2 pt-1">
+              <input 
+                type="text"
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
                 placeholder="أضف ردك الخاص..."
-                className="w-full min-w-0 bg-transparent text-white text-[15px] resize-none focus:outline-none min-h-[40px]"
-                rows={1}
+                className="w-full bg-transparent text-white text-[15px] outline-none border-none min-h-[40px]"
               />
               <div className="flex justify-between items-center border-t border-slate-800/50 pt-2 mt-1">
                 <div className="flex gap-1">
