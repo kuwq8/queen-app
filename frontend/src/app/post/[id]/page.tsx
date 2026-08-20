@@ -303,10 +303,11 @@ export default function PostDetailPage() {
         {/* The Post */}
         <div className="border-b border-slate-800/50">
           <PostItem 
-            post={{...post, comments_count: comments.length}} 
+            post={post} 
             currentUsername={currentUsername} 
             onPostDeleted={handlePostDeleted} 
             onPostEdited={handlePostEdited} 
+            commentsCountOverride={comments.length}
           />
         </div>
 

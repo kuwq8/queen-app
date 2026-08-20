@@ -10,9 +10,10 @@ interface PostItemProps {
   currentUsername: string;
   onPostDeleted: (postId: string) => void;
   onPostEdited: (postId: string, newContent: string) => void;
+  commentsCountOverride?: number;
 }
 
-export default function PostItem({ post: initialPost, currentUsername, onPostDeleted, onPostEdited }: PostItemProps) {
+export default function PostItem({ post: initialPost, currentUsername, onPostDeleted, onPostEdited, commentsCountOverride }: PostItemProps) {
   const router = useRouter();
   const [post, setPost] = useState(initialPost);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -411,7 +412,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             <div className={`p-2 rounded-full transition-colors ${post.is_comments_disabled ? '' : 'group-hover:bg-cyan-500/10'}`}>
               {post.is_comments_disabled ? <MessageSquareOff size={18} /> : <MessageCircle size={18} />}
             </div>
-            <span className="text-sm">{post.comments_count || 0}</span>
+            <span className="text-sm">{commentsCountOverride !== undefined ? commentsCountOverride : (post.comments_count || 0)}</span>
           </button>
           
           <button 
