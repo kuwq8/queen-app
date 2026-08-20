@@ -2,7 +2,7 @@
 
 
 import { API_URL } from '@/lib/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, MessageCircle, Repeat, Heart, Share, Calendar, MapPin, Link as LinkIcon, User, Camera, Mail, Phone, Video, Lock } from 'lucide-react';
@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
-  let username = decodeURIComponent(params.username as string);
+  let username = decodeURIComponent(id as string);
   if (username.startsWith('@')) {
     username = username.substring(1);
   }

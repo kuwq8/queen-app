@@ -192,6 +192,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         onPostDeleted(post.id);
       } else {
         setIsDeleting(false);
+        alert('فشل الحذف: ' + error.message);
       }
     } catch (e) {
       console.error(e);

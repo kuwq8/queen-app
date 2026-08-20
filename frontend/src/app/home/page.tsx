@@ -403,7 +403,7 @@ export default function HomePage() {
             onClick={() => setFeedType('communities')}
             className={`whitespace-nowrap px-4 py-1.5 text-sm font-bold rounded-full transition-all flex items-center gap-1.5 ${feedType === 'communities' ? 'bg-white text-black' : 'bg-white/5 text-slate-400 hover:text-white hover:bg-white/10'}`}
           >
-            <Users size={16} /> المجتمعات
+            <Users size={16} /> القنوات
           </button>
         </div>
 
@@ -414,10 +414,10 @@ export default function HomePage() {
                 <div className="flex items-center justify-between gap-2 px-1 pb-2 w-full mx-auto border-b border-white/5 mb-2">
                   <div className="flex items-center gap-2">
                     <Users className="text-white/70" size={20} />
-                    <h1 className="text-xl font-bold text-white">المجتمعات</h1>
+                    <h1 className="text-xl font-bold text-white">القنوات</h1>
                   </div>
                   <Link href="/communities/create" className="text-sky-500 hover:text-sky-400 text-sm font-medium flex items-center gap-1">
-                    <Plus size={16} />أنشئ مجتمعاً
+                    <Plus size={16} />أنشئ قناةاً
                   </Link>
                 </div>
                 {localCommunities.length > 0 ? localCommunities.map((community) => (
@@ -444,7 +444,7 @@ export default function HomePage() {
                   </Link>
                 )) : (
                   <div className="text-center p-12 text-slate-500 text-sm font-bold">
-                    لا توجد مجتمعات بعد. كن أول من ينشئ مجتمعاً!
+                    لا توجد قناةات بعد. كن أول من ينشئ قناةاً!
                   </div>
                 )}
              </div>

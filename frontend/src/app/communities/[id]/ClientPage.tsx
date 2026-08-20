@@ -21,7 +21,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchCommunityData();
-  }, [params.id]);
+  }, [id]);
 
   const fetchCommunityData = async () => {
     try {
@@ -52,7 +52,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
       const { data: comm, error: commError } = await supabase
         .from('communities')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single();
 
       if (commError || !comm) {
@@ -65,7 +65,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
       const { data: member } = await supabase
         .from('community_members')
         .select('*')
-        .eq('community_id', params.id)
+        .eq('community_id', id)
         .eq('user_id', session.user.id)
         .maybeSingle();
 
@@ -79,7 +79,7 @@ export default function CommunityPage({ params }: { params: { id: string } }) {
           author:profiles!posts_user_id_fkey(username, avatar_url),
           community:communities!community_id(name)
         `)
-        .eq('community_id', params.id)
+        .eq('community_id', id)
         .order('created_at', { ascending: false });
 
       if (postsData && session) {
