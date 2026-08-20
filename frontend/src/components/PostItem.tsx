@@ -178,7 +178,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا المنشور؟')) return;
+    // window.confirm removed
     try {
       setIsDeleting(true);
       const { createClient } = await import('@/utils/supabase/client');
