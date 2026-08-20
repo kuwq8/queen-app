@@ -198,6 +198,25 @@ export default function HomePage() {
     if (showGifPicker) searchGifs(gifSearch);
   }, [gifSearch, showGifPicker]);
 
+  useEffect(() => {
+    let channel: any;
+    const setupRealtime = async () => {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      channel = supabase.channel('home-posts')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'posts' }, (payload) => {
+          setPosts(prev => prev.map(p => p.id === payload.new.id ? { ...p, ...payload.new } : p));
+        })
+        .subscribe((status) => console.log('Home Realtime Status:', status));
+    };
+    
+    setupRealtime();
+    return () => {
+      if (channel) channel.unsubscribe();
+    };
+  }, []);
+
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];

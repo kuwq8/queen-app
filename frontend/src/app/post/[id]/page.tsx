@@ -122,16 +122,27 @@ export default function PostDetailPage() {
       
       channel = supabase.channel(`comments-${postId}`)
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'comments', filter: `post_id=eq.${postId}` }, async (payload) => {
-          // Fetch the new comment with author details
-          const { data } = await supabase.from('comments').select('*, author:profiles(id, username, avatar_url)').eq('id', payload.new.id).single();
-          if (data) {
-            setComments(prev => {
-              if (prev.some(c => c.id === data.id)) return prev;
-              return [data, ...prev].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          const currentUserId = (await supabase.auth.getSession()).data.session?.user?.id;
+          
+          if (payload.new.user_id !== currentUserId) {
+            const { data: author } = await supabase
+              .from('profiles')
+              .select('id, username, avatar_url')
+              .eq('id', payload.new.user_id)
+              .single();
+
+            const fullComment = {
+              ...payload.new,
+              author: author || { id: payload.new.user_id, username: 'مستخدم', avatar_url: null }
+            };
+
+            setComments((prev) => {
+              if (prev.some(c => c.id === fullComment.id)) return prev;
+              return [fullComment, ...prev].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
             });
           }
         })
-        .subscribe();
+        .subscribe((status: string) => console.log('Post Realtime Status:', status));
     };
     
     setupRealtime();

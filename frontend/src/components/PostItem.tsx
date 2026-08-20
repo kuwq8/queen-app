@@ -16,6 +16,11 @@ interface PostItemProps {
 export default function PostItem({ post: initialPost, currentUsername, onPostDeleted, onPostEdited, commentsCountOverride }: PostItemProps) {
   const router = useRouter();
   const [post, setPost] = useState(initialPost);
+  
+  useEffect(() => {
+    setPost(prev => ({ ...prev, ...initialPost }));
+  }, [initialPost]);
+
   const [showDropdown, setShowDropdown] = useState(false);
   const [showShareDropdown, setShowShareDropdown] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
