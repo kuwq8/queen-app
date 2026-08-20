@@ -11,7 +11,7 @@ import BottomNav from '../../../components/BottomNav';
 export default function PostDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const postId = id as string;
+  const postId = params.id as string;
 
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);

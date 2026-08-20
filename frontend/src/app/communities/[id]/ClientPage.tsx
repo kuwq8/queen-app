@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Image as ImageIcon, Users, User, Feather } from 'lucide-react';
 import Link from 'next/link';
 import PostItem from '../../../components/PostItem';
 import BottomNav from '../../../components/BottomNav';
 
-export default function CommunityPage({ params }: { params: { id: string } }) {
+export default function CommunityPage({ params }: { params: any }) {
+  const resolvedParams = params instanceof Promise ? use(params) : params;
+  const id = resolvedParams.id;
   const router = useRouter();
   const [community, setCommunity] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);

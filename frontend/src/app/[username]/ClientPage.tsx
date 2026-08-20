@@ -16,7 +16,7 @@ export default function ProfilePage() {
   const supabase = createClient();
   const router = useRouter();
   const params = useParams();
-  let username = decodeURIComponent(id as string);
+  let username = decodeURIComponent(params.username as string);
   if (username.startsWith('@')) {
     username = username.substring(1);
   }
