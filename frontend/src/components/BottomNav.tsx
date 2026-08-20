@@ -95,7 +95,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
       <Link href="/notifications" aria-label="الإشعارات" className={`relative p-2 hover:bg-white/5 rounded-full transition-all flex items-center justify-center ${activeTab === 'notifications' ? 'text-white' : 'text-gray-500'}`}>
         <Bell size={25} strokeWidth={activeTab === 'notifications' ? 2.5 : 1.75} />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-2 bg-sky-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-black">
+          <span className="absolute top-1 right-1.5 bg-red-500 text-white text-[10px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center border-2 border-black">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}

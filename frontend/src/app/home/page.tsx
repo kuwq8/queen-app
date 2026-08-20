@@ -26,6 +26,10 @@ export default function HomePage() {
   const [localCommunities, setLocalCommunities] = useState<any[]>([]);
   const [disableComments, setDisableComments] = useState(false);
   const fetchIdRef = useRef(0);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const observerTarget = useRef<HTMLDivElement>(null);
+  const POSTS_PER_PAGE = 20;
 
   const [isBookmarksModalOpen, setIsBookmarksModalOpen] = useState(false);
   const [bookmarksList, setBookmarksList] = useState<any[]>([]);
@@ -51,11 +55,15 @@ export default function HomePage() {
         
         const { data: profile } = await supabase
           .from('profiles')
-          .select('*')
+          .select('*, is_onboarded')
           .eq('id', session.user.id)
           .single();
           
         if (profile && isMounted) {
+          if (profile.is_onboarded === false) {
+            router.push('/onboarding');
+            return;
+          }
           setCurrentUsername(profile.username);
           setCurrentUserAvatar(profile.avatar_url);
         }
@@ -81,7 +89,7 @@ export default function HomePage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('communities')
-        .select('*')
+        .select('*, is_onboarded')
         .order('members_count', { ascending: false })
         .limit(20);
       
@@ -93,7 +101,26 @@ export default function HomePage() {
     }
   };
 
-  const fetchPosts = async () => {
+  
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          setPage(prev => prev + 1);
+        }
+      },
+      { threshold: 1.0 }
+    );
+    if (observerTarget.current) observer.observe(observerTarget.current);
+    return () => observer.disconnect();
+  }, [hasMore, isLoading]);
+
+  useEffect(() => {
+    if (page > 0) fetchPosts(page);
+  }, [page]);
+
+  const fetchPosts = async (pageNum = 0) => {
     const fetchId = ++fetchIdRef.current;
     try {
       setIsLoading(true);
@@ -107,9 +134,10 @@ export default function HomePage() {
         .from('posts')
         .select(`
           *,
-          author:profiles(username, avatar_url)
+          author:profiles!posts_user_id_fkey(username, avatar_url)
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(pageNum * POSTS_PER_PAGE, (pageNum + 1) * POSTS_PER_PAGE - 1);
 
       if (feedType === 'following') {
         if (!session) {
@@ -165,7 +193,12 @@ export default function HomePage() {
       }
 
       if (fetchId === fetchIdRef.current) {
-        setPosts(finalPosts);
+        if (finalPosts.length < POSTS_PER_PAGE) setHasMore(false);
+        if (pageNum === 0) {
+          setPosts(finalPosts);
+        } else {
+          setPosts(prev => [...prev, ...finalPosts]);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -239,7 +272,7 @@ export default function HomePage() {
           post:posts (
             id,
             content,
-            author:profiles(username)
+            author:profiles!posts_user_id_fkey(username)
           )
         `)
         .eq('user_id', session.user.id)

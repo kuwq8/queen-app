@@ -3,22 +3,66 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MessageCircle, MessageSquareOff, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2, Users } from 'lucide-react';
+import { MessageCircle, MessageSquareOff, Repeat, Heart, Share, MoreHorizontal, Edit, Trash2, Bookmark, BarChart2, Link2, Users, User } from 'lucide-react';
 
 interface PostItemProps {
   post: any;
   currentUsername: string;
   onPostDeleted: (postId: string) => void;
   onPostEdited: (postId: string, newContent: string) => void;
+  onInteractionChange?: (postId: string, type: 'like' | 'repost' | 'bookmark', isNowActive: boolean) => void;
+  onQuote?: () => void;
   commentsCountOverride?: number;
 }
 
-export default function PostItem({ post: initialPost, currentUsername, onPostDeleted, onPostEdited, commentsCountOverride }: PostItemProps) {
+export const renderContentWithHashtags = (text: string) => {
+  if (!text) return null;
+  // Match words starting with # or @, followed by word characters or Arabic letters
+  const parts = text.split(/([#@][a-zA-Z0-9_\u0600-\u06FF]+)/g);
+  
+  return parts.map((part, index) => {
+    if (part.startsWith('#')) {
+      const tag = part.substring(1);
+      return (
+        <Link 
+          key={index} 
+          href={`/search?q=${encodeURIComponent('#' + tag)}`}
+          className="text-cyan-500 hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </Link>
+      );
+    } else if (part.startsWith('@')) {
+      const username = part.substring(1);
+      return (
+        <Link 
+          key={index} 
+          href={`/${username}`}
+          className="text-cyan-500 hover:underline font-bold"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </Link>
+      );
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
+export default function PostItem({ post: initialPost, currentUsername, onPostDeleted, onPostEdited, onInteractionChange, onQuote, commentsCountOverride }: PostItemProps) {
   const router = useRouter();
   const [post, setPost] = useState(initialPost);
   
   useEffect(() => {
-    setPost(prev => ({ ...prev, ...initialPost }));
+    setPost((prev: any) => ({
+      ...prev,
+      ...initialPost,
+      // Preserve local interaction state (not in DB columns, computed on fetch)
+      isLiked: prev.isLiked,
+      isReposted: prev.isReposted,
+      isBookmarked: prev.isBookmarked,
+    }));
   }, [initialPost]);
 
   const [showDropdown, setShowDropdown] = useState(false);
@@ -91,14 +135,15 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     try {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
+      const now = new Date().toISOString();
       const { error } = await supabase
         .from('posts')
-        .update({ content: editContent })
+        .update({ content: editContent, updated_at: now })
         .eq('id', post.id);
 
       if (!error) {
         onPostEdited(post.id, editContent);
-        setPost((prev: any) => ({ ...prev, content: editContent }));
+        setPost((prev: any) => ({ ...prev, content: editContent, updated_at: now }));
         setIsEditing(false);
       }
     } catch (e) {
@@ -133,6 +178,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
   };
 
   const handleDelete = async () => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا المنشور؟')) return;
     try {
       setIsDeleting(true);
       const { createClient } = await import('@/utils/supabase/client');
@@ -164,10 +210,12 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       if (isLiked) {
         setIsLiked(false);
         setPost((prev: any) => ({ ...prev, likes_count: Math.max(0, (prev.likes_count || 0) - 1) }));
+        onInteractionChange?.(post.id, 'like', false);
         const { error } = await supabase.from('likes').delete().eq('post_id', post.id).eq('user_id', session.user.id);
         if (error) {
           setIsLiked(true);
           setPost((prev: any) => ({ ...prev, likes_count: (prev.likes_count || 0) + 1 }));
+          onInteractionChange?.(post.id, 'like', true);
         }
       } else {
         setIsLiked(true);
@@ -194,10 +242,12 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
       if (isBookmarked) {
         setIsBookmarked(false);
         setPost((prev: any) => ({ ...prev, bookmarks_count: Math.max(0, (prev.bookmarks_count || 0) - 1) }));
+        onInteractionChange?.(post.id, 'bookmark', false);
         const { error } = await supabase.from('bookmarks').delete().eq('post_id', post.id).eq('user_id', session.user.id);
         if (error) {
           setIsBookmarked(true);
           setPost((prev: any) => ({ ...prev, bookmarks_count: (prev.bookmarks_count || 0) + 1 }));
+          onInteractionChange?.(post.id, 'bookmark', true);
         }
       } else {
         setIsBookmarked(true);
@@ -259,6 +309,15 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         setIsReposted(true);
         setPost((prev: any) => ({ ...prev, reposts_count: (prev.reposts_count || 0) + 1 }));
         const { error } = await supabase.from('reposts').insert({ post_id: post.id, user_id: session.user.id });
+          // Send repost notification
+          if (!error && post.user_id !== session.user.id) {
+            await supabase.from('notifications').insert({
+              user_id: post.user_id,
+              sender_id: session.user.id,
+              type: 'repost',
+              reference_id: post.id
+            });
+          }
         if (error) {
           setIsReposted(false);
           setPost((prev: any) => ({ ...prev, reposts_count: Math.max(0, (prev.reposts_count || 0) - 1) }));
@@ -277,15 +336,23 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         onClick={() => router.push(`/post/${post.id}`)}
       />
 
-      <Link href={`/${post.author?.username || 'unknown'}`} className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-base border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors z-10 relative overflow-hidden">
-        {post.author?.avatar_url ? (
-          <img src={post.author.avatar_url} alt={post.author?.username || 'User'} className="w-full h-full object-cover" />
-        ) : (
-          <span dir="ltr">{(post.author?.username || 'U').charAt(0).toUpperCase()}</span>
-        )}
-      </Link>
-      
-      <div className="flex-1 min-w-0 z-10 relative">
+      {post.is_repost_by_profile && (
+        <div className="absolute top-1 right-12 text-[11px] text-slate-500 font-bold flex items-center gap-1 z-10">
+          <Repeat size={12} />
+          إعادة نشر
+        </div>
+      )}
+
+      <div className={`mt-${post.is_repost_by_profile ? '4' : '0'} flex gap-3 w-full`}>
+        <Link href={`/${post.author?.username || 'unknown'}`} className="w-10 h-10 rounded-full bg-slate-800 flex-shrink-0 flex items-center justify-center font-bold text-base border border-slate-700 text-slate-300 hover:bg-slate-700 transition-colors z-10 relative overflow-hidden">
+          {post.author?.avatar_url ? (
+            <img src={post.author.avatar_url} alt={post.author?.username || 'User'} className="w-full h-full object-cover" />
+          ) : (
+            <span dir="ltr">{(post.author?.username || 'U').charAt(0).toUpperCase()}</span>
+          )}
+        </Link>
+        
+        <div className="flex-1 min-w-0 z-10 relative">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             {post.community && (
@@ -330,6 +397,19 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
                     <Edit size={16} className="text-slate-400 shrink-0" /> تعديل
                   </button>
                   <button 
+                    onClick={async (e) => { 
+                      e.stopPropagation(); 
+                      setShowDropdown(false);
+                      const { createClient } = await import('@/utils/supabase/client');
+                      const supabase = createClient();
+                      await supabase.from('profiles').update({ pinned_post_id: post.id }).eq('id', post.user_id);
+                      alert('تم التثبيت في الملف الشخصي!');
+                    }}
+                    className="w-full text-right px-3 py-2 text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 transition-colors text-sm"
+                  >
+                    <Bookmark size={16} className="text-slate-400 shrink-0" /> تثبيت في الملف الشخصي
+                  </button>
+                  <button 
                     onClick={(e) => { e.stopPropagation(); handleToggleComments(); }}
                     className="w-full text-right px-3 py-2 text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 transition-colors border-b border-slate-800/50 pb-2 mb-1 text-sm"
                   >
@@ -369,35 +449,41 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         ) : (
           <>
             {post.content && (
-              <p className="mt-1 text-slate-200 whitespace-pre-wrap break-words text-[15px] leading-relaxed">{post.content}</p>
+              <p className="mt-1 text-slate-200 whitespace-pre-wrap break-words text-[15px] leading-relaxed">
+                {renderContentWithHashtags(post.content)}
+              </p>
             )}
 
             {post.media_url && (
               <div className="mt-3 relative rounded-2xl overflow-hidden border border-slate-800/50">
-                <img src={post.media_url} alt="Post media" className="w-full max-h-[500px] object-cover" />
+                {/\.(mp4|webm|mov|ogg)(\?|$)/i.test(post.media_url || '') ? (
+                  <video src={post.media_url} controls className="w-full max-h-[400px] object-contain rounded-xl" />
+                ) : (
+                  <img src={post.media_url} alt="Post media" className="w-full max-h-[500px] object-cover" />
+                )}
               </div>
             )}
 
-            {post.quotePost && (
+            {(post.quoted_post || post.quotePost) && (
               <div 
                 className="mt-3 border border-slate-700 rounded-xl p-3 hover:bg-slate-800/50 cursor-pointer transition-colors"
-                onClick={(e) => { e.stopPropagation(); router.push(`/post/${post.quotePost.id}`); }}
+                onClick={(e) => { e.stopPropagation(); router.push(`/post/${(post.quoted_post || post.quotePost).id}`); }}
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-slate-800 overflow-hidden">
-                    {post.quotePost.author?.avatar_url ? (
-                      <img src={post.quotePost.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                <div className="flex items-center gap-1.5 mb-1.5 cursor-pointer hover:underline" onClick={(e) => { e.stopPropagation(); router.push(`/${(post.quoted_post || post.quotePost).author?.username}`); }}>
+                  <div className="w-5 h-5 rounded-full bg-slate-800 overflow-hidden shrink-0">
+                    {(post.quoted_post || post.quotePost).author?.avatar_url ? (
+                      <img src={(post.quoted_post || post.quotePost).author.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="flex items-center justify-center w-full h-full text-[10px] font-bold" dir="ltr">{post.quotePost.author?.username?.charAt(0).toUpperCase() || 'U'}</span>
+                      <User size={12} className="text-slate-400 mx-auto mt-1" />
                     )}
                   </div>
-                  <span className="font-bold text-white text-[13px]" dir="ltr">{post.quotePost.author?.username || 'Unknown'}</span>
-                  <span className="text-slate-500 text-[13px]" dir="ltr">@{post.quotePost.author?.username || 'unknown'}</span>
+                  <span className="font-bold text-white text-[13px]" dir="ltr">{(post.quoted_post || post.quotePost).author?.username || 'Unknown'}</span>
+                  <span className="text-slate-500 text-[13px]" dir="ltr">@{(post.quoted_post || post.quotePost).author?.username || 'unknown'}</span>
                 </div>
-                <p className="mt-1 text-slate-200 text-[14px]">{post.quotePost.content}</p>
-                {post.quotePost.media_url && (
+                <p className="mt-1 text-slate-200 text-[14px]">{renderContentWithHashtags((post.quoted_post || post.quotePost).content)}</p>
+                {(post.quoted_post || post.quotePost).media_url && (
                    <div className="mt-2 relative rounded-xl overflow-hidden border border-slate-800/50">
-                     <img src={post.quotePost.media_url} alt="Quoted media" className="w-full max-h-[200px] object-cover" />
+                     <img src={(post.quoted_post || post.quotePost).media_url} alt="Quoted media" className="w-full max-h-[200px] object-cover" />
                    </div>
                 )}
               </div>
@@ -420,16 +506,23 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             <span className="text-sm">{commentsCountOverride !== undefined ? commentsCountOverride : (post.comments_count || 0)}</span>
           </button>
           
-          <button 
-            onClick={handleRepost}
-            aria-label="إعادة نشر"
-            className={`flex items-center gap-1.5 hover:text-green-500 transition-colors group ${isReposted ? 'text-green-500' : ''}`}
-          >
-            <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
-              <Repeat size={18} />
+          <div className="relative group">
+            <button 
+              onClick={handleRepost}
+              onContextMenu={(e) => { e.preventDefault(); if(onQuote) onQuote(); }}
+              aria-label="إعادة نشر"
+              className={`flex items-center gap-1.5 hover:text-green-500 transition-colors group ${isReposted ? 'text-green-500' : ''}`}
+            >
+              <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">
+                <Repeat size={18} />
+              </div>
+              <span className="text-sm">{post.reposts_count || 0}</span>
+            </button>
+            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-slate-800 rounded-lg p-2 whitespace-nowrap z-50 flex flex-col gap-1 hidden md:flex pointer-events-none group-hover:pointer-events-auto">
+               <button onClick={(e) => { e.stopPropagation(); handleRepost(e); }} className="text-sm hover:bg-slate-800 p-1 rounded text-right flex items-center gap-2"><Repeat size={14}/> إعادة نشر</button>
+               {onQuote && <button onClick={(e) => { e.stopPropagation(); if (onQuote) onQuote(); }} className="text-sm hover:bg-slate-800 p-1 rounded text-right flex items-center gap-2"><Edit size={14}/> اقتباس</button>}
             </div>
-            <span className="text-sm">{post.reposts_count || 0}</span>
-          </button>
+          </div>
 
           <button 
             onClick={handleLike}
@@ -516,6 +609,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

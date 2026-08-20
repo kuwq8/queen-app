@@ -15,10 +15,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Gemini Social",
   description: "شبكة تواصل اجتماعية متكاملة",
+  appleWebApp: {
+    capable: true,
+    title: "Gemini Social",
+    statusBarStyle: "black-translucent",
+  }
 };
 
 export const viewport = {
-  themeColor: '#ffffff',
+  themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,

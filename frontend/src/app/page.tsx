@@ -46,6 +46,28 @@ export default function AuthPage() {
     try {
       const supabase = createClient();
       
+      
+      if (authMode === 'register') {
+        if (!username || username.trim() === '') {
+          setErrorMsg('اسم المستخدم مطلوب');
+          return;
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+          setErrorMsg('اسم المستخدم يجب أن يحتوي على أحرف إنجليزية وأرقام وشرطة سفلية فقط');
+          return;
+        }
+        if (username.length < 3) {
+          setErrorMsg('اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
+          return;
+        }
+        // Basic unique check
+        const { data: existingUser } = await supabase.from('profiles').select('id').eq('username', username).maybeSingle();
+        if (existingUser) {
+          setErrorMsg('اسم المستخدم محجوز، يرجى اختيار اسم آخر');
+          return;
+        }
+      }
+
       if (authMode === 'register') {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -92,7 +114,7 @@ export default function AuthPage() {
             Gemini Social
           </h1>
           <p className="text-slate-400 mt-2">
-            مرحباً بك في مجتمعنا! سجل دخولك للمتابعة
+            مرحباً بك في قناةنا! سجل دخولك للمتابعة
           </p>
         </div>
 

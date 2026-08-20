@@ -190,7 +190,7 @@ export default function RetroEntryPage() {
             <div className="mt-8 flex flex-col items-center gap-4 relative z-10">
                <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-black text-white px-6 py-2.5 rounded-full font-bold shadow-[0_4px_10px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform border border-gray-700">
                   <span className="text-xl leading-none font-serif">𝕏</span> 
-                  <span className="text-sm">تابع مجتمعنا على إكس</span>
+                  <span className="text-sm">تابع قناةنا على إكس</span>
                </a>
                <div className="text-xs text-[#8B5A2B] text-center font-bold bg-white/50 px-4 py-1 rounded-full">
                  جميع الحقوق محفوظة © 2026 - شات {srv.name}

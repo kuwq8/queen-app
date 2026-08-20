@@ -40,7 +40,7 @@ export default function CommunityPostPage() {
           <button onClick={() => router.back()} className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-700 transition-colors">
             <ChevronRight size={20} />
           </button>
-          <h2 className="text-lg font-bold text-white">نشر في المجتمع</h2>
+          <h2 className="text-lg font-bold text-white">نشر في القناة</h2>
         </div>
         <button 
           onClick={handleCreatePost}
@@ -57,7 +57,7 @@ export default function CommunityPostPage() {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="شارك أفكارك أو صورك مع أعضاء المجتمع..."
+              placeholder="شارك أفكارك أو صورك مع أعضاء القناة..."
               className="w-full bg-transparent text-white text-lg placeholder-slate-500 focus:outline-none resize-none min-h-[150px]"
               autoFocus
             />

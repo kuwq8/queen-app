@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Settings, User, Lock, Bell, Shield, Star, ChevronRight, LogOut, Loader2, ArrowRight } from 'lucide-react';
+import { Settings, User, Lock, Bell, Shield, Star, ChevronRight, LogOut, Loader2, ArrowRight, Trash2 } from 'lucide-react';
 import BottomNav from '../../components/BottomNav';
+import BlockedUsersList from '../../components/settings/BlockedUsersList';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -300,7 +301,8 @@ export default function SettingsPage() {
                     </select>
                   </div>
                 </div>
-
+                
+                <BlockedUsersList />
               </div>
             )}
 
@@ -332,6 +334,31 @@ export default function SettingsPage() {
                     className="w-full flex items-center justify-center py-2.5 rounded-lg border border-red-500/30 text-red-500 font-bold hover:bg-red-500/10 transition-colors disabled:opacity-50"
                   >
                     تسجيل الخروج من الأجهزة الأخرى
+                  </button>
+                </div>
+                
+                <div className="bg-red-500/10 border border-red-500/20 rounded-2xl overflow-hidden mt-6 p-4">
+                  <h4 className="font-bold text-red-500 text-[15px]">منطقة الخطر</h4>
+                  <p className="text-red-400/70 text-xs mt-1 mb-4">حذف حسابك نهائياً سيؤدي إلى مسح كافة بياناتك ومنشوراتك ولا يمكن التراجع عن هذا الإجراء.</p>
+                  
+                  <button 
+                    onClick={async () => {
+                      const confirm = window.confirm('هل أنت متأكد من رغبتك في حذف الحساب نهائياً؟ هذا الإجراء لا يمكن التراجع عنه!');
+                      if (confirm) {
+                        const { createClient } = await import('@/utils/supabase/client');
+                        const supabase = createClient();
+                        const { error } = await supabase.rpc('delete_user');
+                        if (error) {
+                          alert('حدث خطأ أثناء حذف الحساب: ' + error.message);
+                        } else {
+                          await supabase.auth.signOut();
+                          window.location.href = '/';
+                        }
+                      }
+                    }}
+                    className="w-full flex justify-center items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg transition-colors text-sm"
+                  >
+                    <Trash2 size={18} /> حذف الحساب نهائياً
                   </button>
                 </div>
               </div>

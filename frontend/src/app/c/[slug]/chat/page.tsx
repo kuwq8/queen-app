@@ -197,7 +197,7 @@ export default function ClassicChatPage() {
     secondaryColor: '#005cb2',
     backgroundColor: '#f4f7f6',
     isMarqueeEnabled: true,
-    marqueeText: 'مرحباً بكم في مجتمعنا ... مدعوم بتقنية Gemini ⚡',
+    marqueeText: 'مرحباً بكم في قناةنا ... مدعوم بتقنية Gemini ⚡',
     areAddonsEnabled: true
   });
 
@@ -1759,7 +1759,7 @@ export default function ClassicChatPage() {
 
           {/* Social Network Link */}
           <a href="/home" className="hidden md:flex text-[#D2B48C] hover:text-white transition-colors text-[11px] items-center font-bold tracking-wider absolute left-1/2 transform -translate-x-1/2 z-0">
-            🌐 مجتمع إكس (التواصل الاجتماعي)
+            🌐 قناة إكس (التواصل الاجتماعي)
           </a>
           
           {/* Spacer for right side */}

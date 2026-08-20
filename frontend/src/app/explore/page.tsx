@@ -78,7 +78,7 @@ export default function ExplorePage() {
       
       const { data, error } = await supabase
         .from('posts')
-        .select('*, author:profiles(id, username, avatar_url)')
+        .select('*, author:profiles!posts_user_id_fkey(id, username, avatar_url)')
         .ilike('content', `%${searchQuery}%`)
         .order('created_at', { ascending: false })
         .limit(20);

@@ -42,7 +42,7 @@ export default function CreateCommunityPage() {
 
       if (insertError) {
         if (insertError.code === '23505') { // Unique violation
-           throw new Error('يوجد مجتمع بهذا الاسم مسبقاً.');
+           throw new Error('يوجد قناة بهذا الاسم مسبقاً.');
         }
         throw insertError;
       }
@@ -61,7 +61,7 @@ export default function CreateCommunityPage() {
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'حدث خطأ أثناء إنشاء المجتمع.');
+      setError(err.message || 'حدث خطأ أثناء إنشاء القناة.');
     } finally {
       setIsLoading(false);
     }
@@ -76,14 +76,14 @@ export default function CreateCommunityPage() {
           <button onClick={() => router.back()} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-white">
             <ArrowRight size={20} />
           </button>
-          <h2 className="text-lg font-bold text-white">إنشاء مجتمع جديد</h2>
+          <h2 className="text-lg font-bold text-white">إنشاء قناة جديد</h2>
         </header>
 
         <main className="p-4 flex-1">
           <form onSubmit={handleCreate} className="space-y-6">
             
             <div className="space-y-2">
-              <label className="text-white font-bold text-sm block">اسم المجتمع</label>
+              <label className="text-white font-bold text-sm block">اسم القناة</label>
               <input 
                 type="text" 
                 value={name}
@@ -101,7 +101,7 @@ export default function CreateCommunityPage() {
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="عن ماذا يتحدث هذا المجتمع؟"
+                placeholder="عن ماذا يتحدث هذا القناة؟"
                 maxLength={200}
                 rows={4}
                 className="w-full bg-[#111] border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors resize-none"
@@ -129,7 +129,7 @@ export default function CreateCommunityPage() {
                 disabled={!name.trim() || isLoading}
                 className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'جاري الإنشاء...' : 'إنشاء المجتمع'}
+                {isLoading ? 'جاري الإنشاء...' : 'إنشاء القناة'}
               </button>
             </div>
 

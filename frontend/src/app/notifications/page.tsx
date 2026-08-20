@@ -79,8 +79,10 @@ export default function NotificationsPage() {
       case 'comment': return 'رد على منشورك';
       case 'repost': return 'أعاد نشر منشورك';
       case 'follow': return 'بدأ بمتابعتك';
+      case 'follow_request': return 'طلب متابعتك';
+      case 'follow_accept': return 'وافق على طلب متابعتك';
       case 'message': return 'أرسل لك رسالة جديدة';
-      case 'missed_call': return 'مكالمة فائتة';
+      case 'missed_call': return 'مكالمة لم يرد عليها';
       default: return 'إشعار جديد';
     }
   };
@@ -90,10 +92,10 @@ export default function NotificationsPage() {
       case 'like':
       case 'comment':
       case 'repost':
-        router.push(`/post/${notif.reference_id}`);
+        notif.reference_id && router.push(`/post/${notif.reference_id}`);
         break;
       case 'follow':
-        router.push(`/${notif.actor?.username}`);
+        notif.actor?.username && router.push(`/${notif.actor.username}`);
         break;
       case 'message':
         router.push(`/messages/${notif.reference_id}`);
@@ -155,12 +157,65 @@ export default function NotificationsPage() {
                   <p className="text-white text-[15px] leading-relaxed">
                     <span className="font-bold hover:underline" onClick={(e) => {
                       e.stopPropagation();
-                      router.push(`/${notif.actor?.username}`);
+                      notif.actor?.username && router.push(`/${notif.actor.username}`);
                     }}>
                       {notif.actor?.username}
                     </span>{' '}
                     <span className="text-slate-300">{getMessage(notif.type)}</span>
                   </p>
+                  
+                  {notif.type === 'follow_request' && (
+                    <div className="flex gap-2 mt-3">
+                      <button 
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            const { createClient } = await import('@/utils/supabase/client');
+                            const supabase = createClient();
+                            const { data: { session } } = await supabase.auth.getSession();
+                            if (!session) return;
+                            
+                            await supabase.from('follows')
+                              .update({ status: 'accepted' })
+                              .eq('follower_id', notif.actor_id)
+                              .eq('following_id', session.user.id);
+                              
+                            // Mark notification as handled visually
+                            setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, type: 'follow' } : n));
+                          } catch (err) {
+                            console.error(err);
+                          }
+                        }}
+                        className="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-1.5 rounded-full text-sm font-bold transition-colors"
+                      >
+                        قبول
+                      </button>
+                      <button 
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            const { createClient } = await import('@/utils/supabase/client');
+                            const supabase = createClient();
+                            const { data: { session } } = await supabase.auth.getSession();
+                            if (!session) return;
+                            
+                            await supabase.from('follows')
+                              .delete()
+                              .eq('follower_id', notif.actor_id)
+                              .eq('following_id', session.user.id);
+                              
+                            // Hide notification
+                            setNotifications(prev => prev.filter(n => n.id !== notif.id));
+                          } catch (err) {
+                            console.error(err);
+                          }
+                        }}
+                        className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-1.5 rounded-full text-sm font-bold transition-colors"
+                      >
+                        رفض
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))

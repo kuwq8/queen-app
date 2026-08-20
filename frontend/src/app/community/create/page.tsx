@@ -132,7 +132,7 @@ export default function CreateChatPage() {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2 relative z-10">أطلق شاتك الخاص الآن 🚀</h1>
           <p className="text-[#FDF5E6] opacity-90 relative z-10">
-            احجز الرابط الخاص بك وابدأ ببناء مجتمعك في ثوانٍ.
+            احجز الرابط الخاص بك وابدأ ببناء قناةك في ثوانٍ.
           </p>
         </div>
 

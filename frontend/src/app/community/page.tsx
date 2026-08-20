@@ -130,7 +130,7 @@ export default function CommunityPage() {
               <button onClick={() => router.back()} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors">
                 <ArrowRight size={20} className="text-white" />
               </button>
-              <h1 className="text-xl font-bold text-cyan-500">مجتمعات السيرفرات</h1>
+              <h1 className="text-xl font-bold text-cyan-500">قناةات السيرفرات</h1>
             </div>
             <button 
               onClick={() => router.push('/community/create')}
@@ -147,7 +147,7 @@ export default function CommunityPage() {
             </div>
             <input
               type="text"
-              placeholder="البحث في المجتمعات..."
+              placeholder="البحث في القنوات..."
               className="w-full bg-slate-900 border border-slate-800 text-white rounded-full py-2.5 pr-11 pl-4 focus:outline-none focus:border-cyan-500 transition-colors text-right"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -184,7 +184,7 @@ export default function CommunityPage() {
                 <div>
                   {myServers.length === 0 ? (
                     <div className="text-center p-8 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800/50 font-bold">
-                      أنت لست منضماً لأي مجتمع بعد.
+                      أنت لست منضماً لأي قناة بعد.
                     </div>
                   ) : (
                     <div className="grid gap-3">
@@ -207,7 +207,7 @@ export default function CommunityPage() {
                 <div>
                   {servers.length === 0 ? (
                     <div className="text-center p-8 text-slate-500 bg-slate-900/50 rounded-xl border border-slate-800/50 font-bold">
-                      لم يتم العثور على مجتمعات.
+                      لم يتم العثور على قناةات.
                     </div>
                   ) : (
                     <div className="grid gap-3">
