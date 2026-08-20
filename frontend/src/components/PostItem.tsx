@@ -66,12 +66,13 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     if (!dateString) return '';
     const date = new Date(dateString);
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
     
-    if (diffInSeconds < 60) return 'الآن';
-    if (diffInSeconds < 3600) return `منذ ${Math.floor(diffInSeconds / 60)} دقيقة`;
-    if (diffInSeconds < 86400) return `منذ ${Math.floor(diffInSeconds / 3600)} ساعة`;
-    return `منذ ${Math.floor(diffInSeconds / 86400)} يوم`;
+    if (diff <= 0) return 'الآن';
+    if (diff < 60) return `منذ ${diff} ثانية`;
+    if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+    if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+    return `منذ ${Math.floor(diff / 86400)} يوم`;
   };
 
   const isOwner = currentUsername === post.author?.username;

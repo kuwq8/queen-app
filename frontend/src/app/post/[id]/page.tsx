@@ -34,6 +34,7 @@ export default function PostDetailPage() {
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
     
+    if (diff <= 0) return 'الآن';
     if (diff < 60) return `منذ ${diff} ثانية`;
     if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
     if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
