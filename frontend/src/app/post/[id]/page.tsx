@@ -140,17 +140,16 @@ export default function PostDetailPage() {
     };
   }, [postId]);
 
-  const handleAddComment = async () => {
+  const handleAddComment = () => {
     if (!commentContent.trim() && !mediaFile && !mediaPreview) return;
     
-    // 1. True Optimistic Update (Immediate)
     const optimisticId = 'temp-' + Date.now();
     const optimisticComment = {
       id: optimisticId,
       post_id: postId,
-      user_id: '', // filled below or just local
+      user_id: '', 
       content: commentContent,
-      media_url: mediaPreview, // local preview url
+      media_url: mediaPreview,
       created_at: new Date().toISOString(),
       author: {
         id: '',
@@ -159,14 +158,8 @@ export default function PostDetailPage() {
       }
     };
 
+    // 1. تحديث الواجهة فوراً (لا تنتظر أي شيء)
     setComments(prev => [optimisticComment, ...prev]);
-    setPost((prev: any) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        comments_count: (prev.comments_count || 0) + 1
-      };
-    });
     
     const previousCommentContent = commentContent;
     const previousMediaFile = mediaFile;
@@ -178,69 +171,59 @@ export default function PostDetailPage() {
     setShowGifPicker(false);
     setIsSubmitting(true);
     
-    try {
-      const { createClient } = await import('@/utils/supabase/client');
+    // 2. الإرسال للسيرفر في الخلفية
+    import('@/utils/supabase/client').then(({ createClient }) => {
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) throw new Error("Not logged in");
-      
-      optimisticComment.user_id = session.user.id;
-      optimisticComment.author.id = session.user.id;
-      
-      let finalMediaUrl = previousMediaPreview && previousMediaPreview.startsWith('http') ? previousMediaPreview : null;
-      
-      if (previousMediaFile) {
-        const fileExt = previousMediaFile.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-        const filePath = `${session.user.id}/${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('post_media')
-          .upload(filePath, previousMediaFile);
-          
-        if (!uploadError) {
-          const { data } = supabase.storage.from('post_media').getPublicUrl(filePath);
-          finalMediaUrl = data.publicUrl;
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+          setIsSubmitting(false);
+          return;
         }
-      }
-
-      const { data: newComment, error } = await supabase
-        .from('comments')
-        .insert({
-          post_id: postId,
-          user_id: session.user.id,
-          content: previousCommentContent,
-          media_url: finalMediaUrl
-        })
-        .select('*, author:profiles(id, username, avatar_url)')
-        .single();
         
-      if (error) {
-        console.error("🔥 ERROR INSERTING COMMENT:", error);
-        alert(`فشل الحفظ: ${error.message || JSON.stringify(error)}`);
-        // Revert optimistic update
-        setComments(prev => prev.filter(c => c.id !== optimisticId));
-        setPost((prev: any) => prev ? { ...prev, comments_count: Math.max(0, (prev.comments_count || 1) - 1) } : prev);
-        setCommentContent(previousCommentContent);
-        setMediaFile(previousMediaFile);
-        setMediaPreview(previousMediaPreview);
-      } else if (newComment) {
-        // Replace optimistic comment with real one
-        setComments(prev => prev.map(c => c.id === optimisticId ? newComment : c));
-      }
-    } catch (err: any) {
-      console.error(err);
-      // Revert optimistic update
-      setComments(prev => prev.filter(c => c.id !== optimisticId));
-      setPost((prev: any) => prev ? { ...prev, comments_count: Math.max(0, (prev.comments_count || 1) - 1) } : prev);
-      setCommentContent(previousCommentContent);
-      setMediaFile(previousMediaFile);
-      setMediaPreview(previousMediaPreview);
-      alert("فشل إضافة الرد: " + (err.message || JSON.stringify(err)));
-    } finally {
-      setIsSubmitting(false);
-    }
+        let finalMediaUrl = previousMediaPreview && previousMediaPreview.startsWith('http') ? previousMediaPreview : null;
+        
+        const insertComment = (url: string | null) => {
+          supabase.from('comments').insert({
+            post_id: postId,
+            user_id: session.user.id,
+            content: previousCommentContent,
+            media_url: url
+          }).select('*, author:profiles(id, username, avatar_url)').single()
+          .then(({ data: newComment, error }) => {
+            if (error) {
+              console.error("🔥 ERROR INSERTING COMMENT:", error);
+              setComments(prev => prev.filter(c => c.id !== optimisticId));
+              setCommentContent(previousCommentContent);
+              setMediaFile(previousMediaFile);
+              setMediaPreview(previousMediaPreview);
+              alert(`فشل الحفظ: ${error.message || JSON.stringify(error)}`);
+            } else if (newComment) {
+              setComments(prev => prev.map(c => c.id === optimisticId ? newComment : c));
+              router.refresh();
+            }
+            setIsSubmitting(false);
+          });
+        };
+
+        if (previousMediaFile) {
+          const fileExt = previousMediaFile.name.split('.').pop();
+          const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+          const filePath = `${session.user.id}/${fileName}`;
+          
+          supabase.storage.from('post_media').upload(filePath, previousMediaFile)
+            .then(({ error: uploadError }) => {
+              if (!uploadError) {
+                const { data } = supabase.storage.from('post_media').getPublicUrl(filePath);
+                insertComment(data.publicUrl);
+              } else {
+                insertComment(null);
+              }
+            });
+        } else {
+          insertComment(finalMediaUrl);
+        }
+      });
+    });
   };
 
   const handlePostDeleted = () => {
