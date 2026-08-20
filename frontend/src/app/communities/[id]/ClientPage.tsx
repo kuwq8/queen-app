@@ -164,7 +164,8 @@ export default function CommunityPage({ params }: { params: any }) {
         .insert({
           content: newPost,
           user_id: session.user.id,
-          community_id: community.id
+          community_id: community.id,
+          is_comments_disabled: true
         });
 
       if (!error) {
@@ -302,17 +303,15 @@ export default function CommunityPage({ params }: { params: any }) {
       </main>
 
       {/* FAB */}
-      {currentUserId === community?.creator_id && (
-        <button 
+      {currentUserId === community?.creator_id && (<button 
           onClick={() => setIsComposeOpen(true)}
           className="absolute bottom-20 left-4 bg-sky-600 hover:bg-sky-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-sky-500/30 z-40 transition-colors"
         >
           <Feather size={24} />
-        </button>
-      )}
+        </button>)}
 
       {/* Compose Post Modal Overlay */}
-      {isComposeOpen && (
+      {isComposeOpen && currentUserId === community?.creator_id && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex justify-center items-start pt-16 px-4">
           <div className="bg-[#111] w-full max-w-[600px] rounded-2xl border border-slate-800 p-4 shadow-2xl animate-fade-in-up">
             <div className="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">

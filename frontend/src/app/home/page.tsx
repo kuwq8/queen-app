@@ -55,7 +55,7 @@ export default function HomePage() {
         
         const { data: profile } = await supabase
           .from('profiles')
-          .select('*, is_onboarded')
+          .select('*')
           .eq('id', session.user.id)
           .single();
           
@@ -89,7 +89,7 @@ export default function HomePage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from('communities')
-        .select('*, is_onboarded')
+        .select('*')
         .order('members_count', { ascending: false })
         .limit(20);
       
