@@ -290,7 +290,7 @@ export default function PostDetailPage() {
 
   return (
     <div className="min-h-screen flex justify-center bg-black">
-      <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black pb-[60px]" dir="rtl">
+      <div className="w-full max-w-[600px] flex flex-col relative border-x border-slate-800 min-h-screen bg-black pb-[120px]" dir="rtl">
         
         {/* Expanded Image Modal */}
         {expandedImage && (

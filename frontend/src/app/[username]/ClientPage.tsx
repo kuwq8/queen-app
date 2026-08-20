@@ -674,7 +674,7 @@ export default function ProfilePage() {
           ) : (
             <>
               {activeTab === 'posts' && (
-                <div className="pb-[60px]">
+                <div className="pb-[120px]">
                   {posts.map((post) => (
                     <PostItem 
                       key={post.id} 
@@ -697,7 +697,7 @@ export default function ProfilePage() {
             </div>
           )}
           {activeTab === 'bookmarks' && isOwnProfile && (
-            <div className="pb-[60px]">
+            <div className="pb-[120px]">
               {bookmarkedPosts.length > 0 ? (
                 bookmarkedPosts.map((post) => (
                   <PostItem 

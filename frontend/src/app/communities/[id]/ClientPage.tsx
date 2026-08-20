@@ -149,6 +149,20 @@ export default function CommunityPage({ params }: { params: any }) {
     }
   };
 
+  
+  const handleDeleteCommunity = async () => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه القناة؟')) return;
+    try {
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      await supabase.from('communities').delete().eq('id', community.id);
+      router.push('/home');
+    } catch (e) {
+      console.error(e);
+      alert('فشل الحذف');
+    }
+  };
+
   const handlePostSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newPost.trim()) return;
@@ -212,7 +226,7 @@ export default function CommunityPage({ params }: { params: any }) {
   }
 
   return (
-    <div className="w-full flex flex-col relative pb-[60px] min-h-screen bg-black font-sans text-right">
+    <div className="w-full flex flex-col relative pb-[120px] min-h-screen bg-black font-sans text-right">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md flex items-center px-4 py-2 gap-6 border-b border-slate-800/50">
         <button onClick={() => router.push('/home')} className="p-2 -mr-2 rounded-full hover:bg-slate-800 transition-colors">
@@ -247,6 +261,7 @@ export default function CommunityPage({ params }: { params: any }) {
             </div>
             
             <div className="mt-4">
+              
               <button 
                 onClick={toggleMembership}
                 className={`px-5 py-1.5 rounded-full font-bold text-[15px] border transition-colors ${
@@ -258,6 +273,16 @@ export default function CommunityPage({ params }: { params: any }) {
                 {isMember ? <span className="group-hover:hidden">عضو</span> : 'انضمام'}
                 {isMember && <span className="hidden group-hover:inline">مغادرة</span>}
               </button>
+              
+              {currentUserId === community?.creator_id && (
+                <button 
+                  onClick={handleDeleteCommunity}
+                  className="mr-2 px-5 py-1.5 rounded-full font-bold text-[15px] border border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                >
+                  حذف القناة
+                </button>
+              )}
+
             </div>
           </div>
 
@@ -305,7 +330,7 @@ export default function CommunityPage({ params }: { params: any }) {
       {/* FAB */}
       {currentUserId === community?.creator_id && (<button 
           onClick={() => setIsComposeOpen(true)}
-          className="absolute bottom-20 left-4 bg-sky-600 hover:bg-sky-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-sky-500/30 z-40 transition-colors"
+          className="fixed bottom-24 left-4 bg-sky-600 hover:bg-sky-500 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-sky-500/30 z-40 transition-colors"
         >
           <Feather size={24} />
         </button>)}

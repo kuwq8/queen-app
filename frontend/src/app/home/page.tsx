@@ -363,7 +363,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="w-full flex flex-col relative pb-[60px] min-h-screen bg-black font-sans text-right">
+    <div className="w-full flex flex-col relative pb-[120px] min-h-screen bg-black font-sans text-right">
         
         {/* Top Header */}
         <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-slate-800 p-3 px-4 flex items-center justify-between">
@@ -486,7 +486,7 @@ export default function HomePage() {
               setIsComposeOpen(true);
             }
           }}
-          className="absolute bottom-20 left-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-cyan-500/30 z-40 transition-colors"
+          className="fixed bottom-24 left-4 bg-cyan-600 hover:bg-cyan-700 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-cyan-500/30 z-40 transition-colors"
         >
           <Feather size={20} />
         </button>
