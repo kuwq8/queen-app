@@ -142,6 +142,33 @@ export default function PostDetailPage() {
 
   const handleAddComment = async () => {
     if (!commentContent.trim() && !mediaFile && !mediaPreview) return;
+    
+    // 1. True Optimistic Update (Immediate)
+    const optimisticId = 'temp-' + Date.now();
+    const optimisticComment = {
+      id: optimisticId,
+      post_id: postId,
+      user_id: '', // filled below or just local
+      content: commentContent,
+      media_url: mediaPreview, // local preview url
+      created_at: new Date().toISOString(),
+      author: {
+        id: '',
+        username: currentUsername || 'مستخدم',
+        avatar_url: currentUserAvatar || ''
+      }
+    };
+
+    setComments(prev => [optimisticComment, ...prev]);
+    
+    const previousCommentContent = commentContent;
+    const previousMediaFile = mediaFile;
+    const previousMediaPreview = mediaPreview;
+
+    setCommentContent('');
+    setMediaFile(null);
+    setMediaPreview(null);
+    setShowGifPicker(false);
     setIsSubmitting(true);
     
     try {
@@ -149,18 +176,21 @@ export default function PostDetailPage() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) return;
+      if (!session) throw new Error("Not logged in");
       
-      let finalMediaUrl = mediaPreview && mediaPreview.startsWith('http') ? mediaPreview : null;
+      optimisticComment.user_id = session.user.id;
+      optimisticComment.author.id = session.user.id;
       
-      if (mediaFile) {
-        const fileExt = mediaFile.name.split('.').pop();
+      let finalMediaUrl = previousMediaPreview && previousMediaPreview.startsWith('http') ? previousMediaPreview : null;
+      
+      if (previousMediaFile) {
+        const fileExt = previousMediaFile.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
         const filePath = `${session.user.id}/${fileName}`;
         
         const { error: uploadError } = await supabase.storage
           .from('post_media')
-          .upload(filePath, mediaFile);
+          .upload(filePath, previousMediaFile);
           
         if (!uploadError) {
           const { data } = supabase.storage.from('post_media').getPublicUrl(filePath);
@@ -173,43 +203,32 @@ export default function PostDetailPage() {
         .insert({
           post_id: postId,
           user_id: session.user.id,
-          content: commentContent,
+          content: previousCommentContent,
           media_url: finalMediaUrl
         })
         .select('*, author:profiles(id, username, avatar_url)')
         .single();
         
-      if (newComment) {
-        setComments(prev => [newComment, ...prev]);
-      } else {
-        // Fallback optimistic update if select fails
-        const fakeComment = {
-          id: Math.random().toString(),
-          post_id: postId,
-          user_id: session.user.id,
-          content: commentContent,
-          media_url: finalMediaUrl,
-          created_at: new Date().toISOString(),
-          author: {
-            id: session.user.id,
-            username: currentUsername || 'User',
-            avatar_url: currentUserAvatar || ''
-          }
-        };
-        setComments(prev => [fakeComment as any, ...prev]);
-        if (error) {
-          console.error("🔥 ERROR INSERTING COMMENT:", error);
-          alert(`فشل الحفظ: ${error.message || JSON.stringify(error)}`);
-        }
+      if (error) {
+        console.error("🔥 ERROR INSERTING COMMENT:", error);
+        alert(`فشل الحفظ: ${error.message || JSON.stringify(error)}`);
+        // Revert optimistic update
+        setComments(prev => prev.filter(c => c.id !== optimisticId));
+        setCommentContent(previousCommentContent);
+        setMediaFile(previousMediaFile);
+        setMediaPreview(previousMediaPreview);
+      } else if (newComment) {
+        // Replace optimistic comment with real one
+        setComments(prev => prev.map(c => c.id === optimisticId ? newComment : c));
       }
-      
-      setCommentContent('');
-      setMediaFile(null);
-      setMediaPreview(null);
-      setShowGifPicker(false);
-      // No need to manually increment, comments.length will do it
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      // Revert optimistic update
+      setComments(prev => prev.filter(c => c.id !== optimisticId));
+      setCommentContent(previousCommentContent);
+      setMediaFile(previousMediaFile);
+      setMediaPreview(previousMediaPreview);
+      alert("فشل إضافة الرد: " + (err.message || JSON.stringify(err)));
     } finally {
       setIsSubmitting(false);
     }
@@ -321,7 +340,7 @@ export default function PostDetailPage() {
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
                 placeholder="أضف ردك الخاص..."
-                className="w-full bg-transparent text-white text-[15px] resize-none focus:outline-none min-h-[40px]"
+                className="w-full min-w-0 bg-transparent text-white text-[15px] resize-none focus:outline-none min-h-[40px]"
                 rows={1}
               />
               <div className="flex justify-between items-center border-t border-slate-800/50 pt-2 mt-1">
