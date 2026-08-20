@@ -11,17 +11,15 @@ type Props = {
   params: { username: string }
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
+  const resolvedParams = await params;
   let title = 'Gemini Social';
   let description = 'شبكة تواصل اجتماعية متكاملة';
   let imageUrl = '/icon-512x512.png';
 
   try {
     
-    let username = decodeURIComponent(params.username);
+    let username = decodeURIComponent(resolvedParams.username);
     if (username.startsWith('@')) username = username.substring(1);
     
     const { data: profile } = await supabase

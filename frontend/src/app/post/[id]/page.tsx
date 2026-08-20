@@ -8,10 +8,8 @@ type Props = {
   params: { id: string }
 };
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
+  const resolvedParams = await params;
   
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,7 +25,7 @@ export async function generateMetadata(
     const { data: post } = await supabase
       .from('posts')
       .select('content, media_url, author:profiles!posts_user_id_fkey(username, first_name)')
-      .eq('id', params.id)
+      .eq('id', resolvedParams.id)
       .single();
       
     if (post) {
