@@ -475,7 +475,8 @@ export default function HomePage() {
             )}
           </div>
           )}
-        </main>
+          {/* Spacer for dropdown */} <div className="h-64" />
+      </main>
 
         {/* Floating Action Button (FAB) */}
         <button 

@@ -151,7 +151,7 @@ export default function CommunityPage({ params }: { params: any }) {
 
   
   const handleDeleteCommunity = async () => {
-    if (!window.confirm('هل أنت متأكد من حذف هذه القناة؟')) return;
+    // window.confirm removed
     try {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
@@ -325,6 +325,7 @@ export default function CommunityPage({ params }: { params: any }) {
             )}
           </div>
         )}
+        {/* Spacer for dropdown */} <div className="h-64" />
       </main>
 
       {/* FAB */}
