@@ -136,6 +136,7 @@ export default function HomePage() {
           *,
           author:profiles!posts_user_id_fkey(username, avatar_url)
         `)
+        .is('community_id', null)
         .order('created_at', { ascending: false })
         .range(pageNum * POSTS_PER_PAGE, (pageNum + 1) * POSTS_PER_PAGE - 1);
 
@@ -283,6 +284,7 @@ export default function HomePage() {
           )
         `)
         .eq('user_id', session.user.id)
+        .is('community_id', null)
         .order('created_at', { ascending: false });
         
       if (data) {

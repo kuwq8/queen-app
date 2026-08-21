@@ -214,15 +214,18 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
             </button>
             
             {showEmojiPicker && (
-              <div className="absolute bottom-full right-0 mb-2 shadow-2xl z-50">
-                <EmojiPicker 
-                  theme={Theme.DARK}
-                  onEmojiClick={(emojiData) => handleToggleReaction(emojiData.emoji)}
-                  searchPlaceHolder="ابحث عن إيموجي..."
-                  width={300}
-                  height={400}
-                />
-              </div>
+              <>
+                <div className="fixed inset-0 z-[90] sm:hidden" onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(false); }}></div>
+                <div className="fixed bottom-0 left-0 w-full z-[100] sm:absolute sm:bottom-full sm:left-auto sm:right-0 sm:w-auto sm:mb-2 shadow-2xl animate-in slide-in-from-bottom-10">
+                  <EmojiPicker 
+                    theme={Theme.DARK}
+                    onEmojiClick={(emojiData) => handleToggleReaction(emojiData.emoji)}
+                    searchPlaceHolder="ابحث عن إيموجي..."
+                    width="100%"
+                    height={350}
+                  />
+                </div>
+              </>
             )}
           </div>
 

@@ -80,6 +80,7 @@ export default function ExplorePage() {
         .from('posts')
         .select('*, author:profiles!posts_user_id_fkey(id, username, avatar_url)')
         .ilike('content', `%${searchQuery}%`)
+        .is('community_id', null)
         .order('created_at', { ascending: false })
         .limit(20);
         
