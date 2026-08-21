@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Image as ImageIcon, Send, Trash2 } from 'lucide-react';
+import { ArrowRight, Image as ImageIcon, Send, Trash2, MoreVertical, Share2, Globe, Lock } from 'lucide-react';
 import ChannelPostBubble from '@/components/ChannelPostBubble';
 
 export default function CommunityPage({ params }: { params: any }) {
@@ -18,6 +18,8 @@ export default function CommunityPage({ params }: { params: any }) {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [newPost, setNewPost] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   const fetchCommunityData = async () => {
     try {
@@ -210,13 +212,66 @@ export default function CommunityPage({ params }: { params: any }) {
           <p className="text-[13px] text-slate-400">{community.members_count || 0} متابع</p>
         </div>
 
-        {isCreator && (
-          <button 
-            onClick={handleDeleteCommunity}
-            className="p-2 text-red-400 hover:bg-white/10 rounded-full transition-colors"
-          >
-            <Trash2 size={20} />
-          </button>
+                {isCreator && (
+          <div className="relative">
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 text-slate-300 hover:bg-white/10 rounded-full transition-colors"
+            >
+              <MoreVertical size={20} />
+            </button>
+
+            {isMenuOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)}></div>
+                <div className="absolute top-full left-0 mt-2 w-48 bg-[#2a3942] rounded-xl shadow-2xl py-2 z-50 border border-slate-700 animate-in fade-in zoom-in-95 origin-top-left">
+                  
+                  <button 
+                    onClick={() => { setIsPrivate(true); setIsMenuOpen(false); alert('تم تحويل القناة إلى خاصة'); }}
+                    className="w-full text-right px-4 py-3 flex items-center justify-between text-[#e9edef] hover:bg-white/5 transition-colors"
+                  >
+                    <span>خاص</span>
+                    {isPrivate && <span className="text-[#00a884] text-xs">مفعل</span>}
+                    {!isPrivate && <Lock size={16} className="text-slate-400" />}
+                  </button>
+
+                  <button 
+                    onClick={() => { setIsPrivate(false); setIsMenuOpen(false); alert('تم تحويل القناة إلى عامة'); }}
+                    className="w-full text-right px-4 py-3 flex items-center justify-between text-[#e9edef] hover:bg-white/5 transition-colors"
+                  >
+                    <span>عام</span>
+                    {!isPrivate && <span className="text-[#00a884] text-xs">مفعل</span>}
+                    {isPrivate && <Globe size={16} className="text-slate-400" />}
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      alert('تم نسخ رابط الدعوة!');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-right px-4 py-3 flex items-center justify-between text-[#e9edef] hover:bg-white/5 transition-colors"
+                  >
+                    <span>دعوة</span>
+                    <Share2 size={16} className="text-slate-400" />
+                  </button>
+
+                  <div className="h-px bg-slate-700 my-1 mx-2" />
+
+                  <button 
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleDeleteCommunity();
+                    }}
+                    className="w-full text-right px-4 py-3 flex items-center justify-between text-red-500 hover:bg-red-500/10 transition-colors"
+                  >
+                    <span>حذف القناة</span>
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </header>
 
