@@ -51,8 +51,10 @@ export const renderContentWithHashtags = (text: string) => {
 };
 
 export default function PostItem({ post: initialPost, currentUsername, onPostDeleted, onPostEdited, onInteractionChange, onQuote, commentsCountOverride }: PostItemProps) {
+  // Allow comments for channel posts when viewed outside the channel
   const router = useRouter();
   const [post, setPost] = useState(initialPost);
+  const isCommentsDisabled = post.community ? false : post.is_comments_disabled;
   
   useEffect(() => {
     setPost((prev: any) => ({
