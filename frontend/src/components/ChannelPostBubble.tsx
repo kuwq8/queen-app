@@ -232,7 +232,6 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted, 
             >
               <Smile size={15} />
             </button>
-          )}
             
             {showEmojiPicker && (
               <>
