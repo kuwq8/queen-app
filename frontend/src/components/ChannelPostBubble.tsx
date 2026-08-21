@@ -8,9 +8,10 @@ interface ChannelPostBubbleProps {
   post: any;
   currentUserId: string;
   onPostDeleted?: (id: string) => void;
+  isPrivate?: boolean;
 }
 
-export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }: ChannelPostBubbleProps) {
+export default function ChannelPostBubble({ post, currentUserId, onPostDeleted, isPrivate = false }: ChannelPostBubbleProps) {
   const [reactions, setReactions] = useState<any[]>([]);
   const [reposts, setReposts] = useState<any[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -158,6 +159,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
       <div className="w-[98%] sm:w-[85%] md:w-[70%] lg:w-[60%] xl:w-[55%] bg-[#202c33] rounded-2xl rounded-tr-none p-4 relative shadow-md group">
         
         {currentUserId === post.user_id && (
+          {!isPrivate && (
           <button 
             onClick={async () => {
               if(!confirm('هل أنت متأكد من حذف هذا البث؟')) return;
@@ -229,6 +231,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
             >
               <Smile size={15} />
             </button>
+          )}
             
             {showEmojiPicker && (
               <>

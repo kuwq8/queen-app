@@ -166,7 +166,7 @@ export default function HomePage() {
         // Fetch reposts
         let repostsQuery = supabase
           .from('reposts')
-          .select('created_at, user_id, post:posts(*, author:profiles!posts_user_id_fkey(username, avatar_url), community:communities(id, name, avatar_url))')
+          .select('created_at, user_id, post:posts(*, author:profiles!posts_user_id_fkey(username, avatar_url), community:communities(id, name, avatar_url, is_private))')
           .order('created_at', { ascending: false })
           .limit(POSTS_PER_PAGE * (pageNum + 1));
 

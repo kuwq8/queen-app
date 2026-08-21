@@ -19,7 +19,7 @@ export default function CommunityPage({ params }: { params: any }) {
   const [newPost, setNewPost] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(community?.is_private || false);
 
   const fetchCommunityData = async () => {
     try {
@@ -227,7 +227,13 @@ export default function CommunityPage({ params }: { params: any }) {
                 <div className="absolute top-full left-0 mt-2 w-48 bg-[#2a3942] rounded-xl shadow-2xl py-2 z-50 border border-slate-700 animate-in fade-in zoom-in-95 origin-top-left">
                   
                   <button 
-                    onClick={() => { setIsPrivate(true); setIsMenuOpen(false); alert('تم تحويل القناة إلى خاصة'); }}
+                    onClick={async () => { 
+                      setIsPrivate(true); 
+                      setIsMenuOpen(false); 
+                      const { createClient } = await import('@/utils/supabase/client');
+                      await createClient().from('communities').update({ is_private: true }).eq('id', community.id);
+                      alert('تم تحويل القناة إلى خاصة'); 
+                    }}
                     className="w-full text-right px-4 py-3 flex items-center justify-between text-[#e9edef] hover:bg-white/5 transition-colors"
                   >
                     <span>خاص</span>
@@ -236,7 +242,13 @@ export default function CommunityPage({ params }: { params: any }) {
                   </button>
 
                   <button 
-                    onClick={() => { setIsPrivate(false); setIsMenuOpen(false); alert('تم تحويل القناة إلى عامة'); }}
+                    onClick={async () => { 
+                      setIsPrivate(false); 
+                      setIsMenuOpen(false); 
+                      const { createClient } = await import('@/utils/supabase/client');
+                      await createClient().from('communities').update({ is_private: false }).eq('id', community.id);
+                      alert('تم تحويل القناة إلى عامة'); 
+                    }}
                     className="w-full text-right px-4 py-3 flex items-center justify-between text-[#e9edef] hover:bg-white/5 transition-colors"
                   >
                     <span>عام</span>
@@ -294,12 +306,7 @@ export default function CommunityPage({ params }: { params: any }) {
           </div>
         ) : (
           posts.map((post) => (
-            <ChannelPostBubble 
-              key={post.id} 
-              post={post} 
-              currentUserId={currentUserId}
-              onPostDeleted={handlePostDeleted}
-            />
+            <ChannelPostBubble key={post.id} post={post} currentUserId={currentUserId} onPostDeleted={handlePostDeleted} isPrivate={isPrivate} />
           ))
         )}
         
