@@ -677,7 +677,7 @@ export default function ProfilePage() {
                 <div className="pb-[120px]">
                   {posts.map((post) => (
                     <PostItem 
-                      key={post.id} 
+                      key={post.id + (post.is_repost_by_profile ? '_repost_' + post.repost_created_at : '')} 
                       post={post} 
                       currentUsername={currentUsername} 
                       onPostDeleted={handlePostDeleted}
@@ -701,7 +701,7 @@ export default function ProfilePage() {
               {bookmarkedPosts.length > 0 ? (
                 bookmarkedPosts.map((post) => (
                   <PostItem 
-                    key={post.id} 
+                    key={post.id + (post.is_repost_by_profile ? '_repost_' + post.repost_created_at : '')} 
                     post={post} 
                     currentUsername={currentUsername} 
                     onPostDeleted={(id) => { setPosts(prev => prev.filter(p => p.id !== id)); }}
