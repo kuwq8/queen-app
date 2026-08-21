@@ -153,7 +153,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
 
   const handleToggleComments = async () => {
     try {
-      const newStatus = !post.is_comments_disabled;
+      const newStatus = !isCommentsDisabled;
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
       const { error } = await supabase
@@ -172,7 +172,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
     } catch (e) {
       console.error(e);
       // Fallback for local storage
-      setPost((prev: any) => ({ ...prev, is_comments_disabled: !post.is_comments_disabled }));
+      setPost((prev: any) => ({ ...prev, is_comments_disabled: !isCommentsDisabled }));
       setShowDropdown(false);
     }
   };
@@ -417,7 +417,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
                     onClick={(e) => { e.stopPropagation(); handleToggleComments(); }}
                     className="w-full text-right px-3 py-2 text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 transition-colors border-b border-slate-800/50 pb-2 mb-1 text-sm"
                   >
-                    <MessageSquareOff size={16} className="text-slate-400 shrink-0" /> {post.is_comments_disabled ? 'تفعيل التعليقات' : 'إيقاف التعليقات'}
+                    <MessageSquareOff size={16} className="text-slate-400 shrink-0" /> {isCommentsDisabled ? 'تفعيل التعليقات' : 'إيقاف التعليقات'}
                   </button>
                   <button 
                     onClick={(e) => { e.stopPropagation(); handleDelete(); setShowDropdown(false); }}
@@ -462,7 +462,7 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
                     {renderContentWithHashtags(post.content)}
                   </div>
                   <div className="flex justify-end items-center text-[10px] text-slate-400 gap-1 mt-1 font-bold">
-                    🎙️ بث من قناة {post.community.name}
+                    قناة {post.community.name}
                   </div>
                 </div>
               ) : (
@@ -513,13 +513,13 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
           <button 
             onClick={(e) => { 
               e.stopPropagation(); 
-              if (!post.is_comments_disabled) router.push(`/post/${post.id}`); 
+              if (!isCommentsDisabled) router.push(`/post/${post.id}`); 
             }}
-            className={`flex items-center gap-1.5 transition-colors group ${post.is_comments_disabled ? 'text-slate-600 cursor-not-allowed' : 'hover:text-cyan-500'}`}
-            title={post.is_comments_disabled ? 'التعليقات معطلة' : 'التعليقات'}
+            className={`flex items-center gap-1.5 transition-colors group ${isCommentsDisabled ? 'text-slate-600 cursor-not-allowed' : 'hover:text-cyan-500'}`}
+            title={isCommentsDisabled ? 'التعليقات معطلة' : 'التعليقات'}
           >
-            <div className={`p-2 rounded-full transition-colors ${post.is_comments_disabled ? '' : 'group-hover:bg-cyan-500/10'}`}>
-              {post.is_comments_disabled ? <MessageSquareOff size={18} /> : <MessageCircle size={18} />}
+            <div className={`p-2 rounded-full transition-colors ${isCommentsDisabled ? '' : 'group-hover:bg-cyan-500/10'}`}>
+              {isCommentsDisabled ? <MessageSquareOff size={18} /> : <MessageCircle size={18} />}
             </div>
             <span className="text-sm">{commentsCountOverride !== undefined ? commentsCountOverride : (post.comments_count || 0)}</span>
           </button>
