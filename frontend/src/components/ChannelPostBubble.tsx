@@ -172,6 +172,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted, 
           >
             <Trash2 size={16} />
           </button>
+        )}
 
         {/* Post content */}
         <div className="text-[#e9edef] text-[15px] sm:text-[16px] whitespace-pre-wrap leading-relaxed sm:leading-7 pb-6 pt-1">
