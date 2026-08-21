@@ -1,4 +1,6 @@
-'use client';
+const fs = require('fs');
+
+const newCode = `'use client';
 
 import { useState, useEffect, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -87,8 +89,8 @@ export default function CommunityPage({ params }: { params: any }) {
     const setupRealtime = async () => {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
-      channel = supabase.channel(`community_posts_${id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts', filter: `community_id=eq.${id}` }, payload => {
+      channel = supabase.channel(\`community_posts_\${id}\`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'posts', filter: \`community_id=eq.\${id}\` }, payload => {
           if (payload.eventType === 'INSERT') {
             fetchCommunityData();
           } else if (payload.eventType === 'DELETE') {
@@ -299,3 +301,6 @@ export default function CommunityPage({ params }: { params: any }) {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/app/communities/[id]/ClientPage.tsx', newCode);
