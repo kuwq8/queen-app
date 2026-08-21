@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
+
 import { Trash2, Smile } from 'lucide-react';
 
 interface ChannelPostBubbleProps {
@@ -77,7 +76,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
 
   const availableEmojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
-  const timeString = format(new Date(post.created_at), 'h:mm a', { locale: ar });
+  const timeString = new Intl.DateTimeFormat('ar-SA', { hour: 'numeric', minute: 'numeric', hour12: true }).format(new Date(post.created_at || post.createdAt));
 
   return (
     <div className="w-full flex justify-start mb-4 px-2">
