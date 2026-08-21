@@ -159,7 +159,6 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted, 
       <div className="w-[98%] sm:w-[85%] md:w-[70%] lg:w-[60%] xl:w-[55%] bg-[#202c33] rounded-2xl rounded-tr-none p-4 relative shadow-md group">
         
         {currentUserId === post.user_id && (
-          {!isPrivate && (
           <button 
             onClick={async () => {
               if(!confirm('هل أنت متأكد من حذف هذا البث؟')) return;
@@ -173,7 +172,6 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted, 
           >
             <Trash2 size={16} />
           </button>
-        )}
 
         {/* Post content */}
         <div className="text-[#e9edef] text-[15px] sm:text-[16px] whitespace-pre-wrap leading-relaxed sm:leading-7 pb-6 pt-1">
@@ -200,6 +198,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted, 
         <div className="absolute -bottom-3 right-4 flex gap-1.5 items-center z-10" ref={pickerRef}>
           
           {/* Repost Pill */}
+          {!isPrivate && (
           <div 
             onClick={handleToggleRepost}
             className={`flex items-center gap-1 bg-[#182229] border border-[#2a3942] rounded-full px-2.5 py-1 cursor-pointer hover:bg-[#202c33] shadow-sm transition-colors ${hasReposted ? 'text-green-500 border-green-500/30' : 'text-slate-400'}`}
@@ -207,6 +206,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted, 
             <Repeat size={14} />
             {repostCount > 0 && <span className="text-[12px] font-bold">{repostCount}</span>}
           </div>
+          )}
 
           {/* Reaction Pill (WhatsApp style) */}
           {totalReactions > 0 && (
