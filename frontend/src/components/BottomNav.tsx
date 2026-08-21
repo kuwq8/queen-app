@@ -52,7 +52,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
     fetchUnread();
 
     const supabase = createClient();
-    const subscription = supabase.channel('bottom_nav_changes')
+    const subscription = supabase.channel(`bottom_nav_changes_${Math.random()}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
          fetchUnread();
       })
