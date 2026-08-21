@@ -149,7 +149,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
               await supabase.from('posts').delete().eq('id', post.id);
               if (onPostDeleted) onPostDeleted(post.id);
             }}
-            className="absolute top-2 right-2 text-slate-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1.5 rounded-full"
+            className="absolute top-2 left-2 text-slate-500 hover:text-red-500 transition-colors p-1.5 rounded-full"
             title="حذف البث"
           >
             <Trash2 size={16} />
