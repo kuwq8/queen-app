@@ -1,4 +1,6 @@
-"use client";
+const fs = require('fs');
+
+const newCode = `"use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Trash2, Smile, Repeat } from 'lucide-react';
@@ -55,14 +57,14 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
       
-      channelReactions = supabase.channel(`post_reactions_${post.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'post_reactions', filter: `post_id=eq.${post.id}` }, () => {
+      channelReactions = supabase.channel(\`post_reactions_\${post.id}\`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'post_reactions', filter: \`post_id=eq.\${post.id}\` }, () => {
           fetchReactions();
         })
         .subscribe();
         
-      channelReposts = supabase.channel(`post_reposts_${post.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'reposts', filter: `post_id=eq.${post.id}` }, () => {
+      channelReposts = supabase.channel(\`post_reposts_\${post.id}\`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'reposts', filter: \`post_id=eq.\${post.id}\` }, () => {
           fetchReposts();
         })
         .subscribe();
@@ -164,7 +166,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
         {/* Media (if any) */}
         {post.media_url && (
           <div className="mt-2 mb-6 rounded-xl overflow-hidden">
-            {post.media_url.match(/\.(mp4|webm|ogg)$/i) ? (
+            {post.media_url.match(/\\.(mp4|webm|ogg)$/i) ? (
               <video src={post.media_url} controls className="w-full max-h-[400px] object-cover" />
             ) : (
               <img src={post.media_url} alt="Media" className="w-full max-h-[400px] object-cover" />
@@ -183,7 +185,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
           {/* Repost Pill */}
           <div 
             onClick={handleToggleRepost}
-            className={`flex items-center gap-1 bg-[#182229] border border-[#2a3942] rounded-full px-2.5 py-1 cursor-pointer hover:bg-[#202c33] shadow-sm transition-colors ${hasReposted ? 'text-green-500 border-green-500/30' : 'text-slate-400'}`}
+            className={\`flex items-center gap-1 bg-[#182229] border border-[#2a3942] rounded-full px-2.5 py-1 cursor-pointer hover:bg-[#202c33] shadow-sm transition-colors \${hasReposted ? 'text-green-500 border-green-500/30' : 'text-slate-400'}\`}
           >
             <Repeat size={14} />
             {repostCount > 0 && <span className="text-[12px] font-bold">{repostCount}</span>}
@@ -232,3 +234,6 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/ChannelPostBubble.tsx', newCode);
