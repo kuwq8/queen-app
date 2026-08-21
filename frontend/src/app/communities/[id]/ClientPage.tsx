@@ -188,9 +188,9 @@ export default function CommunityPage({ params }: { params: any }) {
   const isCreator = currentUserId === community.creator_id;
 
   return (
-    <div className="w-full flex flex-col relative min-h-[100dvh] bg-[#0b141a] font-sans text-right">
+    <div className="w-full flex flex-col relative h-[100dvh] bg-[#0b141a] font-sans text-right">
       {/* WhatsApp Style Header */}
-      <header className="sticky top-0 z-50 bg-[#202c33] flex items-center px-2 py-2 gap-3 shadow-md">
+      <header className="sticky top-0 z-50 bg-[#202c33]/85 backdrop-blur-md flex items-center px-4 py-3 gap-4 shadow-lg border-b border-[#2a3942]">
         <button onClick={() => router.push('/home')} className="p-2 -mr-2 rounded-full hover:bg-white/10 transition-colors">
           <ArrowRight className="text-slate-300" size={24} />
         </button>
@@ -252,9 +252,9 @@ export default function CommunityPage({ params }: { params: any }) {
       </main>
 
       {/* Footer Area */}
-      <div className="fixed bottom-0 left-0 w-full z-40 bg-[#0b141a] p-2 sm:p-4">
+      <div className="absolute bottom-0 left-0 w-full z-40 bg-[#182229] border-t border-[#2a3942] p-3 sm:p-4">
         {isCreator ? (
-          <div className="flex gap-2 items-end max-w-2xl mx-auto w-full">
+          <div className="flex gap-2 items-end max-w-3xl mx-auto w-full">
             <div className="flex-1 bg-[#202c33] rounded-3xl flex items-center px-4 py-2 min-h-[50px]">
               <textarea 
                 value={newPost}
@@ -280,7 +280,7 @@ export default function CommunityPage({ params }: { params: any }) {
             </button>
           </div>
         ) : !isMember ? (
-          <div className="max-w-2xl mx-auto w-full">
+          <div className="max-w-3xl mx-auto w-full">
             <button 
               onClick={toggleMembership}
               className="w-full bg-[#00a884] hover:bg-[#029576] text-[#111b21] py-3.5 rounded-full font-bold text-[16px] shadow-lg transition-colors"
@@ -289,7 +289,7 @@ export default function CommunityPage({ params }: { params: any }) {
             </button>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto w-full">
+          <div className="max-w-3xl mx-auto w-full">
             <div className="w-full py-3 text-center text-slate-400 text-sm">
               أنت تتابع هذه القناة
             </div>

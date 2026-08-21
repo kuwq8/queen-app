@@ -32,6 +32,7 @@ export const viewport = {
 
 import CallManager from '../components/CallManager';
 import NotificationToast from '../components/NotificationToast';
+import LayoutWrapper from '../components/LayoutWrapper';
 
 export default function RootLayout({
   children,
@@ -47,9 +48,9 @@ export default function RootLayout({
       <body className="min-h-screen flex justify-center text-white">
         <CallManager />
         <NotificationToast />
-        <div className="w-full max-w-md sm:max-w-lg min-h-screen bg-black border-x border-white/10 flex flex-col relative shadow-2xl">
+        <LayoutWrapper>
           {children}
-        </div>
+        </LayoutWrapper>
       </body>
     </html>
   );
