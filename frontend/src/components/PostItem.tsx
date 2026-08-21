@@ -337,6 +337,13 @@ export default function PostItem({ post: initialPost, currentUsername, onPostDel
         onClick={() => router.push(`/post/${post.id}`)}
       />
 
+      
+      {post.community && (
+        <div className="flex items-center gap-1.5 text-xs font-bold text-[#00a884] mb-3 px-3 py-1 bg-[#00a884]/10 w-fit rounded-lg cursor-pointer hover:bg-[#00a884]/20 transition-colors" onClick={(e) => { e.stopPropagation(); window.location.href = '/communities/' + post.community.id; }}>
+          🎙️ بث من قناة {post.community.name}
+        </div>
+      )}
+
       {post.is_repost_by_profile && (
         <div className="absolute top-1 right-12 text-[11px] text-slate-500 font-bold flex items-center gap-1 z-10">
           <Repeat size={12} />

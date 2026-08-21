@@ -99,31 +99,46 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
   };
 
   const handleToggleReaction = async (emoji: string) => {
+    setShowEmojiPicker(false);
+    
+    // Optimistic update
+    const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === emoji);
+    if (existing) {
+      setReactions(prev => prev.filter(r => r.id !== existing.id));
+    } else {
+      setReactions(prev => [...prev, { id: 'temp-' + Date.now(), post_id: post.id, user_id: currentUserId, emoji }]);
+    }
+    
     try {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
       
-      const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === emoji);
-      
-      if (existing) {
+      if (existing && !existing.id.startsWith('temp-')) {
         await supabase.from('post_reactions').delete().eq('id', existing.id);
-      } else {
+      } else if (!existing) {
         await supabase.from('post_reactions').insert({ post_id: post.id, user_id: currentUserId, emoji });
       }
-      setShowEmojiPicker(false);
     } catch (e) {
       console.error(e);
+      fetchReactions();
     }
   };
 
   const handleToggleRepost = async () => {
+    // Optimistic UI update
+    if (hasReposted) {
+      setReposts(prev => prev.filter(r => r.user_id !== currentUserId));
+    } else {
+      setReposts(prev => [...prev, { id: 'temp', post_id: post.id, user_id: currentUserId }]);
+    }
+    
     try {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
       
       if (hasReposted) {
         const existing = reposts.find(r => r.user_id === currentUserId);
-        if (existing) {
+        if (existing && existing.id !== 'temp') {
           await supabase.from('reposts').delete().eq('id', existing.id);
         }
       } else {
@@ -131,6 +146,8 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
       }
     } catch (e) {
       console.error(e);
+      // Revert on error
+      fetchReposts();
     }
   };
 
