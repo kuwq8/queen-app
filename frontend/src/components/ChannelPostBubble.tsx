@@ -90,7 +90,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
         {/* Media (if any) */}
         {post.media_url && (
           <div className="mt-2 mb-4 rounded-xl overflow-hidden">
-            {post.media_url.match(/\\.(mp4|webm|ogg)$/i) ? (
+            {post.media_url.match(/.(mp4|webm|ogg)$/i) ? (
               <video src={post.media_url} controls className="w-full max-h-80 object-cover" />
             ) : (
               <img src={post.media_url} alt="Media" className="w-full max-h-80 object-cover" />
