@@ -262,8 +262,8 @@ export default function MessagesSidebar() {
                 <Link href={`/messages/${conv.id}`} key={conv.id} className="block group">
                   <div className={`flex items-center gap-3 p-3 transition-all cursor-pointer ${isActive ? 'bg-slate-900 border-r-4 border-cyan-500' : 'hover:bg-slate-900/50'}`}>
                     <div className="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 shrink-0 overflow-hidden">
-                      {conv.otherUser.avatar_url ? (
-                        <img src={conv.otherUser.avatar_url} alt="" className="w-full h-full object-cover" />
+                      {conv.otherUser?.avatar_url ? (
+                        <img src={conv.otherUser?.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <User size={24} />
                       )}
@@ -271,7 +271,7 @@ export default function MessagesSidebar() {
                     <div className="flex-col flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className={`font-bold text-[15px] truncate ${isUnread ? 'text-white' : 'text-slate-200'}`}>
-                          {conv.otherUser.first_name ? `${conv.otherUser.first_name} ${conv.otherUser.last_name||''}` : conv.otherUser.username}
+                          {conv.otherUser?.first_name ? `${conv.otherUser?.first_name} ${conv.otherUser?.last_name||''}` : conv.otherUser?.username}
                         </span>
                         {conv.latestMessage && (
                           <span className={`text-[12px] shrink-0 ${isUnread ? 'text-cyan-500 font-bold' : 'text-slate-500'}`}>

@@ -29,7 +29,7 @@ export default function ChatRoomPage({ params }: { params: { id: string } }) {
       
       const { data: call, error } = await supabase.from('calls').insert({
         caller_id: currentUserId,
-        receiver_id: otherUser.id,
+        receiver_id: otherUser?.id,
         call_type: type,
         status: 'ringing'
       }).select().single();
@@ -304,11 +304,11 @@ export default function ChatRoomPage({ params }: { params: { id: string } }) {
             <ArrowRight size={24} />
           </Link>
           
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => otherUser && router.push(`/${otherUser.username}`)}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => otherUser && router.push(`/${otherUser?.username}`)}>
             <div className="relative">
               <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden border border-slate-700 flex items-center justify-center">
                 {otherUser?.avatar_url ? (
-                  <img src={otherUser.avatar_url} alt="" className="w-full h-full object-cover" />
+                  <img src={otherUser?.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <User size={20} className="text-slate-400" />
                 )}
@@ -319,7 +319,7 @@ export default function ChatRoomPage({ params }: { params: { id: string } }) {
             </div>
             <div className="flex flex-col">
               <span className="font-bold text-white text-base leading-tight">
-                {isLoading ? '...' : (otherUser?.first_name ? `${otherUser.first_name} ${otherUser.last_name||''}` : otherUser?.username)}
+                {isLoading ? '...' : (otherUser?.first_name ? `${otherUser?.first_name} ${otherUser?.last_name||''}` : otherUser?.username)}
               </span>
               <span className="text-slate-400 text-xs">
                 {isLoading ? '...' : (isOnline ? 'متصل الآن' : `@${otherUser?.username}`)}
