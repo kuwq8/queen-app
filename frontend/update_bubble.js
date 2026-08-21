@@ -1,4 +1,6 @@
-"use client";
+const fs = require('fs');
+
+const newCode = `"use client";
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Trash2, Smile, Share2 } from 'lucide-react';
@@ -46,8 +48,8 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
     const setupRealtime = async () => {
       const { createClient } = await import('@/utils/supabase/client');
       const supabase = createClient();
-      channel = supabase.channel(`post_reactions_${post.id}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'post_reactions', filter: `post_id=eq.${post.id}` }, () => {
+      channel = supabase.channel(\`post_reactions_\${post.id}\`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'post_reactions', filter: \`post_id=eq.\${post.id}\` }, () => {
           fetchReactions();
         })
         .subscribe();
@@ -119,7 +121,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
         {/* Media (if any) */}
         {post.media_url && (
           <div className="mt-2 mb-6 rounded-xl overflow-hidden">
-            {post.media_url.match(/\.(mp4|webm|ogg)$/i) ? (
+            {post.media_url.match(/\\.(mp4|webm|ogg)$/i) ? (
               <video src={post.media_url} controls className="w-full max-h-[400px] object-cover" />
             ) : (
               <img src={post.media_url} alt="Media" className="w-full max-h-[400px] object-cover" />
@@ -167,7 +169,7 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
                     <button 
                       key={emoji}
                       onClick={() => handleToggleReaction(emoji)}
-                      className={`text-xl hover:scale-125 transition-transform ${isSelected ? 'bg-white/20 rounded-full' : ''}`}
+                      className={\`text-xl hover:scale-125 transition-transform \${isSelected ? 'bg-white/20 rounded-full' : ''}\`}
                     >
                       {emoji}
                     </button>
@@ -183,3 +185,6 @@ export default function ChannelPostBubble({ post, currentUserId, onPostDeleted }
     </div>
   );
 }
+`;
+
+fs.writeFileSync('src/components/ChannelPostBubble.tsx', newCode);
