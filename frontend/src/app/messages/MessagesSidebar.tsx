@@ -39,24 +39,7 @@ export default function MessagesSidebar() {
   };
 
 
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('الكل');
   
-  const handleMarkAllRead = async () => {
-    try {
-      const supabase = createClient();
-      const unreadConvs = conversations.filter(c => c.latestMessage && !c.latestMessage.is_read && c.latestMessage.sender_id !== currentUserId);
-      for (const conv of unreadConvs) {
-        await supabase.from('messages')
-          .update({ is_read: true })
-          .eq('conversation_id', conv.id)
-          .neq('sender_id', currentUserId);
-      }
-      setFilterDropdownOpen(false);
-      fetchConversations();
-    } catch(e) {}
-  };
-
 
   useEffect(() => {
     fetchConversations();
