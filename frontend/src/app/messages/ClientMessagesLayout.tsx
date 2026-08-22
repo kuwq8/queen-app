@@ -19,7 +19,8 @@ export default function ClientMessagesLayout({ children }: { children: React.Rea
         </div>
 
         {/* Active Chat Window */}
-        <div className={`hidden md:flex flex-1 flex-col h-full bg-black ${isRoot ? 'items-center justify-center' : ''}`}>
+        <div className={`flex-1 flex flex-col h-full bg-black md:pb-14 ${isRoot ? 'hidden md:flex items-center justify-center' : 'flex'}`}>
+
           {children}
         </div>
         
