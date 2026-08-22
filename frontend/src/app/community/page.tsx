@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, ArrowRight } from 'lucide-react';
+import { Search, Plus, ArrowRight, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import BottomNav from '../../components/BottomNav';
 import ServerCard from '../../components/ServerCard';
 
@@ -14,6 +14,12 @@ export default function CommunityPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'joined' | 'explore'>('joined');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newChannelName, setNewChannelName] = useState('');
+  const [newChannelDesc, setNewChannelDesc] = useState('');
+  const [newChannelSlug, setNewChannelSlug] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');| 'explore'>('joined');
 
   useEffect(() => {
     const init = async () => {
@@ -119,6 +125,55 @@ export default function CommunityPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [query]);
 
+  
+  const handleCreateChannel = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChannelName || !newChannelSlug) {
+      setCreateError('الرجاء إدخال اسم ورابط القناة');
+      return;
+    }
+    try {
+      setIsCreating(true);
+      setCreateError('');
+      const { createClient } = await import('@/utils/supabase/client');
+      const supabase = createClient();
+      
+      const { data: existing } = await supabase.from('communities').select('id').eq('slug', newChannelSlug).single();
+      if (existing) {
+        setCreateError('هذا الرابط مستخدم بالفعل');
+        setIsCreating(false);
+        return;
+      }
+
+      const { data: community, error } = await supabase
+        .from('communities')
+        .insert({
+          name: newChannelName,
+          slug: newChannelSlug,
+          description: newChannelDesc,
+          created_by: currentUser.id,
+          is_private: false
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      await supabase.from('community_members').insert({
+        community_id: community.id,
+        user_id: currentUser.id,
+        role: 'admin'
+      });
+      
+      setIsModalOpen(false);
+      router.push(`/c/${community.slug}/admin`);
+    } catch (err: any) {
+      setCreateError(err.message || 'حدث خطأ أثناء الإنشاء');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex justify-center bg-black font-sans text-right">
       <div className="w-full max-w-[600px] flex flex-col relative pb-[60px] border-x border-slate-800 min-h-screen bg-black">
@@ -133,11 +188,11 @@ export default function CommunityPage() {
               <h1 className="text-xl font-bold text-cyan-500">قناةات السيرفرات</h1>
             </div>
             <button 
-              onClick={() => router.push('/community/create')}
+              onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-1 bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded-full text-sm font-bold transition-colors"
             >
               <Plus size={16} />
-              <span>إنشاء</span>
+              <span>إنشاء قناة / مجموعة</span>
             </button>
           </div>
 
