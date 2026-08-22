@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import MessagesSidebar from './MessagesSidebar';
+import BottomNav from '../../components/BottomNav';
 
 export default function ClientMessagesLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,6 +18,9 @@ export default function ClientMessagesLayout({ children }: { children: React.Rea
       {/* Main Content (Chat) - hidden on mobile when root */}
       <div className={`flex-1 flex flex-col h-full bg-[#0a0a0a] ${isRoot ? 'hidden md:flex' : 'flex'}`}>
         {children}
+      </div>
+      <div className={`z-50 md:block ${isRoot ? 'block' : 'hidden'}`}>
+        <BottomNav activeTab="messages" />
       </div>
     </div>
   );

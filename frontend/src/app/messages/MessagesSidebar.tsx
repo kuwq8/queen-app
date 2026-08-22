@@ -5,7 +5,6 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { MessageCircle, User, Plus, Search, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import BottomNav from '../../components/BottomNav';
 
 export default function MessagesSidebar() {
   const router = useRouter();
@@ -298,10 +297,7 @@ export default function MessagesSidebar() {
         )}
       </div>
 
-      {/* Only show bottom nav on mobile if we are on the root messages route (handled by layout layouting) */}
-      <div className="md:hidden">
-        <BottomNav activeTab="messages" />
-      </div>
+      
 
       {/* New Chat Modal */}
       {isNewChatOpen && (
