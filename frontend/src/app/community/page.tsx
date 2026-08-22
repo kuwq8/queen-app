@@ -19,7 +19,7 @@ export default function CommunityPage() {
   const [newChannelDesc, setNewChannelDesc] = useState('');
   const [newChannelSlug, setNewChannelSlug] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [createError, setCreateError] = useState('');| 'explore'>('joined');
+  const [createError, setCreateError] = useState('');
 
   useEffect(() => {
     const init = async () => {
