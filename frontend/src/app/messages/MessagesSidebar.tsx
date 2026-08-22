@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { MessageCircle, User, Plus, Search, X, ChevronDown, Check, MessageSquare, Users, Settings, UserPlus, CheckCircle2 } from 'lucide-react';
+import { MessageCircle, User, Plus, Search, X, ChevronDown, Check, MessageSquare, Users, Settings, UserPlus, CheckCircle2, ChevronLeft, ArrowRight, Verified } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 export default function MessagesSidebar() {
@@ -15,7 +15,34 @@ export default function MessagesSidebar() {
   const [currentUserId, setCurrentUserId] = useState('');
   
   // New Chat Modal State
+  
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
+  const [isGroupMode, setIsGroupMode] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
+  
+  // Fetch suggested users when modal opens
+  useEffect(() => {
+    if (isNewChatOpen) {
+      const fetchSuggested = async () => {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from('profiles')
+          .select('id, username, first_name, last_name, avatar_url, is_verified')
+          .neq('id', currentUserId)
+          .limit(15);
+        setSuggestedUsers(data || []);
+      };
+      fetchSuggested();
+    } else {
+      // Reset state when closed
+      setIsGroupMode(false);
+      setSelectedUsers([]);
+      setSearchQuery('');
+      setSearchResults([]);
+    }
+  }, [isNewChatOpen, currentUserId]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -186,7 +213,7 @@ export default function MessagesSidebar() {
     const supabase = createClient();
     const { data } = await supabase
       .from('profiles')
-      .select('id, username, first_name, last_name, avatar_url')
+      .select('id, username, first_name, last_name, avatar_url, is_verified')
       .ilike('username', `%${query}%`)
       .neq('id', currentUserId)
       .limit(10);
@@ -195,6 +222,19 @@ export default function MessagesSidebar() {
     setIsSearching(false);
   };
 
+  
+  const handleToggleSelectUser = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+    );
+  };
+  
+  const handleStartGroupChat = async () => {
+    if (selectedUsers.length === 0) return;
+    alert('سيتم إضافة إنشاء المجموعات قريباً!');
+    setIsNewChatOpen(false);
+  };
+  
   const handleStartChat = async (targetUserId: string) => {
     const supabase = createClient();
     // Check if conversation already exists
