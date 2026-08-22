@@ -8,7 +8,7 @@ export default function ClientMessagesLayout({ children }: { children: React.Rea
   const isRoot = pathname === '/messages';
 
   return (
-    <div className="flex h-screen bg-black overflow-hidden font-sans text-right" dir="rtl">
+    <div className="fixed inset-0 z-[40] flex h-screen w-screen bg-black overflow-hidden font-sans text-right" dir="rtl">
       {/* Sidebar - hidden on mobile when not root */}
       <div className={`w-full md:w-[350px] lg:w-[400px] flex-shrink-0 border-l border-slate-800 ${isRoot ? 'block' : 'hidden md:block'}`}>
         <MessagesSidebar />
