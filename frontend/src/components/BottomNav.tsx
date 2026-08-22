@@ -59,6 +59,12 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, () => {
          fetchUnread();
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
+         fetchUnread();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'notifications' }, () => {
+         fetchUnread();
+      })
       .subscribe();
 
     const handleNewNotification = () => {
