@@ -300,7 +300,7 @@ export default function ChatRoomPage({ params }: { params: { id: string } }) {
       {/* Header */}
       <header className="sticky top-0 z-20 bg-black/80 backdrop-blur-md border-b border-slate-800 p-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
-          <Link href="/messages" className="md:hidden text-slate-400 hover:text-white p-2 -ml-2 rounded-full hover:bg-slate-800 transition-colors">
+          <Link href="/messages" className="text-slate-400 hover:text-white p-2 -ml-2 rounded-full hover:bg-slate-800 transition-colors">
             <ArrowRight size={24} />
           </Link>
           

@@ -9,25 +9,23 @@ export default function ClientMessagesLayout({ children }: { children: React.Rea
   const isRoot = pathname === '/messages';
 
   return (
-    <div className="fixed inset-0 z-[40] bg-black font-sans text-right" dir="rtl">
-      {/* General Container matching user request */}
-      <div className="max-w-6xl mx-auto h-screen flex border-x border-zinc-800 relative">
+    <div className="fixed inset-0 z-[40] flex justify-center bg-black font-sans text-right" dir="rtl">
+      {/* General Container - exactly like Home page (max-w-lg) */}
+      <div className="w-full max-w-md sm:max-w-lg flex flex-col relative min-h-screen bg-black border-x border-zinc-800 shadow-2xl overflow-hidden">
         
-        {/* Messages Sidebar */}
-        <div className={`w-full md:w-[380px] lg:w-[420px] border-l border-zinc-800 shrink-0 h-full overflow-y-auto ${isRoot ? 'block' : 'hidden md:block'}`}>
+        {/* If we are on /messages, show Sidebar. Otherwise show the Chat window (children) */}
+        <div className={`flex-1 flex-col w-full h-full pb-14 ${isRoot ? 'flex' : 'hidden'}`}>
           <MessagesSidebar />
         </div>
 
-        {/* Active Chat Window */}
-        <div className={`flex-1 flex flex-col h-full bg-black md:pb-14 ${isRoot ? 'hidden md:flex items-center justify-center' : 'flex'}`}>
-
+        <div className={`flex-1 flex-col w-full h-full ${isRoot ? 'hidden' : 'flex'}`}>
           {children}
         </div>
         
       </div>
       
-      {/* Bottom Nav - Always centered at the bottom of the screen */}
-      <div className={`z-50 md:block ${isRoot ? 'block' : 'hidden'}`}>
+      {/* Bottom Nav - Centered perfectly */}
+      <div className={`z-50 ${isRoot ? 'block' : 'hidden'}`}>
         <BottomNav activeTab="messages" />
       </div>
     </div>
