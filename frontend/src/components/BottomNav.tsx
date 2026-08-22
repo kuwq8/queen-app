@@ -74,7 +74,7 @@ export default function BottomNav({ activeTab }: BottomNavProps) {
   }, []);
 
   return (
-    <nav className="bg-black/95 backdrop-blur-md border-t border-white/10 flex items-center justify-around w-full max-w-md sm:max-w-lg fixed bottom-0 left-1/2 -translate-x-1/2 z-50 px-3 h-14">
+    <nav className="fixed bottom-0 inset-x-0 mx-auto max-w-lg w-full backdrop-blur-md bg-black/80 border-t border-zinc-800 z-50 flex items-center justify-around h-14">
       <Link href="/home" aria-label="الرئيسية" className={`p-2 hover:bg-white/5 rounded-full transition-all flex items-center justify-center ${activeTab === 'home' ? 'text-white' : 'text-gray-500'}`}>
         <svg viewBox="0 0 24 24" width="25" height="25" fill={activeTab === 'home' ? 'currentColor' : 'none'} stroke={activeTab === 'home' ? 'none' : 'currentColor'} strokeWidth={activeTab === 'home' ? 0 : 1.75} strokeLinecap="round" strokeLinejoin="round">
           <path d={activeTab === 'home' 

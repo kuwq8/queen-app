@@ -237,11 +237,11 @@ export default function MessagesSidebar() {
           </div>
         ) : conversations.length === 0 ? (
           <div className="text-center p-8 text-slate-500 flex flex-col items-center justify-center h-full">
-            <div className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center mb-4">
-              <MessageCircle size={32} className="text-slate-700" />
+            <div className="w-16 h-16 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 mb-4">
+              <MessageCircle size={32} />
             </div>
             <h3 className="text-white text-lg font-bold mb-2">مرحباً بك في الرسائل</h3>
-            <p className="text-sm">ابدأ محادثة جديدة للتواصل مع الآخرين.</p>
+            <p className="text-zinc-500 text-sm">ابدأ محادثة جديدة للتواصل مع الآخرين.</p>
             <button 
               onClick={() => setIsNewChatOpen(true)} 
               className="mt-6 bg-white text-black font-bold px-6 py-2 rounded-full hover:bg-slate-200 transition-colors"
